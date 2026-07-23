@@ -130,7 +130,7 @@
         .chart-container {
             padding: 20px;
             position: relative;
-            height: 380px;
+            height: 420px; /* Ditambah sedikit agar grafik lebih lega */
         }
 
         /* TABLE STYLES */
@@ -239,7 +239,7 @@
             </div>
         </div>
 
-        <!-- EXECUTIVE SUMMARY CARDS (BOD & MANAGER LOOK) -->
+        <!-- EXECUTIVE SUMMARY CARDS -->
         <div class="kpi-grid">
             <div class="kpi-card">
                 <div class="kpi-title">Total Target (Jul 26)</div>
@@ -263,7 +263,7 @@
             </div>
         </div>
 
-        <!-- Grafik Visualisasi (Smart Dynamic Chart) -->
+        <!-- Grafik Visualisasi -->
         <div class="card">
             <div class="card-header">
                 <span id="chartHeaderTitle">GRAFIK TARGET VS ACTUAL (BY WORKPLACE) - DALAM KL</span>
@@ -320,7 +320,6 @@
     <script>
         const SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQ7ZrrcD9z_Iwj3QWGAHq0usQd20cth9Y8pdfNiuBeWLaX-uqAFlpdZt6J8ggkYx0uCK2cnOJcYzM_5/pub?output=csv';
 
-        // DICTIONARY NAMA SINGKAT KHUSUS CHART AREA
         const AREA_SHORT_NAMES = {
             'PT CAHAYA PENGAJARAN ABADI-MANADO': 'MANADO',
             'PT CAHAYA PENGAJARAN ABADI-MAKASSAR': 'MAKASSAR',
@@ -369,14 +368,12 @@
             return new Intl.NumberFormat('id-ID', { maximumFractionDigits: 1 }).format(num || 0);
         }
 
-        // FUNGSI MENDAPATKAN NAMA SINGKAT KHUSUS CHART
         function getShortAreaName(fullName) {
             if (!fullName) return 'AREA';
             const trimmed = fullName.trim();
             if (AREA_SHORT_NAMES[trimmed]) {
                 return AREA_SHORT_NAMES[trimmed];
             }
-            // Fallback otomatis jika ada area baru di masa depan
             return trimmed.replace(/^PT\s+CAHAYA\s+PENGAJARAN\s+ABADI-?/i, '').trim() || trimmed;
         }
 
@@ -552,10 +549,9 @@
                     grouped[rawWp].actual += cleanNum(row['Actual Jul 26']);
                 });
 
-                // Menggunakan Dictionary Nama Singkat
                 labels = Object.keys(grouped).map(rawWp => {
                     const shortName = getShortAreaName(rawWp);
-                    return shortName.split(' '); // memecah per kata agar rapat & sejajar lurus
+                    return shortName.split(' ');
                 });
 
                 targetDataKL = Object.keys(grouped).map(wp => grouped[wp].target / 1000);
@@ -600,16 +596,24 @@
                     maintainAspectRatio: false,
                     layout: {
                         padding: {
-                            top: 35
+                            top: 50, /* MENAMBAH PADDING ATAS AGAR JUDUL LEGEND TIDAK BERTABRAKAN */
+                            bottom: 10
                         }
                     },
                     plugins: {
                         legend: { 
-                            labels: { color: '#94a3b8', font: { size: 11 } } 
+                            position: 'top',
+                            labels: { 
+                                color: '#94a3b8', 
+                                font: { size: 11, weight: '600' },
+                                boxWidth: 14,
+                                padding: 15
+                            } 
                         },
                         datalabels: {
                             anchor: 'end',
                             align: 'top',
+                            offset: 4, /* MEMBERIKAN SPASI DI ATAS BAR */
                             color: '#f8fafc',
                             font: {
                                 weight: 'bold',
@@ -618,7 +622,6 @@
                             formatter: function(value, context) {
                                 if (value === 0) return '';
                                 
-                                // Bar Actual -> Tampilkan volume + % Achievement
                                 if (context.datasetIndex === 1) {
                                     const targetVal = context.chart.data.datasets[0].data[context.dataIndex];
                                     const pct = targetVal > 0 ? ((value / targetVal) * 100).toFixed(0) : 0;
@@ -640,6 +643,7 @@
                             grid: { display: false }
                         },
                         y: { 
+                            grace: '18%', /* MEMBERIKAN MARGIN EKSTRA PADA SUMBU Y AGAR BAR HIGHEST TIDAK MENEMPEL PADA LEGEND */
                             ticks: { 
                                 color: '#94a3b8', 
                                 font: { size: 10 },
