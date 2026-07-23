@@ -8,6 +8,8 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Chart.js CDN -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- PapaParse CDN (Untuk Membaca Live Data CSV Google Sheets) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
     <style>
         body { background-color: #0f172a; color: #f8fafc; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
     </style>
@@ -17,18 +19,15 @@
     <!-- Header Section -->
     <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4 border-b border-slate-700 pb-6">
         <div>
-            <h1 class="text-2xl md:text-3xl font-bold tracking-wide text-white">📊 SALES PERFORMANCE DASHBOARD</h1>
-            <p class="text-slate-400 text-sm mt-1">Multi-Area CPA Analysis (CPA 01, CPA 02, CPA 03) & DSR Growth Tracking</p>
+            <h1 class="text-2xl md:text-3xl font-bold tracking-wide text-white">📊 DSR SALES PERFORMANCE DASHBOARD</h1>
+            <p class="text-slate-400 text-sm mt-1">Live Tracking: Jan–Jul 2026 | Breakdown per Workplace & DSR Active</p>
         </div>
         
-        <!-- Area Filter Dropdown -->
+        <!-- Workplace Filter Dropdown -->
         <div class="flex items-center gap-3 bg-slate-800 p-3 rounded-lg border border-slate-700 w-full md:w-auto">
-            <label for="areaFilter" class="text-xs font-semibold uppercase text-slate-400 whitespace-nowrap">Filter Area:</label>
-            <select id="areaFilter" onchange="renderDashboard()" class="bg-slate-900 text-sky-400 border border-slate-700 rounded px-3 py-1.5 text-sm font-semibold focus:outline-none focus:border-sky-500 w-full md:w-48">
-                <option value="ALL">Semua Area (ALL)</option>
-                <option value="CPA 01">CPA 01</option>
-                <option value="CPA 02">CPA 02</option>
-                <option value="CPA 03">CPA 03</option>
+            <label for="workplaceFilter" class="text-xs font-semibold uppercase text-slate-400 whitespace-nowrap">Filter Workplace:</label>
+            <select id="workplaceFilter" onchange="filterAndRender()" class="bg-slate-900 text-sky-400 border border-slate-700 rounded px-3 py-1.5 text-sm font-semibold focus:outline-none focus:border-sky-500 w-full md:w-56">
+                <option value="ALL">Semua Workplace (ALL)</option>
             </select>
         </div>
     </div>
@@ -37,7 +36,7 @@
         <!-- KPI Summary Cards -->
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
             <div class="bg-slate-800/80 border border-slate-700/80 p-5 rounded-xl shadow-lg">
-                <p class="text-xs font-bold uppercase text-slate-400 tracking-wider">Total Target</p>
+                <p class="text-xs font-bold uppercase text-slate-400 tracking-wider">Total Target (Jan-Jul)</p>
                 <h3 id="cardTarget" class="text-2xl font-black text-white mt-2">Rp 0</h3>
                 <p id="cardDsrCount" class="text-xs text-slate-400 mt-2">0 DSR Active</p>
             </div>
@@ -49,211 +48,234 @@
             </div>
 
             <div class="bg-slate-800/80 border border-slate-700/80 p-5 rounded-xl shadow-lg">
-                <p class="text-xs font-bold uppercase text-slate-400 tracking-wider">MoM Growth (vs Jun)</p>
+                <p class="text-xs font-bold uppercase text-slate-400 tracking-wider">MoM Growth</p>
                 <h3 id="cardMom" class="text-2xl font-black text-emerald-400 mt-2">+0%</h3>
                 <p id="cardMomValue" class="text-xs text-emerald-400 mt-2">↑ +Rp 0</p>
             </div>
 
             <div class="bg-slate-800/80 border border-slate-700/80 p-5 rounded-xl shadow-lg">
-                <p class="text-xs font-bold uppercase text-slate-400 tracking-wider">YoY Growth (vs 2025)</p>
-                <h3 id="cardYoy" class="text-2xl font-black text-emerald-400 mt-2">+0%</h3>
-                <p id="cardYoyValue" class="text-xs text-emerald-400 mt-2">↑ +Rp 0</p>
+                <p class="text-xs font-bold uppercase text-slate-400 tracking-wider">YTD Growth</p>
+                <h3 id="cardYtd" class="text-2xl font-black text-emerald-400 mt-2">+0%</h3>
+                <p id="cardYtdValue" class="text-xs text-emerald-400 mt-2">↑ +Rp 0</p>
             </div>
         </div>
 
         <!-- Chart Section -->
         <div class="bg-slate-800/60 border border-slate-700 p-5 rounded-xl shadow-lg mb-8">
-            <h2 class="text-sm font-bold text-slate-300 uppercase tracking-wider mb-4 border-l-4 border-sky-500 pl-3">Visualisasi Perbandingan Target vs Actual DSR</h2>
-            <div class="h-64 md:h-80">
+            <h2 class="text-sm font-bold text-slate-300 uppercase tracking-wider mb-4 border-l-4 border-sky-500 pl-3">Visualisasi Target vs Actual per DSR</h2>
+            <div class="h-72 md:h-96">
                 <canvas id="salesChart"></canvas>
             </div>
         </div>
 
         <!-- Main Data Table -->
         <div class="bg-slate-800/60 border border-slate-700 rounded-xl shadow-lg overflow-hidden">
-            <div class="p-5 border-b border-slate-700">
-                <h2 class="text-sm font-bold text-slate-300 uppercase tracking-wider border-l-4 border-sky-500 pl-3">Rincian Performa per DSR & Area</h2>
+            <div class="p-5 border-b border-slate-700 flex justify-between items-center">
+                <h2 class="text-sm font-bold text-slate-300 uppercase tracking-wider border-l-4 border-sky-500 pl-3">Rincian Performa DSR per Workplace</h2>
+                <span id="statusSync" class="text-xs text-slate-400">Menghubungkan ke Google Sheets...</span>
             </div>
             <div class="overflow-x-auto">
                 <table class="w-full text-left text-xs md:text-sm text-slate-300">
                     <thead class="bg-slate-900 text-slate-400 uppercase font-bold text-[11px] border-b border-slate-700">
                         <tr>
-                            <th class="py-3.5 px-4">Area / DSR Name</th>
-                            <th class="py-3.5 px-4 text-right">Target</th>
+                            <th class="py-3.5 px-4">Workplace / DSR Name</th>
+                            <th class="py-3.5 px-4 text-right">Target (Jan-Jul)</th>
                             <th class="py-3.5 px-4 text-right">Actual</th>
                             <th class="py-3.5 px-4 text-center">% Achieve</th>
-                            <th class="py-3.5 px-4 text-right">Actual (MoM)</th>
+                            <th class="py-3.5 px-4 text-right">Actual Prev. Month</th>
                             <th class="py-3.5 px-4 text-center">MoM Growth</th>
-                            <th class="py-3.5 px-4 text-right">Actual (YoY)</th>
-                            <th class="py-3.5 px-4 text-center">YoY Growth</th>
+                            <th class="py-3.5 px-4 text-right">Actual Prev. YTD</th>
+                            <th class="py-3.5 px-4 text-center">YTD Growth</th>
                         </tr>
                     </thead>
                     <tbody id="tableBody" class="divide-y divide-slate-700/50">
-                        <!-- Dynamic Rows Inject via JavaScript -->
+                        <!-- Rows injected via JavaScript -->
                     </tbody>
                 </table>
             </div>
         </div>
     </div>
 
-    <!-- JavaScript Interactive Logic -->
+    <!-- JavaScript Live Engine -->
     <script>
-        // Master Sales Data (Dummy Data)
-        const rawSalesData = [
-            // CPA 01
-            { area: 'CPA 01', dsr: 'Budi Santoso', target: 125000000, actual: 135000000, momActual: 120000000, yoyActual: 110000000 },
-            { area: 'CPA 01', dsr: 'Ani Wijaya', target: 125000000, actual: 130000000, momActual: 122000000, yoyActual: 115000000 },
-            { area: 'CPA 01', dsr: 'Citrus Pratama', target: 125000000, actual: 118000000, momActual: 115000000, yoyActual: 105000000 },
-            { area: 'CPA 01', dsr: 'Dewi Lestari', target: 125000000, actual: 142000000, momActual: 123000000, yoyActual: 120000000 },
-            
-            // CPA 02
-            { area: 'CPA 02', dsr: 'Eko Prasetyo', target: 150000000, actual: 160000000, momActual: 150000000, yoyActual: 138000000 },
-            { area: 'CPA 02', dsr: 'Fajar Nugraha', target: 150000000, actual: 165000000, momActual: 148000000, yoyActual: 140000000 },
-            { area: 'CPA 02', dsr: 'Gita Gutawa', target: 150000000, actual: 145000000, momActual: 142000000, yoyActual: 132000000 },
+        // Direct Link CSV Google Sheet Anda
+        const SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQ7ZrrcD9z_Iwj3QWGAHq0usQd20cth9Y8pdfNiuBeWLaX-uqAFlpdZt6J8ggkYx0uCK2cnOJcYzM_5/pub?output=csv';
 
-            // CPA 03
-            { area: 'CPA 03', dsr: 'Hendra Setiawan', target: 125000000, actual: 130000000, momActual: 118000000, yoyActual: 110000000 },
-            { area: 'CPA 03', dsr: 'Indah Permata', target: 125000000, actual: 110000000, momActual: 115000000, yoyActual: 105000000 },
-            { area: 'CPA 03', dsr: 'Joko Widodo', target: 125000000, actual: 128000000, momActual: 120000000, yoyActual: 112000000 },
-            { area: 'CPA 03', dsr: 'Kevin Sanjaya', target: 125000000, actual: 122000000, momActual: 97000000, yoyActual: 102000000 }
-        ];
-
+        let masterData = [];
         let chartInstance = null;
 
-        // Helper: Currency Formatter
         function formatRupiah(number) {
-            return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(number);
+            return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(number || 0);
         }
 
-        // Main Render Function
-        function renderDashboard() {
-            const selectedArea = document.getElementById('areaFilter').value;
+        function parseNum(val) {
+            if (!val) return 0;
+            let clean = val.toString().replace(/[^0-9.-]+/g, "");
+            return parseFloat(clean) || 0;
+        }
+
+        function getHeaderValue(row, possibleKeys) {
+            const keys = Object.keys(row);
+            for (let key of keys) {
+                for (let p of possibleKeys) {
+                    if (key.toLowerCase().trim().includes(p.toLowerCase())) {
+                        return row[key];
+                    }
+                }
+            }
+            return '';
+        }
+
+        function loadSheetData() {
+            Papa.parse(SHEET_CSV_URL, {
+                download: true,
+                header: true,
+                skipEmptyLines: true,
+                complete: function(results) {
+                    masterData = results.data.map(row => {
+                        const wp = getHeaderValue(row, ['workplace', 'area', 'cabang', 'lokasi']) || 'Unassigned';
+                        const dsr = getHeaderValue(row, ['dsr', 'nama', 'sales', 'agent']) || 'Unknown DSR';
+                        const target = parseNum(getHeaderValue(row, ['target']));
+                        const actual = parseNum(getHeaderValue(row, ['actual', 'pencapaian', 'sales']));
+                        const prevMonth = parseNum(getHeaderValue(row, ['june', 'juni', 'mom', 'prev month', 'sebelumnya']));
+                        const prevYtd = parseNum(getHeaderValue(row, ['ytd 2025', '2025', 'ytd prev', 'lytd']));
+
+                        return { workplace: wp, dsr: dsr, target: target, actual: actual, actualJune: prevMonth, actualYtdPrev: prevYtd };
+                    });
+
+                    populateWorkplaceFilter();
+                    filterAndRender();
+                    document.getElementById('statusSync').innerHTML = '🟢 <span class="text-emerald-400 font-semibold">Live Synced with Google Sheets</span>';
+                },
+                error: function() {
+                    document.getElementById('statusSync').innerHTML = '🔴 <span class="text-rose-400">Gagal mengambil data dari Google Sheets.</span>';
+                }
+            });
+        }
+
+        function populateWorkplaceFilter() {
+            const select = document.getElementById('workplaceFilter');
+            const workplaces = [...new Set(masterData.map(item => item.workplace))].sort();
             
-            // Filter Data
-            const filteredData = selectedArea === 'ALL' 
-                ? rawSalesData 
-                : rawSalesData.filter(item => item.area === selectedArea);
+            select.innerHTML = '<option value="ALL">Semua Workplace (ALL)</option>';
+            workplaces.forEach(wp => {
+                const opt = document.createElement('option');
+                opt.value = wp;
+                opt.innerText = wp;
+                select.appendChild(opt);
+            });
+        }
 
-            // Calculations
-            let totalTarget = 0, totalActual = 0, totalMomActual = 0, totalYoyActual = 0;
+        function filterAndRender() {
+            const selectedWp = document.getElementById('workplaceFilter').value;
+            const filtered = selectedWp === 'ALL' ? masterData : masterData.filter(d => d.workplace === selectedWp);
 
-            filteredData.forEach(d => {
+            let totalTarget = 0, totalActual = 0, totalJune = 0, totalYtdPrev = 0;
+
+            filtered.forEach(d => {
                 totalTarget += d.target;
                 totalActual += d.actual;
-                totalMomActual += d.momActual;
-                totalYoyActual += d.yoyActual;
+                totalJune += d.actualJune;
+                totalYtdPrev += d.actualYtdPrev;
             });
 
-            const overallAchieve = (totalActual / totalTarget) * 100;
-            const overallMomPct = ((totalActual - totalMomActual) / totalMomActual) * 100;
-            const overallYoyPct = ((totalActual - totalYoyActual) / totalYoyActual) * 100;
+            const achievePct = totalTarget > 0 ? (totalActual / totalTarget) * 100 : 0;
+            const momPct = totalJune > 0 ? ((totalActual - totalJune) / totalJune) * 100 : 0;
+            const ytdPct = totalYtdPrev > 0 ? ((totalActual - totalYtdPrev) / totalYtdPrev) * 100 : 0;
 
-            // Update KPI Cards
+            // Update Cards
             document.getElementById('cardTarget').innerText = formatRupiah(totalTarget);
-            document.getElementById('cardDsrCount').innerText = `${filteredData.length} DSR Active`;
-            
+            document.getElementById('cardDsrCount').innerText = `${filtered.length} DSR Active`;
+
             document.getElementById('cardActual').innerText = formatRupiah(totalActual);
-            document.getElementById('cardAchieve').innerText = `${overallAchieve.toFixed(1)}% Achieve`;
-            
-            document.getElementById('cardMom').innerText = `${overallMomPct >= 0 ? '+' : ''}${overallMomPct.toFixed(1)}%`;
-            document.getElementById('cardMomValue').innerText = `${overallMomPct >= 0 ? '↑' : '↓'} ${formatRupiah(totalActual - totalMomActual)}`;
-            
-            document.getElementById('cardYoy').innerText = `${overallYoyPct >= 0 ? '+' : ''}${overallYoyPct.toFixed(1)}%`;
-            document.getElementById('cardYoyValue').innerText = `${overallYoyPct >= 0 ? '↑' : '↓'} ${formatRupiah(totalActual - totalYoyActual)}`;
+            document.getElementById('cardAchieve').innerText = `${achievePct.toFixed(1)}% Achieve`;
 
-            // Render Table
-            renderTable(filteredData, selectedArea);
+            document.getElementById('cardMom').innerText = `${momPct >= 0 ? '+' : ''}${momPct.toFixed(1)}%`;
+            document.getElementById('cardMomValue').innerText = `${momPct >= 0 ? '↑' : '↓'} ${formatRupiah(totalActual - totalJune)}`;
 
-            // Render Chart
-            renderChart(filteredData);
+            document.getElementById('cardYtd').innerText = `${ytdPct >= 0 ? '+' : ''}${ytdPct.toFixed(1)}%`;
+            document.getElementById('cardYtdValue').innerText = `${ytdPct >= 0 ? '↑' : '↓'} ${formatRupiah(totalActual - totalYtdPrev)}`;
+
+            renderTable(filtered, selectedWp);
+            renderChart(filtered);
         }
 
-        function renderTable(data, selectedArea) {
+        function renderTable(data, selectedWp) {
             const tbody = document.getElementById('tableBody');
             tbody.innerHTML = '';
 
-            const areas = selectedArea === 'ALL' ? ['CPA 01', 'CPA 02', 'CPA 03'] : [selectedArea];
+            const workplaces = selectedWp === 'ALL' ? [...new Set(data.map(d => d.workplace))] : [selectedWp];
 
-            areas.forEach(areaName => {
-                const areaItems = data.filter(d => d.area === areaName);
-                if (areaItems.length === 0) return;
+            workplaces.forEach(wpName => {
+                const wpItems = data.filter(d => d.workplace === wpName);
+                if (wpItems.length === 0) return;
 
-                // Subtotal Area
-                let aTarget = 0, aActual = 0, aMom = 0, aYoy = 0;
-                areaItems.forEach(i => {
-                    aTarget += i.target; aActual += i.actual; aMom += i.momActual; aYoy += i.yoyActual;
+                let subTarget = 0, subActual = 0, subJune = 0, subYtdPrev = 0;
+                wpItems.forEach(i => {
+                    subTarget += i.target; subActual += i.actual; subJune += i.actualJune; subYtdPrev += i.actualYtdPrev;
                 });
-                
-                const aAchieve = (aActual / aTarget) * 100;
-                const aMomPct = ((aActual - aMom) / aMom) * 100;
-                const aYoyPct = ((aActual - aYoy) / aYoy) * 100;
 
-                // Area Header Row
-                const headerRow = `
-                    <tr class="bg-sky-950/40 text-sky-400 font-bold border-y border-sky-800/50">
-                        <td class="py-2.5 px-4">📍 AREA ${areaName}</td>
-                        <td class="py-2.5 px-4 text-right">${formatRupiah(aTarget)}</td>
-                        <td class="py-2.5 px-4 text-right">${formatRupiah(aActual)}</td>
-                        <td class="py-2.5 px-4 text-center"><span class="px-2 py-0.5 rounded text-xs ${aAchieve >= 100 ? 'bg-emerald-500/20 text-emerald-400' : 'bg-amber-500/20 text-amber-400'}">${aAchieve.toFixed(1)}%</span></td>
-                        <td class="py-2.5 px-4 text-right">${formatRupiah(aMom)}</td>
-                        <td class="py-2.5 px-4 text-center"><span class="${aMomPct >= 0 ? 'text-emerald-400' : 'text-rose-400'}">${aMomPct >= 0 ? '+' : ''}${aMomPct.toFixed(1)}%</span></td>
-                        <td class="py-2.5 px-4 text-right">${formatRupiah(aYoy)}</td>
-                        <td class="py-2.5 px-4 text-center"><span class="${aYoyPct >= 0 ? 'text-emerald-400' : 'text-rose-400'}">${aYoyPct >= 0 ? '+' : ''}${aYoyPct.toFixed(1)}%</span></td>
+                const subAchieve = subTarget > 0 ? (subActual / subTarget) * 100 : 0;
+                const subMomPct = subJune > 0 ? ((subActual - subJune) / subJune) * 100 : 0;
+                const subYtdPct = subYtdPrev > 0 ? ((subActual - subYtdPrev) / subYtdPrev) * 100 : 0;
+
+                // Subtotal Group Header
+                tbody.innerHTML += `
+                    <tr class="bg-sky-950/50 text-sky-400 font-bold border-y border-sky-800/60">
+                        <td class="py-2.5 px-4">📍 WORKPLACE: ${wpName}</td>
+                        <td class="py-2.5 px-4 text-right">${formatRupiah(subTarget)}</td>
+                        <td class="py-2.5 px-4 text-right">${formatRupiah(subActual)}</td>
+                        <td class="py-2.5 px-4 text-center"><span class="px-2 py-0.5 rounded text-xs ${subAchieve >= 100 ? 'bg-emerald-500/20 text-emerald-400' : 'bg-amber-500/20 text-amber-400'}">${subAchieve.toFixed(1)}%</span></td>
+                        <td class="py-2.5 px-4 text-right">${formatRupiah(subJune)}</td>
+                        <td class="py-2.5 px-4 text-center ${subMomPct >= 0 ? 'text-emerald-400' : 'text-rose-400'}">${subMomPct >= 0 ? '+' : ''}${subMomPct.toFixed(1)}%</td>
+                        <td class="py-2.5 px-4 text-right">${formatRupiah(subYtdPrev)}</td>
+                        <td class="py-2.5 px-4 text-center ${subYtdPct >= 0 ? 'text-emerald-400' : 'text-rose-400'}">${subYtdPct >= 0 ? '+' : ''}${subYtdPct.toFixed(1)}%</td>
                     </tr>
                 `;
-                tbody.innerHTML += headerRow;
 
-                // DSR Rows
-                areaItems.forEach(item => {
-                    const achieve = (item.actual / item.target) * 100;
-                    const momPct = ((item.actual - item.momActual) / item.momActual) * 100;
-                    const yoyPct = ((item.actual - item.yoyActual) / item.yoyActual) * 100;
+                // Individual DSR Rows
+                wpItems.forEach(item => {
+                    const ach = item.target > 0 ? (item.actual / item.target) * 100 : 0;
+                    const mom = item.actualJune > 0 ? ((item.actual - item.actualJune) / item.actualJune) * 100 : 0;
+                    const ytd = item.actualYtdPrev > 0 ? ((item.actual - item.actualYtdPrev) / item.actualYtdPrev) * 100 : 0;
 
-                    const row = `
+                    tbody.innerHTML += `
                         <tr class="hover:bg-slate-800/40 transition">
-                            <td class="py-2.5 px-4 pl-8 text-slate-200">DSR - ${item.dsr}</td>
+                            <td class="py-2.5 px-4 pl-8 text-slate-200">👤 ${item.dsr}</td>
                             <td class="py-2.5 px-4 text-right font-mono text-slate-400">${formatRupiah(item.target)}</td>
                             <td class="py-2.5 px-4 text-right font-mono font-medium text-slate-100">${formatRupiah(item.actual)}</td>
                             <td class="py-2.5 px-4 text-center font-bold">
-                                <span class="px-2 py-0.5 rounded text-xs ${achieve >= 100 ? 'bg-emerald-500/20 text-emerald-400' : achieve >= 90 ? 'bg-amber-500/20 text-amber-400' : 'bg-rose-500/20 text-rose-400'}">${achieve.toFixed(1)}%</span>
+                                <span class="px-2 py-0.5 rounded text-xs ${ach >= 100 ? 'bg-emerald-500/20 text-emerald-400' : 'bg-rose-500/20 text-rose-400'}">${ach.toFixed(1)}%</span>
                             </td>
-                            <td class="py-2.5 px-4 text-right font-mono text-slate-400">${formatRupiah(item.momActual)}</td>
-                            <td class="py-2.5 px-4 text-center font-semibold text-xs ${momPct >= 0 ? 'text-emerald-400' : 'text-rose-400'}">${momPct >= 0 ? '+' : ''}${momPct.toFixed(1)}%</td>
-                            <td class="py-2.5 px-4 text-right font-mono text-slate-400">${formatRupiah(item.yoyActual)}</td>
-                            <td class="py-2.5 px-4 text-center font-semibold text-xs ${yoyPct >= 0 ? 'text-emerald-400' : 'text-rose-400'}">${yoyPct >= 0 ? '+' : ''}${yoyPct.toFixed(1)}%</td>
+                            <td class="py-2.5 px-4 text-right font-mono text-slate-400">${formatRupiah(item.actualJune)}</td>
+                            <td class="py-2.5 px-4 text-center font-semibold text-xs ${mom >= 0 ? 'text-emerald-400' : 'text-rose-400'}">${mom >= 0 ? '+' : ''}${mom.toFixed(1)}%</td>
+                            <td class="py-2.5 px-4 text-right font-mono text-slate-400">${formatRupiah(item.actualYtdPrev)}</td>
+                            <td class="py-2.5 px-4 text-center font-semibold text-xs ${ytd >= 0 ? 'text-emerald-400' : 'text-rose-400'}">${ytd >= 0 ? '+' : ''}${ytd.toFixed(1)}%</td>
                         </tr>
                     `;
-                    tbody.innerHTML += row;
                 });
             });
         }
 
         function renderChart(data) {
             const ctx = document.getElementById('salesChart').getContext('2d');
-            
-            if (chartInstance) {
-                chartInstance.destroy();
-            }
-
-            const labels = data.map(d => d.dsr);
-            const targets = data.map(d => d.target / 1000000); // dalam Jutaan
-            const actuals = data.map(d => d.actual / 1000000);
+            if (chartInstance) chartInstance.destroy();
 
             chartInstance = new Chart(ctx, {
                 type: 'bar',
                 data: {
-                    labels: labels,
+                    labels: data.map(d => d.dsr),
                     datasets: [
                         {
-                            label: 'Target (Juta Rp)',
-                            data: targets,
+                            label: 'Target Jan-Jul (Juta Rp)',
+                            data: data.map(d => d.target / 1000000),
                             backgroundColor: 'rgba(148, 163, 184, 0.4)',
                             borderColor: 'rgba(148, 163, 184, 1)',
                             borderWidth: 1
                         },
                         {
                             label: 'Actual Sales (Juta Rp)',
-                            data: actuals,
+                            data: data.map(d => d.actual / 1000000),
                             backgroundColor: 'rgba(2, 132, 199, 0.8)',
                             borderColor: 'rgba(56, 189, 248, 1)',
                             borderWidth: 1
@@ -267,15 +289,12 @@
                         x: { ticks: { color: '#94a3b8', font: { size: 10 } }, grid: { display: false } },
                         y: { ticks: { color: '#94a3b8' }, grid: { color: 'rgba(51, 65, 85, 0.5)' } }
                     },
-                    plugins: {
-                        legend: { labels: { color: '#f8fafc', font: { size: 12 } } }
-                    }
+                    plugins: { legend: { labels: { color: '#f8fafc' } } }
                 }
             });
         }
 
-        // Initial Load
-        window.onload = renderDashboard;
+        window.onload = loadSheetData;
     </script>
 </body>
 </html>
