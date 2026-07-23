@@ -130,7 +130,7 @@
         .chart-container {
             padding: 20px;
             position: relative;
-            height: 420px; /* Ditambah sedikit agar grafik lebih lega */
+            height: 420px;
         }
 
         /* TABLE STYLES */
@@ -276,7 +276,7 @@
         <!-- Tabel Data -->
         <div class="card">
             <div class="card-header">
-                <span>DAFTAR DSR ACTIVE</span>
+                <span id="tableHeaderTitle">PERINGKAT DSR ACTIVE (BY % MONTHLY ACHIEVEMENT)</span>
             </div>
             <div class="table-responsive">
                 <table>
@@ -368,6 +368,16 @@
             return new Intl.NumberFormat('id-ID', { maximumFractionDigits: 1 }).format(num || 0);
         }
 
+        // FUNGSI HITUNG % MONTHLY SECARA AKURAT
+        function getMonthlyAchieveRatio(row) {
+            const target = cleanNum(row['Target Jul 26']);
+            const actual = cleanNum(row['Actual Jul 26']);
+            if (target > 0) {
+                return (actual / target) * 100;
+            }
+            return cleanNum(row['% Monthly Achievement']);
+        }
+
         function getShortAreaName(fullName) {
             if (!fullName) return 'AREA';
             const trimmed = fullName.trim();
@@ -444,16 +454,29 @@
                 return;
             }
 
-            const displayData = isExpanded ? data : data.slice(0, 10);
+            // 1. SORTING DATA: Dari % Monthly terbesar ke terkecil
+            const sortedData = [...data].sort((a, b) => getMonthlyAchieveRatio(b) - getMonthlyAchieveRatio(a));
 
-            displayData.forEach(row => {
+            // 2. LIMIT TOP 10 ATAU SELURUHNYA
+            const displayData = isExpanded ? sortedData : sortedData.slice(0, 10);
+
+            // Update Judul Header Tabel
+            const tableTitleEl = document.getElementById('tableHeaderTitle');
+            if (isExpanded) {
+                tableTitleEl.innerText = `SELURUH DSR ACTIVE (${sortedData.length} SALES) - DIURUTKAN DARI % MONTHLY TERTINGGI`;
+            } else {
+                tableTitleEl.innerText = `TOP 10 DSR ACTIVE BY % MONTHLY ACHIEVEMENT (JUL 26)`;
+            }
+
+            displayData.forEach((row, idx) => {
                 const name = row['Sales Name'] || '-';
                 const salesId = row['Sales ID'] || '';
                 const workplace = row['Workplace Name'] || '-';
 
                 const targetJul = cleanNum(row['Target Jul 26']);
                 const actualJul = cleanNum(row['Actual Jul 26']);
-                const mAchieve = targetJul > 0 ? ((actualJul / targetJul) * 100).toFixed(0) : cleanNum(row['% Monthly Achievement']);
+                const mAchieveVal = getMonthlyAchieveRatio(row);
+                const mAchieveStr = mAchieveVal.toFixed(0);
                 
                 const prevMonth = cleanNum(row['Prev Month']);
                 const momGrowth = prevMonth > 0 ? (((actualJul - prevMonth) / prevMonth) * 100).toFixed(0) : cleanNum(row['MoM Growth']);
@@ -465,14 +488,14 @@
                 const prevYtd = cleanNum(row['Prev YTD (L)']);
                 const ytdGrowth = prevYtd > 0 ? (((actualYtd - prevYtd) / prevYtd) * 100).toFixed(0) : cleanNum(row['YTD Growth']);
 
-                const mBadgeClass = mAchieve >= 100 ? 'badge-green' : (mAchieve >= 50 ? 'badge-amber' : 'badge-red');
+                const mBadgeClass = mAchieveVal >= 100 ? 'badge-green' : (mAchieveVal >= 50 ? 'badge-amber' : 'badge-red');
                 const momColor = momGrowth >= 0 ? '#34d399' : '#f87171';
                 const ytdGrowthColor = ytdGrowth >= 0 ? '#34d399' : '#f87171';
 
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
                     <td>
-                        <div class="text-white">${name}</div>
+                        <div class="text-white">#${idx + 1} ${name}</div>
                         <div class="text-sub">${salesId} | ${workplace}</div>
                     </td>
                     <td class="text-center">
@@ -481,7 +504,7 @@
                     <td class="text-right">${formatNum(targetJul)}</td>
                     <td class="text-right text-white">${formatNum(actualJul)}</td>
                     <td class="text-center">
-                        <span class="badge ${mBadgeClass}">${mAchieve}%</span>
+                        <span class="badge ${mBadgeClass}">${mAchieveStr}%</span>
                     </td>
                     <td class="text-right text-sub">${formatNum(prevMonth)}</td>
                     <td class="text-right" style="color: ${momColor}; font-weight: 500;">
@@ -501,9 +524,9 @@
             });
 
             const toggleContainer = document.getElementById('toggleShowMoreContainer');
-            if (data.length > 10) {
+            if (sortedData.length > 10) {
                 toggleContainer.classList.remove('hidden');
-                updateToggleButtonText(data.length);
+                updateToggleButtonText(sortedData.length);
             } else {
                 toggleContainer.classList.add('hidden');
             }
@@ -519,10 +542,10 @@
             const iconEl = document.getElementById('toggleIcon');
 
             if (isExpanded) {
-                textEl.innerText = `Sembunyikan DSR (Menampilkan semua ${totalCount} DSR)`;
+                textEl.innerText = `Kembali ke TOP 10 DSR`;
                 iconEl.classList.add('rotate');
             } else {
-                textEl.innerText = `Tampilkan Seluruh DSR (${totalCount - 10} DSR lainnya)`;
+                textEl.innerText = `Tampilkan Seluruh DSR (${totalCount - 10} DSR Lainnya)`;
                 iconEl.classList.remove('rotate');
             }
         }
@@ -596,7 +619,7 @@
                     maintainAspectRatio: false,
                     layout: {
                         padding: {
-                            top: 50, /* MENAMBAH PADDING ATAS AGAR JUDUL LEGEND TIDAK BERTABRAKAN */
+                            top: 50,
                             bottom: 10
                         }
                     },
@@ -613,7 +636,7 @@
                         datalabels: {
                             anchor: 'end',
                             align: 'top',
-                            offset: 4, /* MEMBERIKAN SPASI DI ATAS BAR */
+                            offset: 4,
                             color: '#f8fafc',
                             font: {
                                 weight: 'bold',
@@ -643,7 +666,7 @@
                             grid: { display: false }
                         },
                         y: { 
-                            grace: '18%', /* MEMBERIKAN MARGIN EKSTRA PADA SUMBU Y AGAR BAR HIGHEST TIDAK MENEMPEL PADA LEGEND */
+                            grace: '18%',
                             ticks: { 
                                 color: '#94a3b8', 
                                 font: { size: 10 },
