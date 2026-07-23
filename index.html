@@ -1,4 +1,97 @@
-<!-- Data Table -->
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Report Sell Out DSR Dashboard</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- PapaParse CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
+    <style>
+        /* CSS Cadangan agar Icon & Layout tidak Jebol */
+        .icon-arrow {
+            width: 16px !important;
+            height: 16px !important;
+            display: inline-block;
+            vertical-align: middle;
+            transition: transform 0.3s ease;
+        }
+        .rotate-180 {
+            transform: rotate(180deg);
+        }
+        button#toggleBtn {
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+    </style>
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen p-4 sm:p-6 font-sans">
+
+    <!-- Header Section -->
+    <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4 border-b border-slate-700 pb-4">
+        <div>
+            <h1 class="text-2xl font-bold tracking-wide text-white flex items-center gap-2">
+                📊 DSR SELL OUT PERFORMANCE DASHBOARD
+            </h1>
+            <p class="text-slate-400 text-sm mt-1">
+                Real-Time Summary Analysis — <span class="text-emerald-400 font-semibold">Active DSR Only</span>
+            </p>
+        </div>
+        <div class="flex items-center gap-3">
+            <label for="workplaceFilter" class="text-xs uppercase tracking-wider text-slate-400 font-semibold">Workplace:</label>
+            <select id="workplaceFilter" onchange="applyFilter()" class="bg-slate-800 text-white border border-slate-600 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <option value="ALL">Semua Workplace (ALL)</option>
+            </select>
+        </div>
+    </div>
+
+    <!-- Status Indicator -->
+    <div class="max-w-7xl mx-auto mb-4 flex justify-between items-center text-xs">
+        <span id="statusBadge" class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-yellow-500/10 text-yellow-400 border border-yellow-500/20 font-medium">
+            <span class="w-2 h-2 rounded-full bg-yellow-400 animate-pulse"></span> Connecting to Google Sheets...
+        </span>
+        <span class="text-slate-500">Live Synced with Google Sheets</span>
+    </div>
+
+    <!-- KPI Cards -->
+    <div class="max-w-7xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        <div class="bg-slate-800/80 border border-slate-700 p-4 rounded-xl shadow-lg">
+            <h3 class="text-slate-400 text-xs font-bold uppercase">Target Monthly (Jul 26)</h3>
+            <p id="kpiTarget" class="text-2xl font-black text-white mt-1">0</p>
+            <p id="kpiDsrCount" class="text-slate-400 text-xs mt-2">0 DSR Active</p>
+        </div>
+        <div class="bg-slate-800/80 border border-slate-700 p-4 rounded-xl shadow-lg">
+            <h3 class="text-slate-400 text-xs font-bold uppercase">Actual Monthly (Jul 26)</h3>
+            <p id="kpiActual" class="text-2xl font-black text-white mt-1">0</p>
+            <span id="kpiAchieve" class="inline-block mt-2 text-xs font-semibold px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-400">0% Achieve</span>
+        </div>
+        <div class="bg-slate-800/80 border border-slate-700 p-4 rounded-xl shadow-lg">
+            <h3 class="text-slate-400 text-xs font-bold uppercase">Target YTD</h3>
+            <p id="kpiTargetYtd" class="text-2xl font-black text-white mt-1">0</p>
+            <p class="text-slate-400 text-xs mt-2">Cumulative Target</p>
+        </div>
+        <div class="bg-slate-800/80 border border-slate-700 p-4 rounded-xl shadow-lg">
+            <h3 class="text-slate-400 text-xs font-bold uppercase">Actual YTD</h3>
+            <p id="kpiActualYtd" class="text-2xl font-black text-white mt-1">0</p>
+            <span id="kpiAchieveYtd" class="inline-block mt-2 text-xs font-semibold px-2 py-0.5 rounded bg-blue-500/20 text-blue-400">0% YTD Achieve</span>
+        </div>
+    </div>
+
+    <!-- Chart Visualisation -->
+    <div class="max-w-7xl mx-auto bg-slate-800/80 border border-slate-700 p-5 rounded-xl mb-6 shadow-lg">
+        <h2 class="text-sm font-bold text-slate-200 uppercase tracking-wide mb-4">Grafik Target vs Actual Sales DSR Active (Jul 26)</h2>
+        <div class="h-72 relative">
+            <canvas id="salesChart"></canvas>
+        </div>
+    </div>
+
+    <!-- Data Table -->
     <div class="max-w-7xl mx-auto bg-slate-800/80 border border-slate-700 rounded-xl overflow-hidden shadow-lg mb-6">
         <div class="p-4 border-b border-slate-700 flex justify-between items-center">
             <h2 class="text-sm font-bold text-slate-200 uppercase tracking-wide">Summary Report Sell Out DSR (Active Only)</h2>
@@ -27,13 +120,260 @@
             </table>
         </div>
 
-        <!-- TOMBOL PANAH SHOW MORE / SHOW LESS -->
+        <!-- Tombol Panah Show More / Show Less -->
         <div id="toggleShowMoreContainer" class="p-3 border-t border-slate-700/60 text-center bg-slate-900/40 hidden">
             <button id="toggleBtn" onclick="toggleTableRows()" class="inline-flex items-center gap-2 px-4 py-2 bg-slate-800 hover:bg-slate-700 text-blue-400 hover:text-blue-300 border border-slate-600 rounded-lg text-xs font-semibold transition-all duration-200 shadow">
-                <span id="toggleText">Tampilkan Seluruh DSR (Top 10 DSR ditampilkan)</span>
-                <svg id="toggleIcon" class="w-4 h-4 transform transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <span id="toggleText">Tampilkan Seluruh DSR</span>
+                <svg id="toggleIcon" class="icon-arrow" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
                 </svg>
             </button>
         </div>
     </div>
+
+    <!-- SCRIPT UTAMA -->
+    <script>
+        const SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQ7ZrrcD9z_Iwj3QWGAHq0usQd20cth9Y8pdfNiuBeWLaX-uqAFlpdZt6J8ggkYx0uCK2cnOJcYzM_5/pub?output=csv';
+
+        let activeDataOnly = [];
+        let currentFilteredData = [];
+        let isExpanded = false;
+        let salesChartInstance = null;
+
+        document.addEventListener("DOMContentLoaded", () => {
+            fetchGoogleSheetsData();
+        });
+
+        function fetchGoogleSheetsData() {
+            Papa.parse(SHEET_CSV_URL, {
+                download: true,
+                header: true,
+                skipEmptyLines: true,
+                complete: function(results) {
+                    // Filter DSR Active
+                    activeDataOnly = results.data.filter(row => {
+                        const status = (row['Active'] || '').toString().trim().toUpperCase();
+                        return status === 'YES';
+                    });
+
+                    document.getElementById('statusBadge').className = 'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-medium';
+                    document.getElementById('statusBadge').innerHTML = '<span class="w-2 h-2 rounded-full bg-emerald-400"></span> Live Synced with Google Sheets';
+                    
+                    populateWorkplaceFilter();
+                    applyFilter();
+                },
+                error: function(err) {
+                    console.error("Gagal membaca Google Sheets:", err);
+                    document.getElementById('statusBadge').className = 'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-red-500/10 text-red-400 border border-red-500/20 font-medium';
+                    document.getElementById('statusBadge').innerHTML = '❌ Failed to load Google Sheets Data';
+                }
+            });
+        }
+
+        function cleanNum(val) {
+            if (!val) return 0;
+            let str = val.toString().replace(/%/g, '').replace(/,/g, '.').replace(/[^0-9.-]+/g, "");
+            return parseFloat(str) || 0;
+        }
+
+        function formatNum(num) {
+            return new Intl.NumberFormat('id-ID', { maximumFractionDigits: 1 }).format(num || 0);
+        }
+
+        function populateWorkplaceFilter() {
+            const select = document.getElementById('workplaceFilter');
+            const workplaces = [...new Set(activeDataOnly.map(r => (r['Workplace Name'] || '').trim()).filter(Boolean))];
+            
+            select.innerHTML = '<option value="ALL">Semua Workplace (ALL)</option>';
+
+            workplaces.forEach(wp => {
+                const opt = document.createElement('option');
+                opt.value = wp;
+                opt.textContent = wp;
+                select.appendChild(opt);
+            });
+        }
+
+        function applyFilter() {
+            const selectedWp = document.getElementById('workplaceFilter').value;
+            currentFilteredData = selectedWp === 'ALL' 
+                ? activeDataOnly 
+                : activeDataOnly.filter(item => (item['Workplace Name'] || '').trim() === selectedWp);
+
+            updateKPIs(currentFilteredData);
+            updateTable(currentFilteredData);
+            updateChart(currentFilteredData);
+        }
+
+        function updateKPIs(data) {
+            let totalTargetJul = 0, totalActualJul = 0;
+            let totalTargetYtd = 0, totalActualYtd = 0;
+            let activeCount = data.length;
+
+            data.forEach(row => {
+                totalTargetJul += cleanNum(row['Target Jul 26']);
+                totalActualJul += cleanNum(row['Actual Jul 26']);
+                totalTargetYtd += cleanNum(row['Target YTD']);
+                totalActualYtd += cleanNum(row['Actual YTD']);
+            });
+
+            const mAchieve = totalTargetJul > 0 ? ((totalActualJul / totalTargetJul) * 100).toFixed(1) : 0;
+            const ytdAchieve = totalTargetYtd > 0 ? ((totalActualYtd / totalTargetYtd) * 100).toFixed(1) : 0;
+
+            document.getElementById('kpiTarget').innerText = formatNum(totalTargetJul);
+            document.getElementById('kpiDsrCount').innerText = `${activeCount} DSR Active`;
+            
+            document.getElementById('kpiActual').innerText = formatNum(totalActualJul);
+            document.getElementById('kpiAchieve').innerText = `${mAchieve}% Achieve`;
+
+            document.getElementById('kpiTargetYtd').innerText = formatNum(totalTargetYtd);
+            document.getElementById('kpiActualYtd').innerText = formatNum(totalActualYtd);
+            document.getElementById('kpiAchieveYtd').innerText = `${ytdAchieve}% YTD Achieve`;
+        }
+
+        function updateTable(data) {
+            const tbody = document.getElementById('dataTableBody');
+            tbody.innerHTML = '';
+
+            if (data.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="12" class="p-4 text-center text-slate-500">Tidak ada DSR active ditemukan.</td></tr>`;
+                document.getElementById('toggleShowMoreContainer').classList.add('hidden');
+                return;
+            }
+
+            // Tampilkan Top 10 atau Semua tergantung tombol
+            const displayData = isExpanded ? data : data.slice(0, 10);
+
+            displayData.forEach(row => {
+                const name = row['Sales Name'] || '-';
+                const salesId = row['Sales ID'] || '';
+                const workplace = row['Workplace Name'] || '-';
+
+                const targetJul = cleanNum(row['Target Jul 26']);
+                const actualJul = cleanNum(row['Actual Jul 26']);
+                const mAchieve = targetJul > 0 ? ((actualJul / targetJul) * 100).toFixed(0) : cleanNum(row['% Monthly Achievement']);
+                
+                const prevMonth = cleanNum(row['Prev Month']);
+                const momGrowth = prevMonth > 0 ? (((actualJul - prevMonth) / prevMonth) * 100).toFixed(0) : cleanNum(row['MoM Growth']);
+
+                const targetYtd = cleanNum(row['Target YTD']);
+                const actualYtd = cleanNum(row['Actual YTD']);
+                const ytdAchieve = targetYtd > 0 ? ((actualYtd / targetYtd) * 100).toFixed(0) : cleanNum(row['% YTD Achievement']);
+
+                const prevYtd = cleanNum(row['Prev YTD (L)']);
+                const ytdGrowth = prevYtd > 0 ? (((actualYtd - prevYtd) / prevYtd) * 100).toFixed(0) : cleanNum(row['YTD Growth']);
+
+                const tr = document.createElement('tr');
+                tr.className = 'hover:bg-slate-700/30 transition';
+                tr.innerHTML = `
+                    <td class="p-3">
+                        <div class="font-bold text-white">${name}</div>
+                        <div class="text-[10px] text-slate-400">${salesId} | ${workplace}</div>
+                    </td>
+                    <td class="p-3 text-center">
+                        <span class="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-emerald-500/20 text-emerald-400">
+                            YES
+                        </span>
+                    </td>
+                    <td class="p-3 text-right font-medium">${formatNum(targetJul)}</td>
+                    <td class="p-3 text-right font-bold text-white">${formatNum(actualJul)}</td>
+                    <td class="p-3 text-center">
+                        <span class="px-2 py-0.5 rounded text-[10px] font-bold ${mAchieve >= 100 ? 'bg-emerald-500/20 text-emerald-400' : (mAchieve >= 50 ? 'bg-amber-500/20 text-amber-400' : 'bg-rose-500/20 text-rose-400')}">
+                            ${mAchieve}%
+                        </span>
+                    </td>
+                    <td class="p-3 text-right text-slate-400">${formatNum(prevMonth)}</td>
+                    <td class="p-3 text-right font-medium ${momGrowth >= 0 ? 'text-emerald-400' : 'text-rose-400'}">
+                        ${momGrowth >= 0 ? '+' : ''}${momGrowth}%
+                    </td>
+                    <td class="p-3 text-right font-medium">${formatNum(targetYtd)}</td>
+                    <td class="p-3 text-right font-bold text-white">${formatNum(actualYtd)}</td>
+                    <td class="p-3 text-center">
+                        <span class="px-2 py-0.5 rounded text-[10px] font-bold ${ytdAchieve >= 100 ? 'bg-blue-500/20 text-blue-400' : 'bg-amber-500/20 text-amber-400'}">
+                            ${ytdAchieve}%
+                        </span>
+                    </td>
+                    <td class="p-3 text-right text-slate-400">${formatNum(prevYtd)}</td>
+                    <td class="p-3 text-right font-medium ${ytdGrowth >= 0 ? 'text-emerald-400' : 'text-rose-400'}">
+                        ${ytdGrowth >= 0 ? '+' : ''}${ytdGrowth}%
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            // Kontrol tombol Show More
+            const toggleContainer = document.getElementById('toggleShowMoreContainer');
+            if (data.length > 10) {
+                toggleContainer.classList.remove('hidden');
+                updateToggleButtonText(data.length);
+            } else {
+                toggleContainer.classList.add('hidden');
+            }
+        }
+
+        function toggleTableRows() {
+            isExpanded = !isExpanded;
+            updateTable(currentFilteredData);
+        }
+
+        function updateToggleButtonText(totalCount) {
+            const textEl = document.getElementById('toggleText');
+            const iconEl = document.getElementById('toggleIcon');
+
+            if (isExpanded) {
+                textEl.innerText = `Sembunyikan DSR (Menampilkan semua ${totalCount} DSR)`;
+                iconEl.classList.add('rotate-180');
+            } else {
+                textEl.innerText = `Tampilkan Seluruh DSR (${totalCount - 10} DSR lainnya)`;
+                iconEl.classList.remove('rotate-180');
+            }
+        }
+
+        function updateChart(data) {
+            const labels = data.map(r => r['Sales Name'] || 'DSR');
+            const targetData = data.map(r => cleanNum(r['Target Jul 26']));
+            const actualData = data.map(r => cleanNum(r['Actual Jul 26']));
+
+            const ctx = document.getElementById('salesChart').getContext('2d');
+
+            if (salesChartInstance) {
+                salesChartInstance.destroy();
+            }
+
+            salesChartInstance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: 'Target Jul 26',
+                            data: targetData,
+                            backgroundColor: 'rgba(100, 116, 139, 0.6)',
+                            borderColor: 'rgba(100, 116, 139, 1)',
+                            borderWidth: 1
+                        },
+                        {
+                            label: 'Actual Jul 26',
+                            data: actualData,
+                            backgroundColor: 'rgba(14, 165, 233, 0.8)',
+                            borderColor: 'rgba(14, 165, 233, 1)',
+                            borderWidth: 1
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { labels: { color: '#94a3b8', font: { size: 11 } } }
+                    },
+                    scales: {
+                        x: { ticks: { color: '#94a3b8', font: { size: 10 } }, grid: { color: '#334155' } },
+                        y: { ticks: { color: '#94a3b8', font: { size: 10 } }, grid: { color: '#334155' } }
+                    }
+                }
+            });
+        }
+    </script>
+</body>
+</html>
