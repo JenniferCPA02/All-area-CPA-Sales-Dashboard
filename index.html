@@ -76,7 +76,7 @@
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
             gap: 16px;
-            margin-bottom: 24px;
+            margin-bottom: 20px;
         }
         .kpi-card {
             background-color: #1e293b;
@@ -102,6 +102,52 @@
             font-size: 11px;
             color: #64748b;
             margin-top: 4px;
+        }
+
+        /* BANNER PROGRAM BERJALAN */
+        .program-card {
+            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+            border: 1px solid #38bdf8;
+            border-left: 5px solid #38bdf8;
+            border-radius: 12px;
+            padding: 14px 18px;
+            margin-bottom: 24px;
+            box-shadow: 0 4px 12px rgba(56, 189, 248, 0.08);
+        }
+        .program-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 10px;
+        }
+        .program-title {
+            font-size: 12px;
+            font-weight: bold;
+            color: #38bdf8;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .program-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .program-badge {
+            background-color: rgba(56, 189, 248, 0.12);
+            color: #e0f2fe;
+            border: 1px solid rgba(56, 189, 248, 0.3);
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .program-badge::before {
+            content: "•";
+            color: #38bdf8;
+            font-size: 14px;
         }
 
         /* CARD WRAPPER */
@@ -263,6 +309,21 @@
             </div>
         </div>
 
+        <!-- BANNER INFORMASI PROGRAM AKTIF -->
+        <div class="program-card">
+            <div class="program-header">
+                <span style="font-size: 16px;">🚀</span>
+                <span class="program-title">PROGRAM YANG SEDANG BERJALAN</span>
+            </div>
+            <div class="program-tags">
+                <span class="program-badge">KASIP</span>
+                <span class="program-badge">PANCANAKA</span>
+                <span class="program-badge">Beat the Target</span>
+                <span class="program-badge">SEBAT</span>
+                <span class="program-badge">MBG</span>
+            </div>
+        </div>
+
         <!-- Grafik Visualisasi -->
         <div class="card">
             <div class="card-header">
@@ -276,7 +337,7 @@
         <!-- Tabel Data -->
         <div class="card">
             <div class="card-header">
-                <span id="tableHeaderTitle">PERINGKAT DSR ACTIVE (BY % MONTHLY ACHIEVEMENT)</span>
+                <span id="tableHeaderTitle">TOP 10 DSR ACTIVE BY % MONTHLY ACHIEVEMENT</span>
             </div>
             <div class="table-responsive">
                 <table>
@@ -344,7 +405,7 @@
                 skipEmptyLines: true,
                 complete: function(results) {
                     activeDataOnly = results.data.filter(row => {
-                        const status = (row['Active'] || '').toString().trim().toUpperCase();
+                        const status = getRowValue(row, ['Active', 'ACTIVE', 'active']).toUpperCase();
                         return status === 'YES';
                     });
 
@@ -358,6 +419,22 @@
             });
         }
 
+        function getRowValue(row, possibleKeys) {
+            for (let key of possibleKeys) {
+                if (row[key] !== undefined && row[key] !== null) {
+                    return row[key].toString().trim();
+                }
+            }
+            const keys = Object.keys(row);
+            for (let pk of possibleKeys) {
+                const found = keys.find(k => k.toLowerCase().replace(/\s+/g, '') === pk.toLowerCase().replace(/\s+/g, ''));
+                if (found && row[found] !== undefined && row[found] !== null) {
+                    return row[found].toString().trim();
+                }
+            }
+            return '';
+        }
+
         function cleanNum(val) {
             if (!val) return 0;
             let str = val.toString().replace(/%/g, '').replace(/,/g, '.').replace(/[^0-9.-]+/g, "");
@@ -368,14 +445,16 @@
             return new Intl.NumberFormat('id-ID', { maximumFractionDigits: 1 }).format(num || 0);
         }
 
-        // FUNGSI HITUNG % MONTHLY SECARA AKURAT
         function getMonthlyAchieveRatio(row) {
-            const target = cleanNum(row['Target Jul 26']);
-            const actual = cleanNum(row['Actual Jul 26']);
+            const target = cleanNum(getRowValue(row, ['Target Jul 26', 'Target', 'Target Jul']));
+            const actual = cleanNum(getRowValue(row, ['Actual Jul 26', 'Actual', 'Actual Jul']));
+
             if (target > 0) {
                 return (actual / target) * 100;
             }
-            return cleanNum(row['% Monthly Achievement']);
+
+            const rawPct = getRowValue(row, ['% Monthly Achievement', '% Monthly', '% Monthly Achv', 'Monthly %']);
+            return cleanNum(rawPct);
         }
 
         function getShortAreaName(fullName) {
@@ -389,7 +468,7 @@
 
         function populateWorkplaceFilter() {
             const select = document.getElementById('workplaceFilter');
-            const workplaces = [...new Set(activeDataOnly.map(r => (r['Workplace Name'] || '').trim()).filter(Boolean))];
+            const workplaces = [...new Set(activeDataOnly.map(r => getRowValue(r, ['Workplace Name', 'Workplace'])).filter(Boolean))];
             
             select.innerHTML = '<option value="ALL">Semua Workplace (ALL)</option>';
             workplaces.forEach(wp => {
@@ -404,7 +483,7 @@
             const selectedWp = document.getElementById('workplaceFilter').value;
             currentFilteredData = selectedWp === 'ALL' 
                 ? activeDataOnly 
-                : activeDataOnly.filter(item => (item['Workplace Name'] || '').trim() === selectedWp);
+                : activeDataOnly.filter(item => getRowValue(item, ['Workplace Name', 'Workplace']) === selectedWp);
 
             updateSummaryCards(currentFilteredData);
             updateTable(currentFilteredData);
@@ -416,8 +495,8 @@
             let totalActual = 0;
 
             data.forEach(r => {
-                totalTarget += cleanNum(r['Target Jul 26']);
-                totalActual += cleanNum(r['Actual Jul 26']);
+                totalTarget += cleanNum(getRowValue(r, ['Target Jul 26', 'Target']));
+                totalActual += cleanNum(getRowValue(r, ['Actual Jul 26', 'Actual']));
             });
 
             const targetKL = totalTarget / 1000;
@@ -454,39 +533,36 @@
                 return;
             }
 
-            // 1. SORTING DATA: Dari % Monthly terbesar ke terkecil
             const sortedData = [...data].sort((a, b) => getMonthlyAchieveRatio(b) - getMonthlyAchieveRatio(a));
-
-            // 2. LIMIT TOP 10 ATAU SELURUHNYA
             const displayData = isExpanded ? sortedData : sortedData.slice(0, 10);
 
-            // Update Judul Header Tabel
             const tableTitleEl = document.getElementById('tableHeaderTitle');
             if (isExpanded) {
-                tableTitleEl.innerText = `SELURUH DSR ACTIVE (${sortedData.length} SALES) - DIURUTKAN DARI % MONTHLY TERTINGGI`;
+                tableTitleEl.innerText = `SELURUH DSR ACTIVE (${sortedData.length} SALES) - URUT DARI % MONTHLY TERTINGGI`;
             } else {
                 tableTitleEl.innerText = `TOP 10 DSR ACTIVE BY % MONTHLY ACHIEVEMENT (JUL 26)`;
             }
 
             displayData.forEach((row, idx) => {
-                const name = row['Sales Name'] || '-';
-                const salesId = row['Sales ID'] || '';
-                const workplace = row['Workplace Name'] || '-';
+                const name = getRowValue(row, ['Sales Name', 'SalesName', 'Name']) || '-';
+                const salesId = getRowValue(row, ['Sales ID', 'SalesID', 'ID']) || '';
+                const workplace = getRowValue(row, ['Workplace Name', 'Workplace']) || '-';
 
-                const targetJul = cleanNum(row['Target Jul 26']);
-                const actualJul = cleanNum(row['Actual Jul 26']);
+                const targetJul = cleanNum(getRowValue(row, ['Target Jul 26', 'Target']));
+                const actualJul = cleanNum(getRowValue(row, ['Actual Jul 26', 'Actual']));
+                
                 const mAchieveVal = getMonthlyAchieveRatio(row);
                 const mAchieveStr = mAchieveVal.toFixed(0);
                 
-                const prevMonth = cleanNum(row['Prev Month']);
-                const momGrowth = prevMonth > 0 ? (((actualJul - prevMonth) / prevMonth) * 100).toFixed(0) : cleanNum(row['MoM Growth']);
+                const prevMonth = cleanNum(getRowValue(row, ['Prev Month', 'PrevMonth']));
+                const momGrowth = prevMonth > 0 ? (((actualJul - prevMonth) / prevMonth) * 100).toFixed(0) : cleanNum(getRowValue(row, ['MoM Growth', 'MoM']));
 
-                const targetYtd = cleanNum(row['Target YTD']);
-                const actualYtd = cleanNum(row['Actual YTD']);
-                const ytdAchieve = targetYtd > 0 ? ((actualYtd / targetYtd) * 100).toFixed(0) : cleanNum(row['% YTD Achievement']);
+                const targetYtd = cleanNum(getRowValue(row, ['Target YTD', 'TargetYTD']));
+                const actualYtd = cleanNum(getRowValue(row, ['Actual YTD', 'ActualYTD']));
+                const ytdAchieve = targetYtd > 0 ? ((actualYtd / targetYtd) * 100).toFixed(0) : cleanNum(getRowValue(row, ['% YTD Achievement', '% YTD']));
 
-                const prevYtd = cleanNum(row['Prev YTD (L)']);
-                const ytdGrowth = prevYtd > 0 ? (((actualYtd - prevYtd) / prevYtd) * 100).toFixed(0) : cleanNum(row['YTD Growth']);
+                const prevYtd = cleanNum(getRowValue(row, ['Prev YTD (L)', 'Prev YTD', 'PrevYTD']));
+                const ytdGrowth = prevYtd > 0 ? (((actualYtd - prevYtd) / prevYtd) * 100).toFixed(0) : cleanNum(getRowValue(row, ['YTD Growth']));
 
                 const mBadgeClass = mAchieveVal >= 100 ? 'badge-green' : (mAchieveVal >= 50 ? 'badge-amber' : 'badge-red');
                 const momColor = momGrowth >= 0 ? '#34d399' : '#f87171';
@@ -564,12 +640,12 @@
                 
                 const grouped = {};
                 data.forEach(row => {
-                    const rawWp = (row['Workplace Name'] || 'Unknown').trim();
+                    const rawWp = getRowValue(row, ['Workplace Name', 'Workplace']) || 'Unknown';
                     if (!grouped[rawWp]) {
                         grouped[rawWp] = { target: 0, actual: 0 };
                     }
-                    grouped[rawWp].target += cleanNum(row['Target Jul 26']);
-                    grouped[rawWp].actual += cleanNum(row['Actual Jul 26']);
+                    grouped[rawWp].target += cleanNum(getRowValue(row, ['Target Jul 26', 'Target']));
+                    grouped[rawWp].actual += cleanNum(getRowValue(row, ['Actual Jul 26', 'Actual']));
                 });
 
                 labels = Object.keys(grouped).map(rawWp => {
@@ -582,9 +658,9 @@
             } else {
                 document.getElementById('chartHeaderTitle').innerText = `GRAFIK TARGET VS ACTUAL DSR - AREA: ${selectedWorkplace} (DALAM KL)`;
                 
-                labels = data.map(r => (r['Sales Name'] || 'DSR').split(' '));
-                targetDataKL = data.map(r => cleanNum(r['Target Jul 26']) / 1000);
-                actualDataKL = data.map(r => cleanNum(r['Actual Jul 26']) / 1000);
+                labels = data.map(r => (getRowValue(r, ['Sales Name', 'Name']) || 'DSR').split(' '));
+                targetDataKL = data.map(r => cleanNum(getRowValue(r, ['Target Jul 26', 'Target'])) / 1000);
+                actualDataKL = data.map(r => cleanNum(getRowValue(r, ['Actual Jul 26', 'Actual'])) / 1000);
             }
 
             const ctx = document.getElementById('salesChart').getContext('2d');
