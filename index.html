@@ -3,142 +3,247 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Report Sell Out DSR Dashboard</title>
-    <!-- Tailwind CSS CDN -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Chart.js CDN -->
+    <title>Summary Report Sell Out DSR</title>
+    <!-- Chart.js & PapaParse -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <!-- PapaParse CDN -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
+    
     <style>
-        /* CSS Cadangan agar Icon & Layout tidak Jebol */
-        .icon-arrow {
-            width: 16px !important;
-            height: 16px !important;
+        /* BASE RESET & STYLES (PURE CSS) */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+        body {
+            background-color: #0f172a;
+            color: #f8fafc;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1280px;
+            margin: 0 auto;
+        }
+
+        /* HEADER */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #334155;
+            padding-bottom: 16px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+        .header h1 {
+            font-size: 20px;
+            font-weight: bold;
+            color: #ffffff;
+        }
+        .header p {
+            color: #94a3b8;
+            font-size: 13px;
+            margin-top: 4px;
+        }
+        .filter-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .filter-group label {
+            font-size: 11px;
+            text-transform: uppercase;
+            color: #94a3b8;
+            font-weight: bold;
+        }
+        select {
+            background-color: #1e293b;
+            color: #ffffff;
+            border: 1px solid #475569;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 13px;
+            outline: none;
+        }
+
+        /* CARD WRAPPER */
+        .card {
+            background-color: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 12px;
+            margin-bottom: 24px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+        }
+        .card-header {
+            padding: 16px;
+            border-bottom: 1px solid #334155;
+            font-size: 13px;
+            font-weight: bold;
+            text-transform: uppercase;
+            color: #e2e8f0;
+            letter-spacing: 0.5px;
+        }
+
+        /* TABLE STYLES */
+        .table-responsive {
+            width: 100%;
+            overflow-x: auto;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+            font-size: 12px;
+            color: #cbd5e1;
+        }
+        thead {
+            background-color: #0f172a;
+            color: #94a3b8;
+            text-transform: uppercase;
+            font-size: 10px;
+            letter-spacing: 0.5px;
+            border-bottom: 1px solid #334155;
+        }
+        th, td {
+            padding: 12px;
+            border-bottom: 1px solid #334155;
+        }
+        tr:hover {
+            background-color: rgba(51, 65, 85, 0.4);
+        }
+        .text-center { text-align: center; }
+        .text-right { text-align: right; }
+        .text-white { color: #ffffff; font-weight: bold; }
+        .text-sub { font-size: 10px; color: #94a3b8; }
+
+        /* BADGES */
+        .badge {
             display: inline-block;
-            vertical-align: middle;
-            transition: transform 0.3s ease;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 10px;
+            font-weight: bold;
         }
-        .rotate-180 {
-            transform: rotate(180deg);
+        .badge-green { background-color: rgba(16, 185, 129, 0.2); color: #34d399; }
+        .badge-amber { background-color: rgba(245, 158, 11, 0.2); color: #fbbf24; }
+        .badge-red { background-color: rgba(243, 24, 82, 0.2); color: #f87171; }
+        .badge-blue { background-color: rgba(59, 130, 246, 0.2); color: #60a5fa; }
+
+        /* SHOW MORE BUTTON & ARROW ICON FIX */
+        .toggle-container {
+            padding: 14px;
+            text-align: center;
+            background-color: #0f172a;
+            border-top: 1px solid #334155;
         }
-        button#toggleBtn {
+        .toggle-btn {
+            background-color: #1e293b;
+            color: #60a5fa;
+            border: 1px solid #475569;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 600;
             cursor: pointer;
             display: inline-flex;
             align-items: center;
             justify-content: center;
             gap: 8px;
+            transition: all 0.2s ease;
         }
+        .toggle-btn:hover {
+            background-color: #334155;
+            color: #93c5fd;
+        }
+        /* PENTING: Mencegah SVG membesar raksasa */
+        .icon-arrow {
+            width: 14px !important;
+            height: 14px !important;
+            min-width: 14px !important;
+            min-height: 14px !important;
+            max-width: 14px !important;
+            max-height: 14px !important;
+            stroke: currentColor;
+            stroke-width: 2.5;
+            fill: none;
+            transition: transform 0.3s ease;
+        }
+        .icon-arrow.rotate {
+            transform: rotate(180deg);
+        }
+        .hidden { display: none !important; }
     </style>
 </head>
-<body class="bg-slate-900 text-slate-100 min-h-screen p-4 sm:p-6 font-sans">
+<body>
 
-    <!-- Header Section -->
-    <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4 border-b border-slate-700 pb-4">
-        <div>
-            <h1 class="text-2xl font-bold tracking-wide text-white flex items-center gap-2">
-                📊 DSR SELL OUT PERFORMANCE DASHBOARD
-            </h1>
-            <p class="text-slate-400 text-sm mt-1">
-                Real-Time Summary Analysis — <span class="text-emerald-400 font-semibold">Active DSR Only</span>
-            </p>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <div>
+                <h1>SUMMARY REPORT SELL OUT DSR (ACTIVE ONLY)</h1>
+                <p>Monitoring Kinerja Sales Active Real-Time</p>
+            </div>
+            <div class="filter-group">
+                <label for="workplaceFilter">Workplace:</label>
+                <select id="workplaceFilter" onchange="applyFilter()">
+                    <option value="ALL">Semua Workplace (ALL)</option>
+                </select>
+            </div>
         </div>
-        <div class="flex items-center gap-3">
-            <label for="workplaceFilter" class="text-xs uppercase tracking-wider text-slate-400 font-semibold">Workplace:</label>
-            <select id="workplaceFilter" onchange="applyFilter()" class="bg-slate-800 text-white border border-slate-600 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-                <option value="ALL">Semua Workplace (ALL)</option>
-            </select>
+
+        <!-- Tabel Data -->
+        <div class="card">
+            <div class="card-header">
+                Daftar DSR Active (Top 10 Default)
+            </div>
+            <div class="table-responsive">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Sales Name / Workplace</th>
+                            <th class="text-center">Active</th>
+                            <th class="text-right">Target Jul 26</th>
+                            <th class="text-right">Actual Jul 26</th>
+                            <th class="text-center">% Monthly</th>
+                            <th class="text-right">Prev Month</th>
+                            <th class="text-right">MoM Growth</th>
+                            <th class="text-right">Target YTD</th>
+                            <th class="text-right">Actual YTD</th>
+                            <th class="text-center">% YTD</th>
+                            <th class="text-right">Prev YTD</th>
+                            <th class="text-right">YTD Growth</th>
+                        </tr>
+                    </thead>
+                    <tbody id="dataTableBody">
+                        <tr>
+                            <td colspan="12" class="text-center" style="padding: 20px;">Memuat data Google Sheets...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Tombol Tampilkan Lebih Banyak -->
+            <div id="toggleShowMoreContainer" class="toggle-container hidden">
+                <button id="toggleBtn" onclick="toggleTableRows()" class="toggle-btn">
+                    <span id="toggleText">Tampilkan Seluruh DSR</span>
+                    <svg id="toggleIcon" class="icon-arrow" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+                    </svg>
+                </button>
+            </div>
         </div>
     </div>
 
-    <!-- Status Indicator -->
-    <div class="max-w-7xl mx-auto mb-4 flex justify-between items-center text-xs">
-        <span id="statusBadge" class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-yellow-500/10 text-yellow-400 border border-yellow-500/20 font-medium">
-            <span class="w-2 h-2 rounded-full bg-yellow-400 animate-pulse"></span> Connecting to Google Sheets...
-        </span>
-        <span class="text-slate-500">Live Synced with Google Sheets</span>
-    </div>
-
-    <!-- KPI Cards -->
-    <div class="max-w-7xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-        <div class="bg-slate-800/80 border border-slate-700 p-4 rounded-xl shadow-lg">
-            <h3 class="text-slate-400 text-xs font-bold uppercase">Target Monthly (Jul 26)</h3>
-            <p id="kpiTarget" class="text-2xl font-black text-white mt-1">0</p>
-            <p id="kpiDsrCount" class="text-slate-400 text-xs mt-2">0 DSR Active</p>
-        </div>
-        <div class="bg-slate-800/80 border border-slate-700 p-4 rounded-xl shadow-lg">
-            <h3 class="text-slate-400 text-xs font-bold uppercase">Actual Monthly (Jul 26)</h3>
-            <p id="kpiActual" class="text-2xl font-black text-white mt-1">0</p>
-            <span id="kpiAchieve" class="inline-block mt-2 text-xs font-semibold px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-400">0% Achieve</span>
-        </div>
-        <div class="bg-slate-800/80 border border-slate-700 p-4 rounded-xl shadow-lg">
-            <h3 class="text-slate-400 text-xs font-bold uppercase">Target YTD</h3>
-            <p id="kpiTargetYtd" class="text-2xl font-black text-white mt-1">0</p>
-            <p class="text-slate-400 text-xs mt-2">Cumulative Target</p>
-        </div>
-        <div class="bg-slate-800/80 border border-slate-700 p-4 rounded-xl shadow-lg">
-            <h3 class="text-slate-400 text-xs font-bold uppercase">Actual YTD</h3>
-            <p id="kpiActualYtd" class="text-2xl font-black text-white mt-1">0</p>
-            <span id="kpiAchieveYtd" class="inline-block mt-2 text-xs font-semibold px-2 py-0.5 rounded bg-blue-500/20 text-blue-400">0% YTD Achieve</span>
-        </div>
-    </div>
-
-    <!-- Chart Visualisation -->
-    <div class="max-w-7xl mx-auto bg-slate-800/80 border border-slate-700 p-5 rounded-xl mb-6 shadow-lg">
-        <h2 class="text-sm font-bold text-slate-200 uppercase tracking-wide mb-4">Grafik Target vs Actual Sales DSR Active (Jul 26)</h2>
-        <div class="h-72 relative">
-            <canvas id="salesChart"></canvas>
-        </div>
-    </div>
-
-    <!-- Data Table -->
-    <div class="max-w-7xl mx-auto bg-slate-800/80 border border-slate-700 rounded-xl overflow-hidden shadow-lg mb-6">
-        <div class="p-4 border-b border-slate-700 flex justify-between items-center">
-            <h2 class="text-sm font-bold text-slate-200 uppercase tracking-wide">Summary Report Sell Out DSR (Active Only)</h2>
-        </div>
-        <div class="overflow-x-auto">
-            <table class="w-full text-left text-xs text-slate-300">
-                <thead class="bg-slate-900/80 text-slate-400 uppercase text-[10px] tracking-wider border-b border-slate-700">
-                    <tr>
-                        <th class="p-3">Sales Name / Workplace</th>
-                        <th class="p-3 text-center">Active</th>
-                        <th class="p-3 text-right">Target Jul 26</th>
-                        <th class="p-3 text-right">Actual Jul 26</th>
-                        <th class="p-3 text-center">% Monthly</th>
-                        <th class="p-3 text-right">Prev Month</th>
-                        <th class="p-3 text-right">MoM Growth</th>
-                        <th class="p-3 text-right">Target YTD</th>
-                        <th class="p-3 text-right">Actual YTD</th>
-                        <th class="p-3 text-center">% YTD</th>
-                        <th class="p-3 text-right">Prev YTD</th>
-                        <th class="p-3 text-right">YTD Growth</th>
-                    </tr>
-                </thead>
-                <tbody id="dataTableBody" class="divide-y divide-slate-700/50">
-                    <!-- Data dari Google Sheets akan masuk ke sini -->
-                </tbody>
-            </table>
-        </div>
-
-        <!-- Tombol Panah Show More / Show Less -->
-        <div id="toggleShowMoreContainer" class="p-3 border-t border-slate-700/60 text-center bg-slate-900/40 hidden">
-            <button id="toggleBtn" onclick="toggleTableRows()" class="inline-flex items-center gap-2 px-4 py-2 bg-slate-800 hover:bg-slate-700 text-blue-400 hover:text-blue-300 border border-slate-600 rounded-lg text-xs font-semibold transition-all duration-200 shadow">
-                <span id="toggleText">Tampilkan Seluruh DSR</span>
-                <svg id="toggleIcon" class="icon-arrow" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-                </svg>
-            </button>
-        </div>
-    </div>
-
-    <!-- SCRIPT UTAMA -->
+    <!-- SCRIPT FUNCTIONALITY -->
     <script>
         const SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQ7ZrrcD9z_Iwj3QWGAHq0usQd20cth9Y8pdfNiuBeWLaX-uqAFlpdZt6J8ggkYx0uCK2cnOJcYzM_5/pub?output=csv';
 
         let activeDataOnly = [];
         let currentFilteredData = [];
         let isExpanded = false;
-        let salesChartInstance = null;
 
         document.addEventListener("DOMContentLoaded", () => {
             fetchGoogleSheetsData();
@@ -150,22 +255,18 @@
                 header: true,
                 skipEmptyLines: true,
                 complete: function(results) {
-                    // Filter DSR Active
+                    // Filter khusus Active DSR saja
                     activeDataOnly = results.data.filter(row => {
                         const status = (row['Active'] || '').toString().trim().toUpperCase();
                         return status === 'YES';
                     });
 
-                    document.getElementById('statusBadge').className = 'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-medium';
-                    document.getElementById('statusBadge').innerHTML = '<span class="w-2 h-2 rounded-full bg-emerald-400"></span> Live Synced with Google Sheets';
-                    
                     populateWorkplaceFilter();
                     applyFilter();
                 },
                 error: function(err) {
                     console.error("Gagal membaca Google Sheets:", err);
-                    document.getElementById('statusBadge').className = 'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-red-500/10 text-red-400 border border-red-500/20 font-medium';
-                    document.getElementById('statusBadge').innerHTML = '❌ Failed to load Google Sheets Data';
+                    document.getElementById('dataTableBody').innerHTML = `<tr><td colspan="12" class="text-center" style="color:#f87171;">Gagal mengambil data dari Google Sheets.</td></tr>`;
                 }
             });
         }
@@ -185,7 +286,6 @@
             const workplaces = [...new Set(activeDataOnly.map(r => (r['Workplace Name'] || '').trim()).filter(Boolean))];
             
             select.innerHTML = '<option value="ALL">Semua Workplace (ALL)</option>';
-
             workplaces.forEach(wp => {
                 const opt = document.createElement('option');
                 opt.value = wp;
@@ -200,35 +300,7 @@
                 ? activeDataOnly 
                 : activeDataOnly.filter(item => (item['Workplace Name'] || '').trim() === selectedWp);
 
-            updateKPIs(currentFilteredData);
             updateTable(currentFilteredData);
-            updateChart(currentFilteredData);
-        }
-
-        function updateKPIs(data) {
-            let totalTargetJul = 0, totalActualJul = 0;
-            let totalTargetYtd = 0, totalActualYtd = 0;
-            let activeCount = data.length;
-
-            data.forEach(row => {
-                totalTargetJul += cleanNum(row['Target Jul 26']);
-                totalActualJul += cleanNum(row['Actual Jul 26']);
-                totalTargetYtd += cleanNum(row['Target YTD']);
-                totalActualYtd += cleanNum(row['Actual YTD']);
-            });
-
-            const mAchieve = totalTargetJul > 0 ? ((totalActualJul / totalTargetJul) * 100).toFixed(1) : 0;
-            const ytdAchieve = totalTargetYtd > 0 ? ((totalActualYtd / totalTargetYtd) * 100).toFixed(1) : 0;
-
-            document.getElementById('kpiTarget').innerText = formatNum(totalTargetJul);
-            document.getElementById('kpiDsrCount').innerText = `${activeCount} DSR Active`;
-            
-            document.getElementById('kpiActual').innerText = formatNum(totalActualJul);
-            document.getElementById('kpiAchieve').innerText = `${mAchieve}% Achieve`;
-
-            document.getElementById('kpiTargetYtd').innerText = formatNum(totalTargetYtd);
-            document.getElementById('kpiActualYtd').innerText = formatNum(totalActualYtd);
-            document.getElementById('kpiAchieveYtd').innerText = `${ytdAchieve}% YTD Achieve`;
         }
 
         function updateTable(data) {
@@ -236,12 +308,12 @@
             tbody.innerHTML = '';
 
             if (data.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="12" class="p-4 text-center text-slate-500">Tidak ada DSR active ditemukan.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="12" class="text-center" style="padding: 20px;">Tidak ada DSR Active ditemukan.</td></tr>`;
                 document.getElementById('toggleShowMoreContainer').classList.add('hidden');
                 return;
             }
 
-            // Tampilkan Top 10 atau Semua tergantung tombol
+            // Potong data jika belum di-expand (Top 10)
             const displayData = isExpanded ? data : data.slice(0, 10);
 
             displayData.forEach(row => {
@@ -263,45 +335,43 @@
                 const prevYtd = cleanNum(row['Prev YTD (L)']);
                 const ytdGrowth = prevYtd > 0 ? (((actualYtd - prevYtd) / prevYtd) * 100).toFixed(0) : cleanNum(row['YTD Growth']);
 
+                // Badge colors
+                const mBadgeClass = mAchieve >= 100 ? 'badge-green' : (mAchieve >= 50 ? 'badge-amber' : 'badge-red');
+                const momColor = momGrowth >= 0 ? '#34d399' : '#f87171';
+                const ytdGrowthColor = ytdGrowth >= 0 ? '#34d399' : '#f87171';
+
                 const tr = document.createElement('tr');
-                tr.className = 'hover:bg-slate-700/30 transition';
                 tr.innerHTML = `
-                    <td class="p-3">
-                        <div class="font-bold text-white">${name}</div>
-                        <div class="text-[10px] text-slate-400">${salesId} | ${workplace}</div>
+                    <td>
+                        <div class="text-white">${name}</div>
+                        <div class="text-sub">${salesId} | ${workplace}</div>
                     </td>
-                    <td class="p-3 text-center">
-                        <span class="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-emerald-500/20 text-emerald-400">
-                            YES
-                        </span>
+                    <td class="text-center">
+                        <span class="badge badge-green">YES</span>
                     </td>
-                    <td class="p-3 text-right font-medium">${formatNum(targetJul)}</td>
-                    <td class="p-3 text-right font-bold text-white">${formatNum(actualJul)}</td>
-                    <td class="p-3 text-center">
-                        <span class="px-2 py-0.5 rounded text-[10px] font-bold ${mAchieve >= 100 ? 'bg-emerald-500/20 text-emerald-400' : (mAchieve >= 50 ? 'bg-amber-500/20 text-amber-400' : 'bg-rose-500/20 text-rose-400')}">
-                            ${mAchieve}%
-                        </span>
+                    <td class="text-right">${formatNum(targetJul)}</td>
+                    <td class="text-right text-white">${formatNum(actualJul)}</td>
+                    <td class="text-center">
+                        <span class="badge ${mBadgeClass}">${mAchieve}%</span>
                     </td>
-                    <td class="p-3 text-right text-slate-400">${formatNum(prevMonth)}</td>
-                    <td class="p-3 text-right font-medium ${momGrowth >= 0 ? 'text-emerald-400' : 'text-rose-400'}">
+                    <td class="text-right text-sub">${formatNum(prevMonth)}</td>
+                    <td class="text-right" style="color: ${momColor}; font-weight: 500;">
                         ${momGrowth >= 0 ? '+' : ''}${momGrowth}%
                     </td>
-                    <td class="p-3 text-right font-medium">${formatNum(targetYtd)}</td>
-                    <td class="p-3 text-right font-bold text-white">${formatNum(actualYtd)}</td>
-                    <td class="p-3 text-center">
-                        <span class="px-2 py-0.5 rounded text-[10px] font-bold ${ytdAchieve >= 100 ? 'bg-blue-500/20 text-blue-400' : 'bg-amber-500/20 text-amber-400'}">
-                            ${ytdAchieve}%
-                        </span>
+                    <td class="text-right">${formatNum(targetYtd)}</td>
+                    <td class="text-right text-white">${formatNum(actualYtd)}</td>
+                    <td class="text-center">
+                        <span class="badge badge-blue">${ytdAchieve}%</span>
                     </td>
-                    <td class="p-3 text-right text-slate-400">${formatNum(prevYtd)}</td>
-                    <td class="p-3 text-right font-medium ${ytdGrowth >= 0 ? 'text-emerald-400' : 'text-rose-400'}">
+                    <td class="text-right text-sub">${formatNum(prevYtd)}</td>
+                    <td class="text-right" style="color: ${ytdGrowthColor}; font-weight: 500;">
                         ${ytdGrowth >= 0 ? '+' : ''}${ytdGrowth}%
                     </td>
                 `;
                 tbody.appendChild(tr);
             });
 
-            // Kontrol tombol Show More
+            // Sembunyikan atau tampilkan tombol jika data > 10
             const toggleContainer = document.getElementById('toggleShowMoreContainer');
             if (data.length > 10) {
                 toggleContainer.classList.remove('hidden');
@@ -322,57 +392,11 @@
 
             if (isExpanded) {
                 textEl.innerText = `Sembunyikan DSR (Menampilkan semua ${totalCount} DSR)`;
-                iconEl.classList.add('rotate-180');
+                iconEl.classList.add('rotate');
             } else {
                 textEl.innerText = `Tampilkan Seluruh DSR (${totalCount - 10} DSR lainnya)`;
-                iconEl.classList.remove('rotate-180');
+                iconEl.classList.remove('rotate');
             }
-        }
-
-        function updateChart(data) {
-            const labels = data.map(r => r['Sales Name'] || 'DSR');
-            const targetData = data.map(r => cleanNum(r['Target Jul 26']));
-            const actualData = data.map(r => cleanNum(r['Actual Jul 26']));
-
-            const ctx = document.getElementById('salesChart').getContext('2d');
-
-            if (salesChartInstance) {
-                salesChartInstance.destroy();
-            }
-
-            salesChartInstance = new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: labels,
-                    datasets: [
-                        {
-                            label: 'Target Jul 26',
-                            data: targetData,
-                            backgroundColor: 'rgba(100, 116, 139, 0.6)',
-                            borderColor: 'rgba(100, 116, 139, 1)',
-                            borderWidth: 1
-                        },
-                        {
-                            label: 'Actual Jul 26',
-                            data: actualData,
-                            backgroundColor: 'rgba(14, 165, 233, 0.8)',
-                            borderColor: 'rgba(14, 165, 233, 1)',
-                            borderWidth: 1
-                        }
-                    ]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: { labels: { color: '#94a3b8', font: { size: 11 } } }
-                    },
-                    scales: {
-                        x: { ticks: { color: '#94a3b8', font: { size: 10 } }, grid: { color: '#334155' } },
-                        y: { ticks: { color: '#94a3b8', font: { size: 10 } }, grid: { color: '#334155' } }
-                    }
-                }
-            });
         }
     </script>
 </body>
