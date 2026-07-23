@@ -11,7 +11,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
     
     <style>
-        /* BASE RESET & STYLES (PURE CSS - ANTI RUSAK) */
+        /* BASE RESET & STYLES (PURE CSS) */
         * {
             box-sizing: border-box;
             margin: 0;
@@ -68,6 +68,40 @@
             border-radius: 6px;
             font-size: 13px;
             outline: none;
+            cursor: pointer;
+        }
+
+        /* EXECUTIVE KPI SUMMARY CARDS */
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+        .kpi-card {
+            background-color: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 12px;
+            padding: 16px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+        }
+        .kpi-title {
+            font-size: 11px;
+            text-transform: uppercase;
+            color: #94a3b8;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            margin-bottom: 6px;
+        }
+        .kpi-value {
+            font-size: 22px;
+            font-weight: bold;
+            color: #ffffff;
+        }
+        .kpi-sub {
+            font-size: 11px;
+            color: #64748b;
+            margin-top: 4px;
         }
 
         /* CARD WRAPPER */
@@ -87,13 +121,16 @@
             text-transform: uppercase;
             color: #e2e8f0;
             letter-spacing: 0.5px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
 
         /* CHART CONTAINER */
         .chart-container {
             padding: 20px;
             position: relative;
-            height: 320px;
+            height: 350px;
         }
 
         /* TABLE STYLES */
@@ -172,8 +209,6 @@
             height: 14px !important;
             min-width: 14px !important;
             min-height: 14px !important;
-            max-width: 14px !important;
-            max-height: 14px !important;
             stroke: currentColor;
             stroke-width: 2.5;
             fill: none;
@@ -195,17 +230,41 @@
                 <p>Monitoring Kinerja Sales Active Real-Time</p>
             </div>
             <div class="filter-group">
-                <label for="workplaceFilter">Workplace:</label>
+                <label for="workplaceFilter">Workplace / Area:</label>
                 <select id="workplaceFilter" onchange="applyFilter()">
                     <option value="ALL">Semua Workplace (ALL)</option>
                 </select>
             </div>
         </div>
 
-        <!-- Grafik Visualisasi -->
+        <!-- EXECUTIVE SUMMARY CARDS (BOD & MANAGER LOOK) -->
+        <div class="kpi-grid">
+            <div class="kpi-card">
+                <div class="kpi-title">Total Target (Jul 26)</div>
+                <div class="kpi-value" id="kpiTarget">0 KL</div>
+                <div class="kpi-sub">Target Penjualan Bulanan</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-title">Total Actual (Jul 26)</div>
+                <div class="kpi-value" id="kpiActual" style="color: #38bdf8;">0 KL</div>
+                <div class="kpi-sub">Pencapaian Real-Time</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-title">% Monthly Achievement</div>
+                <div class="kpi-value" id="kpiAchieve">0%</div>
+                <div class="kpi-sub" id="kpiAchieveStatus">Status: -</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-title">Active DSR Count</div>
+                <div class="kpi-value" id="kpiDsrCount" style="color: #34d399;">0</div>
+                <div class="kpi-sub">Total Sales Person Active</div>
+            </div>
+        </div>
+
+        <!-- Grafik Visualisasi (Smart Dynamic Chart) -->
         <div class="card">
             <div class="card-header">
-                GRAFIK TARGET VS ACTUAL SALES DSR ACTIVE (JUL 26) - DALAM KL
+                <span id="chartHeaderTitle">GRAFIK TARGET VS ACTUAL (BY WORKPLACE) - DALAM KL</span>
             </div>
             <div class="chart-container">
                 <canvas id="salesChart"></canvas>
@@ -215,7 +274,7 @@
         <!-- Tabel Data -->
         <div class="card">
             <div class="card-header">
-                DAFTAR DSR ACTIVE (TOP 10 DEFAULT)
+                <span>DAFTAR DSR ACTIVE</span>
             </div>
             <div class="table-responsive">
                 <table>
@@ -274,7 +333,6 @@
                 header: true,
                 skipEmptyLines: true,
                 complete: function(results) {
-                    // Filter hanya Active DSR == 'YES'
                     activeDataOnly = results.data.filter(row => {
                         const status = (row['Active'] || '').toString().trim().toUpperCase();
                         return status === 'YES';
@@ -319,8 +377,43 @@
                 ? activeDataOnly 
                 : activeDataOnly.filter(item => (item['Workplace Name'] || '').trim() === selectedWp);
 
+            updateSummaryCards(currentFilteredData);
             updateTable(currentFilteredData);
-            updateChart(currentFilteredData);
+            updateSmartChart(currentFilteredData, selectedWp);
+        }
+
+        // FUNGSI SUMMARY KPI EXECUTIVE
+        function updateSummaryCards(data) {
+            let totalTarget = 0;
+            let totalActual = 0;
+
+            data.forEach(r => {
+                totalTarget += cleanNum(r['Target Jul 26']);
+                totalActual += cleanNum(r['Actual Jul 26']);
+            });
+
+            const targetKL = totalTarget / 1000;
+            const actualKL = totalActual / 1000;
+            const achPercent = targetKL > 0 ? ((actualKL / targetKL) * 100).toFixed(1) : 0;
+
+            document.getElementById('kpiTarget').innerText = `${formatNum(targetKL)} KL`;
+            document.getElementById('kpiActual').innerText = `${formatNum(actualKL)} KL`;
+            
+            const achEl = document.getElementById('kpiAchieve');
+            achEl.innerText = `${achPercent}%`;
+            
+            if (achPercent >= 100) {
+                achEl.style.color = '#34d399';
+                document.getElementById('kpiAchieveStatus').innerText = 'Status: Target Achieved 🎉';
+            } else if (achPercent >= 70) {
+                achEl.style.color = '#fbbf24';
+                document.getElementById('kpiAchieveStatus').innerText = 'Status: On Progress 🟡';
+            } else {
+                achEl.style.color = '#f87171';
+                document.getElementById('kpiAchieveStatus').innerText = 'Status: Need Attention 🔴';
+            }
+
+            document.getElementById('kpiDsrCount').innerText = data.length;
         }
 
         function updateTable(data) {
@@ -416,17 +509,40 @@
             }
         }
 
-        function updateChart(data) {
-            // Register Data Labels Plugin
+        // SMART CHART ADAPTIF (ALL = BY AREA, FILTERED = BY DSR)
+        function updateSmartChart(data, selectedWorkplace) {
             if (typeof ChartDataLabels !== 'undefined') {
                 Chart.register(ChartDataLabels);
             }
 
-            const labels = data.map(r => r['Sales Name'] || 'DSR');
-            
-            // Konversi dari Liter (L) ke Kiloliter (KL) -> dibagi 1000
-            const targetDataKL = data.map(r => cleanNum(r['Target Jul 26']) / 1000);
-            const actualDataKL = data.map(r => cleanNum(r['Actual Jul 26']) / 1000);
+            let labels = [];
+            let targetDataKL = [];
+            let actualDataKL = [];
+
+            if (selectedWorkplace === 'ALL') {
+                document.getElementById('chartHeaderTitle').innerText = 'GRAFIK TARGET VS ACTUAL PER WORKPLACE / AREA (JUL 26) - DALAM KL';
+                
+                // Grouping Agregat Data per Workplace
+                const grouped = {};
+                data.forEach(row => {
+                    const wp = (row['Workplace Name'] || 'Unknown').trim();
+                    if (!grouped[wp]) {
+                        grouped[wp] = { target: 0, actual: 0 };
+                    }
+                    grouped[wp].target += cleanNum(row['Target Jul 26']);
+                    grouped[wp].actual += cleanNum(row['Actual Jul 26']);
+                });
+
+                labels = Object.keys(grouped);
+                targetDataKL = labels.map(wp => grouped[wp].target / 1000);
+                actualDataKL = labels.map(wp => grouped[wp].actual / 1000);
+            } else {
+                document.getElementById('chartHeaderTitle').innerText = `GRAFIK TARGET VS ACTUAL DSR - AREA: ${selectedWorkplace} (DALAM KL)`;
+                
+                labels = data.map(r => r['Sales Name'] || 'DSR');
+                targetDataKL = data.map(r => cleanNum(r['Target Jul 26']) / 1000);
+                actualDataKL = data.map(r => cleanNum(r['Actual Jul 26']) / 1000);
+            }
 
             const ctx = document.getElementById('salesChart').getContext('2d');
 
@@ -460,14 +576,13 @@
                     maintainAspectRatio: false,
                     layout: {
                         padding: {
-                            top: 25 // Ruang di atas grafik agar angka tidak terpotong
+                            top: 25
                         }
                     },
                     plugins: {
                         legend: { 
                             labels: { color: '#94a3b8', font: { size: 11 } } 
                         },
-                        // MENAMPILKAN ANGKA DI ATAS BATANG GRAFIK
                         datalabels: {
                             anchor: 'end',
                             align: 'top',
@@ -485,7 +600,7 @@
                     scales: {
                         x: { 
                             ticks: { color: '#94a3b8', font: { size: 10 } }, 
-                            grid: { display: false } // Menghilangkan garis background X
+                            grid: { display: false }
                         },
                         y: { 
                             ticks: { 
@@ -493,7 +608,7 @@
                                 font: { size: 10 },
                                 callback: function(value) { return value + ' KL'; }
                             }, 
-                            grid: { display: false } // Menghilangkan garis background Y
+                            grid: { display: false }
                         }
                     }
                 }
