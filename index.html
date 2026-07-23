@@ -320,6 +320,15 @@
     <script>
         const SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQ7ZrrcD9z_Iwj3QWGAHq0usQd20cth9Y8pdfNiuBeWLaX-uqAFlpdZt6J8ggkYx0uCK2cnOJcYzM_5/pub?output=csv';
 
+        // DICTIONARY NAMA SINGKAT KHUSUS CHART AREA
+        const AREA_SHORT_NAMES = {
+            'PT CAHAYA PENGAJARAN ABADI-MANADO': 'MANADO',
+            'PT CAHAYA PENGAJARAN ABADI-MAKASSAR': 'MAKASSAR',
+            'PT CAHAYA PENGAJARAN ABADI-KALTENG': 'KALTENG',
+            'PT CAHAYA PENGAJARAN ABADI-MANADO KA Smelter': 'MANADO KA SMELTER',
+            'PT CAHAYA PENGAJARAN ABADI-MAKASSAR KA Smelter': 'MAKASSAR KA SMELTER'
+        };
+
         let activeDataOnly = [];
         let currentFilteredData = [];
         let isExpanded = false;
@@ -360,11 +369,15 @@
             return new Intl.NumberFormat('id-ID', { maximumFractionDigits: 1 }).format(num || 0);
         }
 
-        function cleanAreaName(name) {
-            if (!name) return 'AREA';
-            let cleaned = name.replace(/^PT\s+CAHAYA\s+PENGAJARAN\s+ABADI-?/i, '').trim();
-            if (!cleaned) cleaned = name;
-            return cleaned;
+        // FUNGSI MENDAPATKAN NAMA SINGKAT KHUSUS CHART
+        function getShortAreaName(fullName) {
+            if (!fullName) return 'AREA';
+            const trimmed = fullName.trim();
+            if (AREA_SHORT_NAMES[trimmed]) {
+                return AREA_SHORT_NAMES[trimmed];
+            }
+            // Fallback otomatis jika ada area baru di masa depan
+            return trimmed.replace(/^PT\s+CAHAYA\s+PENGAJARAN\s+ABADI-?/i, '').trim() || trimmed;
         }
 
         function populateWorkplaceFilter() {
@@ -539,10 +552,10 @@
                     grouped[rawWp].actual += cleanNum(row['Actual Jul 26']);
                 });
 
-                // Text wrapping & pembersihan nama PT
+                // Menggunakan Dictionary Nama Singkat
                 labels = Object.keys(grouped).map(rawWp => {
-                    const shortName = cleanAreaName(rawWp);
-                    return shortName.split(' '); 
+                    const shortName = getShortAreaName(rawWp);
+                    return shortName.split(' '); // memecah per kata agar rapat & sejajar lurus
                 });
 
                 targetDataKL = Object.keys(grouped).map(wp => grouped[wp].target / 1000);
@@ -594,7 +607,6 @@
                         legend: { 
                             labels: { color: '#94a3b8', font: { size: 11 } } 
                         },
-                        // MENAMPILKAN VOLUME KL & PERCENTAGE ACHIEVEMENT
                         datalabels: {
                             anchor: 'end',
                             align: 'top',
@@ -606,7 +618,7 @@
                             formatter: function(value, context) {
                                 if (value === 0) return '';
                                 
-                                // Jika ini bar Actual (datasetIndex == 1), tampilkan volume + % Achievement
+                                // Bar Actual -> Tampilkan volume + % Achievement
                                 if (context.datasetIndex === 1) {
                                     const targetVal = context.chart.data.datasets[0].data[context.dataIndex];
                                     const pct = targetVal > 0 ? ((value / targetVal) * 100).toFixed(0) : 0;
@@ -621,7 +633,7 @@
                         x: { 
                             ticks: { 
                                 color: '#94a3b8', 
-                                font: { size: 10 },
+                                font: { size: 10, weight: 'bold' },
                                 maxRotation: 0,
                                 minRotation: 0
                             }, 
