@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sales Performance Dashboard - CPA Areas</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body { background-color: #0f172a; color: #f8fafc; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+    </style>
+</head>
+<body class="p-4 md:p-8 min-h-screen">
+
+    <!-- Header Section -->
+    <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4 border-b border-slate-700 pb-6">
+        <div>
+            <h1 class="text-2xl md:text-3xl font-bold tracking-wide text-white">📊 SALES PERFORMANCE DASHBOARD</h1>
+            <p class="text-slate-400 text-sm mt-1">Multi-Area CPA Analysis (CPA 01, CPA 02, CPA 03) & DSR Growth Tracking</p>
+        </div>
+        
+        <!-- Area Filter Dropdown -->
+        <div class="flex items-center gap-3 bg-slate-800 p-3 rounded-lg border border-slate-700 w-full md:w-auto">
+            <label for="areaFilter" class="text-xs font-semibold uppercase text-slate-400 whitespace-nowrap">Filter Area:</label>
+            <select id="areaFilter" onchange="renderDashboard()" class="bg-slate-900 text-sky-400 border border-slate-700 rounded px-3 py-1.5 text-sm font-semibold focus:outline-none focus:border-sky-500 w-full md:w-48">
+                <option value="ALL">Semua Area (ALL)</option>
+                <option value="CPA 01">CPA 01</option>
+                <option value="CPA 02">CPA 02</option>
+                <option value="CPA 03">CPA 03</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="max-w-7xl mx-auto">
+        <!-- KPI Summary Cards -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+            <div class="bg-slate-800/80 border border-slate-700/80 p-5 rounded-xl shadow-lg">
+                <p class="text-xs font-bold uppercase text-slate-400 tracking-wider">Total Target</p>
+                <h3 id="cardTarget" class="text-2xl font-black text-white mt-2">Rp 0</h3>
+                <p id="cardDsrCount" class="text-xs text-slate-400 mt-2">0 DSR Active</p>
+            </div>
+            
+            <div class="bg-slate-800/80 border border-slate-700/80 p-5 rounded-xl shadow-lg">
+                <p class="text-xs font-bold uppercase text-slate-400 tracking-wider">Total Actual Sales</p>
+                <h3 id="cardActual" class="text-2xl font-black text-white mt-2">Rp 0</h3>
+                <span id="cardAchieve" class="inline-block px-2.5 py-0.5 rounded text-xs font-bold mt-2 bg-emerald-500/20 text-emerald-400">0% Achieve</span>
+            </div>
+
+            <div class="bg-slate-800/80 border border-slate-700/80 p-5 rounded-xl shadow-lg">
+                <p class="text-xs font-bold uppercase text-slate-400 tracking-wider">MoM Growth (vs Jun)</p>
+                <h3 id="cardMom" class="text-2xl font-black text-emerald-400 mt-2">+0%</h3>
+                <p id="cardMomValue" class="text-xs text-emerald-400 mt-2">↑ +Rp 0</p>
+            </div>
+
+            <div class="bg-slate-800/80 border border-slate-700/80 p-5 rounded-xl shadow-lg">
+                <p class="text-xs font-bold uppercase text-slate-400 tracking-wider">YoY Growth (vs 2025)</p>
+                <h3 id="cardYoy" class="text-2xl font-black text-emerald-400 mt-2">+0%</h3>
+                <p id="cardYoyValue" class="text-xs text-emerald-400 mt-2">↑ +Rp 0</p>
+            </div>
+        </div>
+
+        <!-- Chart Section -->
+        <div class="bg-slate-800/60 border border-slate-700 p-5 rounded-xl shadow-lg mb-8">
+            <h2 class="text-sm font-bold text-slate-300 uppercase tracking-wider mb-4 border-l-4 border-sky-500 pl-3">Visualisasi Perbandingan Target vs Actual DSR</h2>
+            <div class="h-64 md:h-80">
+                <canvas id="salesChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Main Data Table -->
+        <div class="bg-slate-800/60 border border-slate-700 rounded-xl shadow-lg overflow-hidden">
+            <div class="p-5 border-b border-slate-700">
+                <h2 class="text-sm font-bold text-slate-300 uppercase tracking-wider border-l-4 border-sky-500 pl-3">Rincian Performa per DSR & Area</h2>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left text-xs md:text-sm text-slate-300">
+                    <thead class="bg-slate-900 text-slate-400 uppercase font-bold text-[11px] border-b border-slate-700">
+                        <tr>
+                            <th class="py-3.5 px-4">Area / DSR Name</th>
+                            <th class="py-3.5 px-4 text-right">Target</th>
+                            <th class="py-3.5 px-4 text-right">Actual</th>
+                            <th class="py-3.5 px-4 text-center">% Achieve</th>
+                            <th class="py-3.5 px-4 text-right">Actual (MoM)</th>
+                            <th class="py-3.5 px-4 text-center">MoM Growth</th>
+                            <th class="py-3.5 px-4 text-right">Actual (YoY)</th>
+                            <th class="py-3.5 px-4 text-center">YoY Growth</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody" class="divide-y divide-slate-700/50">
+                        <!-- Dynamic Rows Inject via JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript Interactive Logic -->
+    <script>
+        // Master Sales Data (Dummy Data)
+        const rawSalesData = [
+            // CPA 01
+            { area: 'CPA 01', dsr: 'Budi Santoso', target: 125000000, actual: 135000000, momActual: 120000000, yoyActual: 110000000 },
+            { area: 'CPA 01', dsr: 'Ani Wijaya', target: 125000000, actual: 130000000, momActual: 122000000, yoyActual: 115000000 },
+            { area: 'CPA 01', dsr: 'Citrus Pratama', target: 125000000, actual: 118000000, momActual: 115000000, yoyActual: 105000000 },
+            { area: 'CPA 01', dsr: 'Dewi Lestari', target: 125000000, actual: 142000000, momActual: 123000000, yoyActual: 120000000 },
+            
+            // CPA 02
+            { area: 'CPA 02', dsr: 'Eko Prasetyo', target: 150000000, actual: 160000000, momActual: 150000000, yoyActual: 138000000 },
+            { area: 'CPA 02', dsr: 'Fajar Nugraha', target: 150000000, actual: 165000000, momActual: 148000000, yoyActual: 140000000 },
+            { area: 'CPA 02', dsr: 'Gita Gutawa', target: 150000000, actual: 145000000, momActual: 142000000, yoyActual: 132000000 },
+
+            // CPA 03
+            { area: 'CPA 03', dsr: 'Hendra Setiawan', target: 125000000, actual: 130000000, momActual: 118000000, yoyActual: 110000000 },
+            { area: 'CPA 03', dsr: 'Indah Permata', target: 125000000, actual: 110000000, momActual: 115000000, yoyActual: 105000000 },
+            { area: 'CPA 03', dsr: 'Joko Widodo', target: 125000000, actual: 128000000, momActual: 120000000, yoyActual: 112000000 },
+            { area: 'CPA 03', dsr: 'Kevin Sanjaya', target: 125000000, actual: 122000000, momActual: 97000000, yoyActual: 102000000 }
+        ];
+
+        let chartInstance = null;
+
+        // Helper: Currency Formatter
+        function formatRupiah(number) {
+            return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(number);
+        }
+
+        // Main Render Function
+        function renderDashboard() {
+            const selectedArea = document.getElementById('areaFilter').value;
+            
+            // Filter Data
+            const filteredData = selectedArea === 'ALL' 
+                ? rawSalesData 
+                : rawSalesData.filter(item => item.area === selectedArea);
+
+            // Calculations
+            let totalTarget = 0, totalActual = 0, totalMomActual = 0, totalYoyActual = 0;
+
+            filteredData.forEach(d => {
+                totalTarget += d.target;
+                totalActual += d.actual;
+                totalMomActual += d.momActual;
+                totalYoyActual += d.yoyActual;
+            });
+
+            const overallAchieve = (totalActual / totalTarget) * 100;
+            const overallMomPct = ((totalActual - totalMomActual) / totalMomActual) * 100;
+            const overallYoyPct = ((totalActual - totalYoyActual) / totalYoyActual) * 100;
+
+            // Update KPI Cards
+            document.getElementById('cardTarget').innerText = formatRupiah(totalTarget);
+            document.getElementById('cardDsrCount').innerText = `${filteredData.length} DSR Active`;
+            
+            document.getElementById('cardActual').innerText = formatRupiah(totalActual);
+            document.getElementById('cardAchieve').innerText = `${overallAchieve.toFixed(1)}% Achieve`;
+            
+            document.getElementById('cardMom').innerText = `${overallMomPct >= 0 ? '+' : ''}${overallMomPct.toFixed(1)}%`;
+            document.getElementById('cardMomValue').innerText = `${overallMomPct >= 0 ? '↑' : '↓'} ${formatRupiah(totalActual - totalMomActual)}`;
+            
+            document.getElementById('cardYoy').innerText = `${overallYoyPct >= 0 ? '+' : ''}${overallYoyPct.toFixed(1)}%`;
+            document.getElementById('cardYoyValue').innerText = `${overallYoyPct >= 0 ? '↑' : '↓'} ${formatRupiah(totalActual - totalYoyActual)}`;
+
+            // Render Table
+            renderTable(filteredData, selectedArea);
+
+            // Render Chart
+            renderChart(filteredData);
+        }
+
+        function renderTable(data, selectedArea) {
+            const tbody = document.getElementById('tableBody');
+            tbody.innerHTML = '';
+
+            const areas = selectedArea === 'ALL' ? ['CPA 01', 'CPA 02', 'CPA 03'] : [selectedArea];
+
+            areas.forEach(areaName => {
+                const areaItems = data.filter(d => d.area === areaName);
+                if (areaItems.length === 0) return;
+
+                // Subtotal Area
+                let aTarget = 0, aActual = 0, aMom = 0, aYoy = 0;
+                areaItems.forEach(i => {
+                    aTarget += i.target; aActual += i.actual; aMom += i.momActual; aYoy += i.yoyActual;
+                });
+                
+                const aAchieve = (aActual / aTarget) * 100;
+                const aMomPct = ((aActual - aMom) / aMom) * 100;
+                const aYoyPct = ((aActual - aYoy) / aYoy) * 100;
+
+                // Area Header Row
+                const headerRow = `
+                    <tr class="bg-sky-950/40 text-sky-400 font-bold border-y border-sky-800/50">
+                        <td class="py-2.5 px-4">📍 AREA ${areaName}</td>
+                        <td class="py-2.5 px-4 text-right">${formatRupiah(aTarget)}</td>
+                        <td class="py-2.5 px-4 text-right">${formatRupiah(aActual)}</td>
+                        <td class="py-2.5 px-4 text-center"><span class="px-2 py-0.5 rounded text-xs ${aAchieve >= 100 ? 'bg-emerald-500/20 text-emerald-400' : 'bg-amber-500/20 text-amber-400'}">${aAchieve.toFixed(1)}%</span></td>
+                        <td class="py-2.5 px-4 text-right">${formatRupiah(aMom)}</td>
+                        <td class="py-2.5 px-4 text-center"><span class="${aMomPct >= 0 ? 'text-emerald-400' : 'text-rose-400'}">${aMomPct >= 0 ? '+' : ''}${aMomPct.toFixed(1)}%</span></td>
+                        <td class="py-2.5 px-4 text-right">${formatRupiah(aYoy)}</td>
+                        <td class="py-2.5 px-4 text-center"><span class="${aYoyPct >= 0 ? 'text-emerald-400' : 'text-rose-400'}">${aYoyPct >= 0 ? '+' : ''}${aYoyPct.toFixed(1)}%</span></td>
+                    </tr>
+                `;
+                tbody.innerHTML += headerRow;
+
+                // DSR Rows
+                areaItems.forEach(item => {
+                    const achieve = (item.actual / item.target) * 100;
+                    const momPct = ((item.actual - item.momActual) / item.momActual) * 100;
+                    const yoyPct = ((item.actual - item.yoyActual) / item.yoyActual) * 100;
+
+                    const row = `
+                        <tr class="hover:bg-slate-800/40 transition">
+                            <td class="py-2.5 px-4 pl-8 text-slate-200">DSR - ${item.dsr}</td>
+                            <td class="py-2.5 px-4 text-right font-mono text-slate-400">${formatRupiah(item.target)}</td>
+                            <td class="py-2.5 px-4 text-right font-mono font-medium text-slate-100">${formatRupiah(item.actual)}</td>
+                            <td class="py-2.5 px-4 text-center font-bold">
+                                <span class="px-2 py-0.5 rounded text-xs ${achieve >= 100 ? 'bg-emerald-500/20 text-emerald-400' : achieve >= 90 ? 'bg-amber-500/20 text-amber-400' : 'bg-rose-500/20 text-rose-400'}">${achieve.toFixed(1)}%</span>
+                            </td>
+                            <td class="py-2.5 px-4 text-right font-mono text-slate-400">${formatRupiah(item.momActual)}</td>
+                            <td class="py-2.5 px-4 text-center font-semibold text-xs ${momPct >= 0 ? 'text-emerald-400' : 'text-rose-400'}">${momPct >= 0 ? '+' : ''}${momPct.toFixed(1)}%</td>
+                            <td class="py-2.5 px-4 text-right font-mono text-slate-400">${formatRupiah(item.yoyActual)}</td>
+                            <td class="py-2.5 px-4 text-center font-semibold text-xs ${yoyPct >= 0 ? 'text-emerald-400' : 'text-rose-400'}">${yoyPct >= 0 ? '+' : ''}${yoyPct.toFixed(1)}%</td>
+                        </tr>
+                    `;
+                    tbody.innerHTML += row;
+                });
+            });
+        }
+
+        function renderChart(data) {
+            const ctx = document.getElementById('salesChart').getContext('2d');
+            
+            if (chartInstance) {
+                chartInstance.destroy();
+            }
+
+            const labels = data.map(d => d.dsr);
+            const targets = data.map(d => d.target / 1000000); // dalam Jutaan
+            const actuals = data.map(d => d.actual / 1000000);
+
+            chartInstance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: 'Target (Juta Rp)',
+                            data: targets,
+                            backgroundColor: 'rgba(148, 163, 184, 0.4)',
+                            borderColor: 'rgba(148, 163, 184, 1)',
+                            borderWidth: 1
+                        },
+                        {
+                            label: 'Actual Sales (Juta Rp)',
+                            data: actuals,
+                            backgroundColor: 'rgba(2, 132, 199, 0.8)',
+                            borderColor: 'rgba(56, 189, 248, 1)',
+                            borderWidth: 1
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: { ticks: { color: '#94a3b8', font: { size: 10 } }, grid: { display: false } },
+                        y: { ticks: { color: '#94a3b8' }, grid: { color: 'rgba(51, 65, 85, 0.5)' } }
+                    },
+                    plugins: {
+                        legend: { labels: { color: '#f8fafc', font: { size: 12 } } }
+                    }
+                }
+            });
+        }
+
+        // Initial Load
+        window.onload = renderDashboard;
+    </script>
+</body>
+</html>
