@@ -28,35 +28,63 @@
             margin: 0 auto;
         }
 
-        /* HEADER */
+        /* HEADER WITH DUAL LOGOS */
         .header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            border-bottom: 1px solid #2a3a5e;
-            padding-bottom: 18px;
+            border-bottom: 2px solid #d4af37; /* Warm Gold Accent Border */
+            padding-bottom: 20px;
             margin-bottom: 24px;
-            flex-wrap: wrap;
-            gap: 12px;
+            gap: 16px;
+            background-color: #151d33;
+            padding: 16px 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
         }
-        .header h1 {
-            font-size: 22px;
-            font-weight: 700;
+        .logo-box {
+            background-color: #ffffff;
+            padding: 6px 12px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 48px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        }
+        .logo-box img {
+            height: 100%;
+            max-height: 38px;
+            width: auto;
+            object-fit: contain;
+        }
+        .header-center {
+            text-align: center;
+            flex-grow: 1;
+        }
+        .header-center h1 {
+            font-size: 20px;
+            font-weight: 800;
             color: #ffffff;
             letter-spacing: -0.3px;
+            text-transform: uppercase;
         }
-        .header p {
+        .header-center p {
             color: #8d99ae;
-            font-size: 13px;
+            font-size: 12px;
             margin-top: 4px;
             font-weight: 500;
         }
-        .filter-group {
+
+        /* FILTER AREA IN HEADER OR BELOW */
+        .filter-bar {
             display: flex;
+            justify-content: flex-end;
             align-items: center;
+            margin-bottom: 20px;
             gap: 10px;
         }
-        .filter-group label {
+        .filter-bar label {
             font-size: 11px;
             text-transform: uppercase;
             color: #d4af37; /* Gold Accent */
@@ -278,23 +306,47 @@
             transform: rotate(180deg);
         }
         .hidden { display: none !important; }
+
+        /* RESPONSIVE HEADER MEDIA QUERY */
+        @media (max-width: 768px) {
+            .header {
+                flex-direction: column;
+                text-align: center;
+            }
+            .logo-box {
+                height: 40px;
+            }
+        }
     </style>
 </head>
 <body>
 
     <div class="container">
-        <!-- Header -->
+        <!-- HEADER WITH DUAL LOGOS -->
         <div class="header">
-            <div>
-                <h1>SUMMARY REPORT SELL OUT DSR (ACTIVE ONLY)</h1>
-                <p>Monitoring Kinerja Sales Active Real-Time</p>
+            <!-- LOGO SHELL (KIRI) -->
+            <div class="logo-box">
+                <img src="https://upload.wikimedia.org/wikipedia/en/e/e8/Shell_logo.svg" alt="Shell Lubricant Solutions">
             </div>
-            <div class="filter-group">
-                <label for="workplaceFilter">Workplace / Area:</label>
-                <select id="workplaceFilter" onchange="applyFilter()">
-                    <option value="ALL">Semua Workplace (ALL)</option>
-                </select>
+
+            <!-- JUDUL HEADER (TENGAH) -->
+            <div class="header-center">
+                <h1>CPA 01 - Integrated Business Performance</h1>
+                <p>Summary Report Sell Out DSR | Real-Time Operational Dashboard</p>
             </div>
+
+            <!-- LOGO CPA (KANAN) -->
+            <div class="logo-box">
+                <img src="https://cahayapengajaran.com/wp-content/uploads/2021/04/Logo-CPA-web.png" alt="PT Cahaya Pengajaran Abadi">
+            </div>
+        </div>
+
+        <!-- FILTER BAR -->
+        <div class="filter-bar">
+            <label for="workplaceFilter">Workplace / Area:</label>
+            <select id="workplaceFilter" onchange="applyFilter()">
+                <option value="ALL">Semua Workplace (ALL)</option>
+            </select>
         </div>
 
         <!-- EXECUTIVE SUMMARY CARDS -->
