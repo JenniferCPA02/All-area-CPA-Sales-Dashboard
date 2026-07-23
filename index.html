@@ -3,281 +3,254 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sales Performance Dashboard - CPA Areas</title>
+    <title>DSR Sales Performance Dashboard</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Chart.js CDN -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <!-- PapaParse CDN (Untuk Membaca Live Data CSV Google Sheets) -->
+    <!-- PapaParse untuk membaca CSV Google Sheets -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
-    <style>
-        body { background-color: #0f172a; color: #f8fafc; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-    </style>
 </head>
-<body class="p-4 md:p-8 min-h-screen">
+<body class="bg-slate-900 text-slate-100 min-h-screen p-6 font-sans">
 
-    <!-- Header Section -->
-    <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4 border-b border-slate-700 pb-6">
+    <!-- Header -->
+    <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4 border-b border-slate-700 pb-4">
         <div>
-            <h1 class="text-2xl md:text-3xl font-bold tracking-wide text-white">📊 DSR SALES PERFORMANCE DASHBOARD</h1>
-            <p class="text-slate-400 text-sm mt-1">Live Tracking: Jan–Jul 2026 | Breakdown per Workplace & DSR Active</p>
+            <h1 class="text-2xl font-bold tracking-wide text-white flex items-center gap-2">
+                📊 DSR SALES PERFORMANCE DASHBOARD
+            </h1>
+            <p class="text-slate-400 text-sm mt-1">
+                Multi-Area CPA Analysis (CPA 01, CPA 02, CPA 03) & DSR Growth Tracking
+            </p>
         </div>
-        
-        <!-- Workplace Filter Dropdown -->
-        <div class="flex items-center gap-3 bg-slate-800 p-3 rounded-lg border border-slate-700 w-full md:w-auto">
-            <label for="workplaceFilter" class="text-xs font-semibold uppercase text-slate-400 whitespace-nowrap">Filter Workplace:</label>
-            <select id="workplaceFilter" onchange="filterAndRender()" class="bg-slate-900 text-sky-400 border border-slate-700 rounded px-3 py-1.5 text-sm font-semibold focus:outline-none focus:border-sky-500 w-full md:w-56">
-                <option value="ALL">Semua Workplace (ALL)</option>
+        <div class="flex items-center gap-3">
+            <label for="areaFilter" class="text-xs uppercase tracking-wider text-slate-400 font-semibold">Filter Area:</label>
+            <select id="areaFilter" onchange="applyFilter()" class="bg-slate-800 text-white border border-slate-600 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <option value="ALL">Semua Area (ALL)</option>                <option value="CPA 01">CPA 01</option>
+                <option value="CPA 02">CPA 02</option>
+                <option value="CPA 03">CPA 03</option>
             </select>
         </div>
     </div>
 
-    <div class="max-w-7xl mx-auto">
-        <!-- KPI Summary Cards -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-            <div class="bg-slate-800/80 border border-slate-700/80 p-5 rounded-xl shadow-lg">
-                <p class="text-xs font-bold uppercase text-slate-400 tracking-wider">Total Target (Jan-Jul)</p>
-                <h3 id="cardTarget" class="text-2xl font-black text-white mt-2">Rp 0</h3>
-                <p id="cardDsrCount" class="text-xs text-slate-400 mt-2">0 DSR Active</p>
-            </div>
-            
-            <div class="bg-slate-800/80 border border-slate-700/80 p-5 rounded-xl shadow-lg">
-                <p class="text-xs font-bold uppercase text-slate-400 tracking-wider">Total Actual Sales</p>
-                <h3 id="cardActual" class="text-2xl font-black text-white mt-2">Rp 0</h3>
-                <span id="cardAchieve" class="inline-block px-2.5 py-0.5 rounded text-xs font-bold mt-2 bg-emerald-500/20 text-emerald-400">0% Achieve</span>
-            </div>
+    <!-- Status Indicator -->
+    <div class="max-w-7xl mx-auto mb-4 flex justify-between items-center text-xs">
+        <span id="statusBadge" class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-yellow-500/10 text-yellow-400 border border-yellow-500/20 font-medium">
+            <span class="w-2 h-2 rounded-full bg-yellow-400 animate-pulse"></span> Connecting to Google Sheets...
+        </span>
+        <span class="text-slate-500">Auto-Synced with Google Sheets</span>
+    </div>
 
-            <div class="bg-slate-800/80 border border-slate-700/80 p-5 rounded-xl shadow-lg">
-                <p class="text-xs font-bold uppercase text-slate-400 tracking-wider">MoM Growth</p>
-                <h3 id="cardMom" class="text-2xl font-black text-emerald-400 mt-2">+0%</h3>
-                <p id="cardMomValue" class="text-xs text-emerald-400 mt-2">↑ +Rp 0</p>
-            </div>
-
-            <div class="bg-slate-800/80 border border-slate-700/80 p-5 rounded-xl shadow-lg">
-                <p class="text-xs font-bold uppercase text-slate-400 tracking-wider">YTD Growth</p>
-                <h3 id="cardYtd" class="text-2xl font-black text-emerald-400 mt-2">+0%</h3>
-                <p id="cardYtdValue" class="text-xs text-emerald-400 mt-2">↑ +Rp 0</p>
-            </div>
+    <!-- KPI Cards -->
+    <div class="max-w-7xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        <div class="bg-slate-800/80 border border-slate-700 p-4 rounded-xl shadow-lg">
+            <h3 class="text-slate-400 text-xs font-bold uppercase">Total Target</h3>
+            <p id="kpiTarget" class="text-2xl font-black text-white mt-1">Rp 0</p>
+            <p id="kpiDsrCount" class="text-slate-400 text-xs mt-2">0 DSR Active</p>
         </div>
-
-        <!-- Chart Section -->
-        <div class="bg-slate-800/60 border border-slate-700 p-5 rounded-xl shadow-lg mb-8">
-            <h2 class="text-sm font-bold text-slate-300 uppercase tracking-wider mb-4 border-l-4 border-sky-500 pl-3">Visualisasi Target vs Actual per DSR</h2>
-            <div class="h-72 md:h-96">
-                <canvas id="salesChart"></canvas>
-            </div>
+        <div class="bg-slate-800/80 border border-slate-700 p-4 rounded-xl shadow-lg">
+            <h3 class="text-slate-400 text-xs font-bold uppercase">Total Actual Sales</h3>
+            <p id="kpiActual" class="text-2xl font-black text-white mt-1">Rp 0</p>
+            <span id="kpiAchieve" class="inline-block mt-2 text-xs font-semibold px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-400">0% Achieve</span>
         </div>
-
-        <!-- Main Data Table -->
-        <div class="bg-slate-800/60 border border-slate-700 rounded-xl shadow-lg overflow-hidden">
-            <div class="p-5 border-b border-slate-700 flex justify-between items-center">
-                <h2 class="text-sm font-bold text-slate-300 uppercase tracking-wider border-l-4 border-sky-500 pl-3">Rincian Performa DSR per Workplace</h2>
-                <span id="statusSync" class="text-xs text-slate-400">Menghubungkan ke Google Sheets...</span>
-            </div>
-            <div class="overflow-x-auto">
-                <table class="w-full text-left text-xs md:text-sm text-slate-300">
-                    <thead class="bg-slate-900 text-slate-400 uppercase font-bold text-[11px] border-b border-slate-700">
-                        <tr>
-                            <th class="py-3.5 px-4">Workplace / DSR Name</th>
-                            <th class="py-3.5 px-4 text-right">Target (Jan-Jul)</th>
-                            <th class="py-3.5 px-4 text-right">Actual</th>
-                            <th class="py-3.5 px-4 text-center">% Achieve</th>
-                            <th class="py-3.5 px-4 text-right">Actual Prev. Month</th>
-                            <th class="py-3.5 px-4 text-center">MoM Growth</th>
-                            <th class="py-3.5 px-4 text-right">Actual Prev. YTD</th>
-                            <th class="py-3.5 px-4 text-center">YTD Growth</th>
-                        </tr>
-                    </thead>
-                    <tbody id="tableBody" class="divide-y divide-slate-700/50">
-                        <!-- Rows injected via JavaScript -->
-                    </tbody>
-                </table>
-            </div>
+        <div class="bg-slate-800/80 border border-slate-700 p-4 rounded-xl shadow-lg">
+            <h3 class="text-slate-400 text-xs font-bold uppercase">MoM Growth (vs Bln Lalu)</h3>
+            <p id="kpiMom" class="text-2xl font-black text-emerald-400 mt-1">0%</p>
+            <p id="kpiMomVal" class="text-slate-400 text-xs mt-2">↑ Rp 0 Growth</p>
+        </div>
+        <div class="bg-slate-800/80 border border-slate-700 p-4 rounded-xl shadow-lg">
+            <h3 class="text-slate-400 text-xs font-bold uppercase">YoY Growth (vs Thn Lalu)</h3>
+            <p id="kpiYoy" class="text-2xl font-black text-emerald-400 mt-1">0%</p>
+            <p id="kpiYoyVal" class="text-slate-400 text-xs mt-2">↑ Rp 0 Growth</p>
         </div>
     </div>
 
-    <!-- JavaScript Live Engine -->
+    <!-- Chart Visualisation -->
+    <div class="max-w-7xl mx-auto bg-slate-800/80 border border-slate-700 p-5 rounded-xl mb-6 shadow-lg">
+        <h2 class="text-sm font-bold text-slate-200 uppercase tracking-wide mb-4">Visualisasi Perbandingan Target vs Actual DSR</h2>
+        <div class="h-64 relative">
+            <canvas id="salesChart"></canvas>
+        </div>
+    </div>
+
+    <!-- Data Table -->
+    <div class="max-w-7xl mx-auto bg-slate-800/80 border border-slate-700 rounded-xl overflow-hidden shadow-lg">
+        <div class="p-4 border-b border-slate-700">
+            <h2 class="text-sm font-bold text-slate-200 uppercase tracking-wide">Rincian Performa DSR per Area</h2>
+        </div>
+        <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs text-slate-300">
+                <thead class="bg-slate-900/80 text-slate-400 uppercase text-[10px] tracking-wider border-b border-slate-700">
+                    <tr>
+                        <th class="p-3">Area / DSR Name</th>
+                        <th class="p-3 text-right">Target</th>
+                        <th class="p-3 text-right">Actual</th>
+                        <th class="p-3 text-center">% Achieve</th>
+                        <th class="p-3 text-right">MoM Growth</th>
+                        <th class="p-3 text-right">YoY Growth</th>
+                    </tr>
+                </thead>
+                <tbody id="dataTableBody" class="divide-y divide-slate-700/50">
+                    <!-- Data dari Google Sheets akan masuk ke sini -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- SCRIPT UTAMA INTEGRASI GOOGLE SHEETS -->
     <script>
-        // Direct Link CSV Google Sheet Anda
+        // LINK GOOGLE SHEETS CSV MILIKMU SUDAH TERPASANG DI SINI:
         const SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQ7ZrrcD9z_Iwj3QWGAHq0usQd20cth9Y8pdfNiuBeWLaX-uqAFlpdZt6J8ggkYx0uCK2cnOJcYzM_5/pub?output=csv';
 
-        let masterData = [];
-        let chartInstance = null;
+        let rawData = [];
+        let salesChartInstance = null;
 
-        function formatRupiah(number) {
-            return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(number || 0);
-        }
+        // Ambil data CSV dari Google Sheets saat pertama kali halaman dimuat
+        document.addEventListener("DOMContentLoaded", () => {
+            fetchGoogleSheetsData();
+        });
 
-        function parseNum(val) {
-            if (!val) return 0;
-            let clean = val.toString().replace(/[^0-9.-]+/g, "");
-            return parseFloat(clean) || 0;
-        }
-
-        function getHeaderValue(row, possibleKeys) {
-            const keys = Object.keys(row);
-            for (let key of keys) {
-                for (let p of possibleKeys) {
-                    if (key.toLowerCase().trim().includes(p.toLowerCase())) {
-                        return row[key];
-                    }
-                }
-            }
-            return '';
-        }
-
-        function loadSheetData() {
+        function fetchGoogleSheetsData() {
             Papa.parse(SHEET_CSV_URL, {
                 download: true,
                 header: true,
                 skipEmptyLines: true,
                 complete: function(results) {
-                    masterData = results.data.map(row => {
-                        const wp = getHeaderValue(row, ['workplace', 'area', 'cabang', 'lokasi']) || 'Unassigned';
-                        const dsr = getHeaderValue(row, ['dsr', 'nama', 'sales', 'agent']) || 'Unknown DSR';
-                        const target = parseNum(getHeaderValue(row, ['target']));
-                        const actual = parseNum(getHeaderValue(row, ['actual', 'pencapaian', 'sales']));
-                        const prevMonth = parseNum(getHeaderValue(row, ['june', 'juni', 'mom', 'prev month', 'sebelumnya']));
-                        const prevYtd = parseNum(getHeaderValue(row, ['ytd 2025', '2025', 'ytd prev', 'lytd']));
-
-                        return { workplace: wp, dsr: dsr, target: target, actual: actual, actualJune: prevMonth, actualYtdPrev: prevYtd };
-                    });
-
-                    populateWorkplaceFilter();
-                    filterAndRender();
-                    document.getElementById('statusSync').innerHTML = '🟢 <span class="text-emerald-400 font-semibold">Live Synced with Google Sheets</span>';
+                    rawData = results.data;
+                    document.getElementById('statusBadge').className = 'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-medium';
+                    document.getElementById('statusBadge').innerHTML = '<span class="w-2 h-2 rounded-full bg-emerald-400"></span> Live Synced with Google Sheets';
+                    applyFilter();
                 },
-                error: function() {
-                    document.getElementById('statusSync').innerHTML = '🔴 <span class="text-rose-400">Gagal mengambil data dari Google Sheets.</span>';
+                error: function(err) {
+                    console.error("Gagal membaca Google Sheets:", err);
+                    document.getElementById('statusBadge').className = 'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-red-500/10 text-red-400 border border-red-500/20 font-medium';
+                    document.getElementById('statusBadge').innerHTML = '❌ Failed to load Google Sheets Data';
                 }
             });
         }
 
-        function populateWorkplaceFilter() {
-            const select = document.getElementById('workplaceFilter');
-            const workplaces = [...new Set(masterData.map(item => item.workplace))].sort();
+        function formatRupiah(number) {
+            return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(number || 0);
+        }
+
+        function cleanNum(val) {
+            if (!val) return 0;
+            return parseFloat(val.toString().replace(/[^0-9.-]+/g, "")) || 0;
+        }
+
+        function applyFilter() {
+            const selectedArea = document.getElementById('areaFilter').value;
             
-            select.innerHTML = '<option value="ALL">Semua Workplace (ALL)</option>';
-            workplaces.forEach(wp => {
-                const opt = document.createElement('option');
-                opt.value = wp;
-                opt.innerText = wp;
-                select.appendChild(opt);
-            });
+            // Filter Data berdasarkan Area
+            const filteredData = selectedArea === 'ALL' 
+                ? rawData 
+                : rawData.filter(item => (item['Area'] || item['Kode Area'] || item['AREA'] || '').trim() === selectedArea);
+
+            updateKPIs(filteredData);
+            updateTable(filteredData);
+            updateChart(filteredData);
         }
 
-        function filterAndRender() {
-            const selectedWp = document.getElementById('workplaceFilter').value;
-            const filtered = selectedWp === 'ALL' ? masterData : masterData.filter(d => d.workplace === selectedWp);
+        function updateKPIs(data) {
+            let totalTarget = 0, totalActual = 0, totalMom = 0, totalYoy = 0;
 
-            let totalTarget = 0, totalActual = 0, totalJune = 0, totalYtdPrev = 0;
-
-            filtered.forEach(d => {
-                totalTarget += d.target;
-                totalActual += d.actual;
-                totalJune += d.actualJune;
-                totalYtdPrev += d.actualYtdPrev;
+            data.forEach(row => {
+                totalTarget += cleanNum(row['Target Sales'] || row['Target'] || 0);
+                totalActual += cleanNum(row['Actual Sales'] || row['Actual'] || 0);
+                totalMom += cleanNum(row['Actual Sales (Bulan Lalu)'] || row['Actual MoM'] || 0);
+                totalYoy += cleanNum(row['Actual Sales (Tahun Lalu)'] || row['Actual YoY'] || 0);
             });
 
-            const achievePct = totalTarget > 0 ? (totalActual / totalTarget) * 100 : 0;
-            const momPct = totalJune > 0 ? ((totalActual - totalJune) / totalJune) * 100 : 0;
-            const ytdPct = totalYtdPrev > 0 ? ((totalActual - totalYtdPrev) / totalYtdPrev) * 100 : 0;
+            const achievePct = totalTarget > 0 ? ((totalActual / totalTarget) * 100).toFixed(1) : 0;
+            const momPct = totalMom > 0 ? (((totalActual - totalMom) / totalMom) * 100).toFixed(1) : 0;
+            const yoyPct = totalYoy > 0 ? (((totalActual - totalYoy) / totalYoy) * 100).toFixed(1) : 0;
 
-            // Update Cards
-            document.getElementById('cardTarget').innerText = formatRupiah(totalTarget);
-            document.getElementById('cardDsrCount').innerText = `${filtered.length} DSR Active`;
-
-            document.getElementById('cardActual').innerText = formatRupiah(totalActual);
-            document.getElementById('cardAchieve').innerText = `${achievePct.toFixed(1)}% Achieve`;
-
-            document.getElementById('cardMom').innerText = `${momPct >= 0 ? '+' : ''}${momPct.toFixed(1)}%`;
-            document.getElementById('cardMomValue').innerText = `${momPct >= 0 ? '↑' : '↓'} ${formatRupiah(totalActual - totalJune)}`;
-
-            document.getElementById('cardYtd').innerText = `${ytdPct >= 0 ? '+' : ''}${ytdPct.toFixed(1)}%`;
-            document.getElementById('cardYtdValue').innerText = `${ytdPct >= 0 ? '↑' : '↓'} ${formatRupiah(totalActual - totalYtdPrev)}`;
-
-            renderTable(filtered, selectedWp);
-            renderChart(filtered);
+            document.getElementById('kpiTarget').innerText = formatRupiah(totalTarget);
+            document.getElementById('kpiDsrCount').innerText = `${data.length} DSR Active`;
+            
+            document.getElementById('kpiActual').innerText = formatRupiah(totalActual);
+            document.getElementById('kpiAchieve').innerText = `${achievePct}% Achieve`;
+            
+            document.getElementById('kpiMom').innerText = `${momPct >= 0 ? '+' : ''}${momPct}%`;
+            document.getElementById('kpiMomVal').innerText = `${momPct >= 0 ? '↑' : '↓'} ${formatRupiah(totalActual - totalMom)} Growth`;
+            
+            document.getElementById('kpiYoy').innerText = `${yoyPct >= 0 ? '+' : ''}${yoyPct}%`;
+            document.getElementById('kpiYoyVal').innerText = `${yoyPct >= 0 ? '↑' : '↓'} ${formatRupiah(totalActual - totalYoy)} Growth`;
         }
 
-        function renderTable(data, selectedWp) {
-            const tbody = document.getElementById('tableBody');
+        function updateTable(data) {
+            const tbody = document.getElementById('dataTableBody');
             tbody.innerHTML = '';
 
-            const workplaces = selectedWp === 'ALL' ? [...new Set(data.map(d => d.workplace))] : [selectedWp];
+            if(data.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" class="p-4 text-center text-slate-500">Tidak ada data ditemukan.</td></tr>`;
+                return;
+            }
 
-            workplaces.forEach(wpName => {
-                const wpItems = data.filter(d => d.workplace === wpName);
-                if (wpItems.length === 0) return;
+            data.forEach(row => {
+                const name = row['Nama DSR'] || row['DSR'] || row['Nama'] || 'Unassigned';
+                const area = row['Area'] || row['Kode Area'] || row['AREA'] || '-';
+                const target = cleanNum(row['Target Sales'] || row['Target'] || 0);
+                const actual = cleanNum(row['Actual Sales'] || row['Actual'] || 0);
+                const mom = cleanNum(row['Actual Sales (Bulan Lalu)'] || row['Actual MoM'] || 0);
+                const yoy = cleanNum(row['Actual Sales (Tahun Lalu)'] || row['Actual YoY'] || 0);
 
-                let subTarget = 0, subActual = 0, subJune = 0, subYtdPrev = 0;
-                wpItems.forEach(i => {
-                    subTarget += i.target; subActual += i.actual; subJune += i.actualJune; subYtdPrev += i.actualYtdPrev;
-                });
+                const achieve = target > 0 ? ((actual / target) * 100).toFixed(1) : 0;
+                const momGrowth = mom > 0 ? (((actual - mom) / mom) * 100).toFixed(1) : 0;
+                const yoyGrowth = yoy > 0 ? (((actual - yoy) / yoy) * 100).toFixed(1) : 0;
 
-                const subAchieve = subTarget > 0 ? (subActual / subTarget) * 100 : 0;
-                const subMomPct = subJune > 0 ? ((subActual - subJune) / subJune) * 100 : 0;
-                const subYtdPct = subYtdPrev > 0 ? ((subActual - subYtdPrev) / subYtdPrev) * 100 : 0;
-
-                // Subtotal Group Header
-                tbody.innerHTML += `
-                    <tr class="bg-sky-950/50 text-sky-400 font-bold border-y border-sky-800/60">
-                        <td class="py-2.5 px-4">📍 WORKPLACE: ${wpName}</td>
-                        <td class="py-2.5 px-4 text-right">${formatRupiah(subTarget)}</td>
-                        <td class="py-2.5 px-4 text-right">${formatRupiah(subActual)}</td>
-                        <td class="py-2.5 px-4 text-center"><span class="px-2 py-0.5 rounded text-xs ${subAchieve >= 100 ? 'bg-emerald-500/20 text-emerald-400' : 'bg-amber-500/20 text-amber-400'}">${subAchieve.toFixed(1)}%</span></td>
-                        <td class="py-2.5 px-4 text-right">${formatRupiah(subJune)}</td>
-                        <td class="py-2.5 px-4 text-center ${subMomPct >= 0 ? 'text-emerald-400' : 'text-rose-400'}">${subMomPct >= 0 ? '+' : ''}${subMomPct.toFixed(1)}%</td>
-                        <td class="py-2.5 px-4 text-right">${formatRupiah(subYtdPrev)}</td>
-                        <td class="py-2.5 px-4 text-center ${subYtdPct >= 0 ? 'text-emerald-400' : 'text-rose-400'}">${subYtdPct >= 0 ? '+' : ''}${subYtdPct.toFixed(1)}%</td>
-                    </tr>
+                const tr = document.createElement('tr');
+                tr.className = 'hover:bg-slate-700/30 transition';
+                tr.innerHTML = `
+                    <td class="p-3 font-semibold text-white">
+                        ${name} <span class="text-[10px] text-slate-400 font-normal border border-slate-600 rounded px-1.5 py-0.2 ml-1">${area}</span>
+                    </td>
+                    <td class="p-3 text-right">${formatRupiah(target)}</td>
+                    <td class="p-3 text-right font-bold text-white">${formatRupiah(actual)}</td>
+                    <td class="p-3 text-center">
+                        <span class="px-2 py-0.5 rounded text-[10px] font-bold ${achieve >= 100 ? 'bg-emerald-500/20 text-emerald-400' : 'bg-amber-500/20 text-amber-400'}">
+                            ${achieve}%
+                        </span>
+                    </td>
+                    <td class="p-3 text-right font-medium ${momGrowth >= 0 ? 'text-emerald-400' : 'text-rose-400'}">
+                        ${momGrowth >= 0 ? '+' : ''}${momGrowth}%
+                    </td>
+                    <td class="p-3 text-right font-medium ${yoyGrowth >= 0 ? 'text-emerald-400' : 'text-rose-400'}">
+                        ${yoyGrowth >= 0 ? '+' : ''}${yoyGrowth}%
+                    </td>
                 `;
-
-                // Individual DSR Rows
-                wpItems.forEach(item => {
-                    const ach = item.target > 0 ? (item.actual / item.target) * 100 : 0;
-                    const mom = item.actualJune > 0 ? ((item.actual - item.actualJune) / item.actualJune) * 100 : 0;
-                    const ytd = item.actualYtdPrev > 0 ? ((item.actual - item.actualYtdPrev) / item.actualYtdPrev) * 100 : 0;
-
-                    tbody.innerHTML += `
-                        <tr class="hover:bg-slate-800/40 transition">
-                            <td class="py-2.5 px-4 pl-8 text-slate-200">👤 ${item.dsr}</td>
-                            <td class="py-2.5 px-4 text-right font-mono text-slate-400">${formatRupiah(item.target)}</td>
-                            <td class="py-2.5 px-4 text-right font-mono font-medium text-slate-100">${formatRupiah(item.actual)}</td>
-                            <td class="py-2.5 px-4 text-center font-bold">
-                                <span class="px-2 py-0.5 rounded text-xs ${ach >= 100 ? 'bg-emerald-500/20 text-emerald-400' : 'bg-rose-500/20 text-rose-400'}">${ach.toFixed(1)}%</span>
-                            </td>
-                            <td class="py-2.5 px-4 text-right font-mono text-slate-400">${formatRupiah(item.actualJune)}</td>
-                            <td class="py-2.5 px-4 text-center font-semibold text-xs ${mom >= 0 ? 'text-emerald-400' : 'text-rose-400'}">${mom >= 0 ? '+' : ''}${mom.toFixed(1)}%</td>
-                            <td class="py-2.5 px-4 text-right font-mono text-slate-400">${formatRupiah(item.actualYtdPrev)}</td>
-                            <td class="py-2.5 px-4 text-center font-semibold text-xs ${ytd >= 0 ? 'text-emerald-400' : 'text-rose-400'}">${ytd >= 0 ? '+' : ''}${ytd.toFixed(1)}%</td>
-                        </tr>
-                    `;
-                });
+                tbody.appendChild(tr);
             });
         }
 
-        function renderChart(data) {
-            const ctx = document.getElementById('salesChart').getContext('2d');
-            if (chartInstance) chartInstance.destroy();
+        function updateChart(data) {
+            const labels = data.map(r => r['Nama DSR'] || r['DSR'] || r['Nama'] || 'DSR');
+            const targetData = data.map(r => cleanNum(r['Target Sales'] || r['Target'] || 0) / 1000000); // dalam juta
+            const actualData = data.map(r => cleanNum(r['Actual Sales'] || r['Actual'] || 0) / 1000000); // dalam juta
 
-            chartInstance = new Chart(ctx, {
+            const ctx = document.getElementById('salesChart').getContext('2d');
+
+            if (salesChartInstance) {
+                salesChartInstance.destroy();
+            }
+
+            salesChartInstance = new Chart(ctx, {
                 type: 'bar',
                 data: {
-                    labels: data.map(d => d.dsr),
+                    labels: labels,
                     datasets: [
                         {
-                            label: 'Target Jan-Jul (Juta Rp)',
-                            data: data.map(d => d.target / 1000000),
-                            backgroundColor: 'rgba(148, 163, 184, 0.4)',
-                            borderColor: 'rgba(148, 163, 184, 1)',
+                            label: 'Target (Juta Rp)',
+                            data: targetData,
+                            backgroundColor: 'rgba(100, 116, 139, 0.5)',
+                            borderColor: 'rgba(100, 116, 139, 1)',
                             borderWidth: 1
                         },
                         {
                             label: 'Actual Sales (Juta Rp)',
-                            data: data.map(d => d.actual / 1000000),
-                            backgroundColor: 'rgba(2, 132, 199, 0.8)',
-                            borderColor: 'rgba(56, 189, 248, 1)',
+                            data: actualData,
+                            backgroundColor: 'rgba(14, 165, 233, 0.8)',
+                            borderColor: 'rgba(14, 165, 233, 1)',
                             borderWidth: 1
                         }
                     ]
@@ -285,16 +258,16 @@
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    scales: {
-                        x: { ticks: { color: '#94a3b8', font: { size: 10 } }, grid: { display: false } },
-                        y: { ticks: { color: '#94a3b8' }, grid: { color: 'rgba(51, 65, 85, 0.5)' } }
+                    plugins: {
+                        legend: { labels: { color: '#94a3b8', font: { size: 11 } } }
                     },
-                    plugins: { legend: { labels: { color: '#f8fafc' } } }
+                    scales: {
+                        x: { ticks: { color: '#94a3b8', font: { size: 10 } }, grid: { color: '#334155' } },
+                        y: { ticks: { color: '#94a3b8', font: { size: 10 } }, grid: { color: '#334155' } }
+                    }
                 }
             });
         }
-
-        window.onload = loadSheetData;
     </script>
 </body>
 </html>
