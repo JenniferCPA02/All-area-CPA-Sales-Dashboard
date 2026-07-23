@@ -130,7 +130,7 @@
         .chart-container {
             padding: 20px;
             position: relative;
-            height: 350px;
+            height: 380px;
         }
 
         /* TABLE STYLES */
@@ -209,6 +209,8 @@
             height: 14px !important;
             min-width: 14px !important;
             min-height: 14px !important;
+            max-width: 14px !important;
+            max-height: 14px !important;
             stroke: currentColor;
             stroke-width: 2.5;
             fill: none;
@@ -358,6 +360,13 @@
             return new Intl.NumberFormat('id-ID', { maximumFractionDigits: 1 }).format(num || 0);
         }
 
+        function cleanAreaName(name) {
+            if (!name) return 'AREA';
+            let cleaned = name.replace(/^PT\s+CAHAYA\s+PENGAJARAN\s+ABADI-?/i, '').trim();
+            if (!cleaned) cleaned = name;
+            return cleaned;
+        }
+
         function populateWorkplaceFilter() {
             const select = document.getElementById('workplaceFilter');
             const workplaces = [...new Set(activeDataOnly.map(r => (r['Workplace Name'] || '').trim()).filter(Boolean))];
@@ -382,7 +391,6 @@
             updateSmartChart(currentFilteredData, selectedWp);
         }
 
-        // FUNGSI SUMMARY KPI EXECUTIVE
         function updateSummaryCards(data) {
             let totalTarget = 0;
             let totalActual = 0;
@@ -509,7 +517,6 @@
             }
         }
 
-        // SMART CHART ADAPTIF (ALL = BY AREA, FILTERED = BY DSR)
         function updateSmartChart(data, selectedWorkplace) {
             if (typeof ChartDataLabels !== 'undefined') {
                 Chart.register(ChartDataLabels);
@@ -522,24 +529,28 @@
             if (selectedWorkplace === 'ALL') {
                 document.getElementById('chartHeaderTitle').innerText = 'GRAFIK TARGET VS ACTUAL PER WORKPLACE / AREA (JUL 26) - DALAM KL';
                 
-                // Grouping Agregat Data per Workplace
                 const grouped = {};
                 data.forEach(row => {
-                    const wp = (row['Workplace Name'] || 'Unknown').trim();
-                    if (!grouped[wp]) {
-                        grouped[wp] = { target: 0, actual: 0 };
+                    const rawWp = (row['Workplace Name'] || 'Unknown').trim();
+                    if (!grouped[rawWp]) {
+                        grouped[rawWp] = { target: 0, actual: 0 };
                     }
-                    grouped[wp].target += cleanNum(row['Target Jul 26']);
-                    grouped[wp].actual += cleanNum(row['Actual Jul 26']);
+                    grouped[rawWp].target += cleanNum(row['Target Jul 26']);
+                    grouped[rawWp].actual += cleanNum(row['Actual Jul 26']);
                 });
 
-                labels = Object.keys(grouped);
-                targetDataKL = labels.map(wp => grouped[wp].target / 1000);
-                actualDataKL = labels.map(wp => grouped[wp].actual / 1000);
+                // Text wrapping & pembersihan nama PT
+                labels = Object.keys(grouped).map(rawWp => {
+                    const shortName = cleanAreaName(rawWp);
+                    return shortName.split(' '); 
+                });
+
+                targetDataKL = Object.keys(grouped).map(wp => grouped[wp].target / 1000);
+                actualDataKL = Object.keys(grouped).map(wp => grouped[wp].actual / 1000);
             } else {
                 document.getElementById('chartHeaderTitle').innerText = `GRAFIK TARGET VS ACTUAL DSR - AREA: ${selectedWorkplace} (DALAM KL)`;
                 
-                labels = data.map(r => r['Sales Name'] || 'DSR');
+                labels = data.map(r => (r['Sales Name'] || 'DSR').split(' '));
                 targetDataKL = data.map(r => cleanNum(r['Target Jul 26']) / 1000);
                 actualDataKL = data.map(r => cleanNum(r['Actual Jul 26']) / 1000);
             }
@@ -576,13 +587,14 @@
                     maintainAspectRatio: false,
                     layout: {
                         padding: {
-                            top: 25
+                            top: 35
                         }
                     },
                     plugins: {
                         legend: { 
                             labels: { color: '#94a3b8', font: { size: 11 } } 
                         },
+                        // MENAMPILKAN VOLUME KL & PERCENTAGE ACHIEVEMENT
                         datalabels: {
                             anchor: 'end',
                             align: 'top',
@@ -591,15 +603,28 @@
                                 weight: 'bold',
                                 size: 10
                             },
-                            formatter: function(value) {
+                            formatter: function(value, context) {
                                 if (value === 0) return '';
+                                
+                                // Jika ini bar Actual (datasetIndex == 1), tampilkan volume + % Achievement
+                                if (context.datasetIndex === 1) {
+                                    const targetVal = context.chart.data.datasets[0].data[context.dataIndex];
+                                    const pct = targetVal > 0 ? ((value / targetVal) * 100).toFixed(0) : 0;
+                                    return [formatNum(value) + ' KL', `(${pct}%)`];
+                                }
+                                
                                 return formatNum(value) + ' KL';
                             }
                         }
                     },
                     scales: {
                         x: { 
-                            ticks: { color: '#94a3b8', font: { size: 10 } }, 
+                            ticks: { 
+                                color: '#94a3b8', 
+                                font: { size: 10 },
+                                maxRotation: 0,
+                                minRotation: 0
+                            }, 
                             grid: { display: false }
                         },
                         y: { 
