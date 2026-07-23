@@ -318,11 +318,11 @@
 <body>
 
     <div class="container">
-        <!-- HEADER WITH LOGOS & UPDATED TITLE -->
+        <!-- HEADER WITH LOGOS (UPDATED FILE NAMES) -->
         <div class="header">
             <!-- LOGO SHELL LUBRICANTS (KIRI) -->
             <div class="logo-box">
-                <img src="logo-shell.png" alt="Shell Lubricants Logo">
+                <img src="LOGO_SHELL.png" alt="Shell Lubricants Logo">
             </div>
 
             <!-- JUDUL HEADER (TENGAH) -->
@@ -333,7 +333,7 @@
 
             <!-- LOGO PT CAHAYA PENGAJARAN ABADI (KANAN) -->
             <div class="logo-box">
-                <img src="logo-cpa.png" alt="PT Cahaya Pengajaran Abadi Logo">
+                <img src="LOGO_CPA.png" alt="PT Cahaya Pengajaran Abadi Logo">
             </div>
         </div>
 
@@ -439,6 +439,7 @@
 
     <!-- SCRIPT FUNCTIONALITY -->
     <script>
+        // URL Google Sheets Publik Milik Anda
         const SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQ7ZrrcD9z_Iwj3QWGAHq0usQd20cth9Y8pdfNiuBeWLaX-uqAFlpdZt6J8ggkYx0uCK2cnOJcYzM_5/pub?output=csv';
 
         const AREA_SHORT_NAMES = {
@@ -474,7 +475,7 @@
                 },
                 error: function(err) {
                     console.error("Gagal membaca Google Sheets:", err);
-                    document.getElementById('dataTableBody').innerHTML = `<tr><td colspan="12" class="text-center" style="color:#e74c3c;">Gagal mengambil data dari Google Sheets.</td></tr>`;
+                    document.getElementById('dataTableBody').innerHTML = `<tr><td colspan="12" class="text-center" style="color:#e74c3c;">Gagal mengambil data dari Google Sheets. Silakan periksa kembali link spreadsheet.</td></tr>`;
                 }
             });
         }
