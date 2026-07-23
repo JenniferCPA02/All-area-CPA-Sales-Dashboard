@@ -4,12 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Summary Report Sell Out DSR</title>
-    <!-- Chart.js & PapaParse -->
+    <!-- Chart.js & Plugin Data Labels -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
+    <!-- PapaParse CDN -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
     
     <style>
-        /* BASE RESET & STYLES (PURE CSS) */
+        /* BASE RESET & STYLES (PURE CSS - ANTI RUSAK) */
         * {
             box-sizing: border-box;
             margin: 0;
@@ -87,6 +89,13 @@
             letter-spacing: 0.5px;
         }
 
+        /* CHART CONTAINER */
+        .chart-container {
+            padding: 20px;
+            position: relative;
+            height: 320px;
+        }
+
         /* TABLE STYLES */
         .table-responsive {
             width: 100%;
@@ -132,7 +141,7 @@
         .badge-red { background-color: rgba(243, 24, 82, 0.2); color: #f87171; }
         .badge-blue { background-color: rgba(59, 130, 246, 0.2); color: #60a5fa; }
 
-        /* SHOW MORE BUTTON & ARROW ICON FIX */
+        /* SHOW MORE BUTTON & ARROW FIX */
         .toggle-container {
             padding: 14px;
             text-align: center;
@@ -158,7 +167,6 @@
             background-color: #334155;
             color: #93c5fd;
         }
-        /* PENTING: Mencegah SVG membesar raksasa */
         .icon-arrow {
             width: 14px !important;
             height: 14px !important;
@@ -194,10 +202,20 @@
             </div>
         </div>
 
+        <!-- Grafik Visualisasi -->
+        <div class="card">
+            <div class="card-header">
+                GRAFIK TARGET VS ACTUAL SALES DSR ACTIVE (JUL 26) - DALAM KL
+            </div>
+            <div class="chart-container">
+                <canvas id="salesChart"></canvas>
+            </div>
+        </div>
+
         <!-- Tabel Data -->
         <div class="card">
             <div class="card-header">
-                Daftar DSR Active (Top 10 Default)
+                DAFTAR DSR ACTIVE (TOP 10 DEFAULT)
             </div>
             <div class="table-responsive">
                 <table>
@@ -244,6 +262,7 @@
         let activeDataOnly = [];
         let currentFilteredData = [];
         let isExpanded = false;
+        let salesChartInstance = null;
 
         document.addEventListener("DOMContentLoaded", () => {
             fetchGoogleSheetsData();
@@ -255,7 +274,7 @@
                 header: true,
                 skipEmptyLines: true,
                 complete: function(results) {
-                    // Filter khusus Active DSR saja
+                    // Filter hanya Active DSR == 'YES'
                     activeDataOnly = results.data.filter(row => {
                         const status = (row['Active'] || '').toString().trim().toUpperCase();
                         return status === 'YES';
@@ -301,6 +320,7 @@
                 : activeDataOnly.filter(item => (item['Workplace Name'] || '').trim() === selectedWp);
 
             updateTable(currentFilteredData);
+            updateChart(currentFilteredData);
         }
 
         function updateTable(data) {
@@ -313,7 +333,6 @@
                 return;
             }
 
-            // Potong data jika belum di-expand (Top 10)
             const displayData = isExpanded ? data : data.slice(0, 10);
 
             displayData.forEach(row => {
@@ -335,7 +354,6 @@
                 const prevYtd = cleanNum(row['Prev YTD (L)']);
                 const ytdGrowth = prevYtd > 0 ? (((actualYtd - prevYtd) / prevYtd) * 100).toFixed(0) : cleanNum(row['YTD Growth']);
 
-                // Badge colors
                 const mBadgeClass = mAchieve >= 100 ? 'badge-green' : (mAchieve >= 50 ? 'badge-amber' : 'badge-red');
                 const momColor = momGrowth >= 0 ? '#34d399' : '#f87171';
                 const ytdGrowthColor = ytdGrowth >= 0 ? '#34d399' : '#f87171';
@@ -371,7 +389,6 @@
                 tbody.appendChild(tr);
             });
 
-            // Sembunyikan atau tampilkan tombol jika data > 10
             const toggleContainer = document.getElementById('toggleShowMoreContainer');
             if (data.length > 10) {
                 toggleContainer.classList.remove('hidden');
@@ -397,6 +414,90 @@
                 textEl.innerText = `Tampilkan Seluruh DSR (${totalCount - 10} DSR lainnya)`;
                 iconEl.classList.remove('rotate');
             }
+        }
+
+        function updateChart(data) {
+            // Register Data Labels Plugin
+            if (typeof ChartDataLabels !== 'undefined') {
+                Chart.register(ChartDataLabels);
+            }
+
+            const labels = data.map(r => r['Sales Name'] || 'DSR');
+            
+            // Konversi dari Liter (L) ke Kiloliter (KL) -> dibagi 1000
+            const targetDataKL = data.map(r => cleanNum(r['Target Jul 26']) / 1000);
+            const actualDataKL = data.map(r => cleanNum(r['Actual Jul 26']) / 1000);
+
+            const ctx = document.getElementById('salesChart').getContext('2d');
+
+            if (salesChartInstance) {
+                salesChartInstance.destroy();
+            }
+
+            salesChartInstance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: 'Target Jul 26 (KL)',
+                            data: targetDataKL,
+                            backgroundColor: 'rgba(100, 116, 139, 0.7)',
+                            borderColor: 'rgba(100, 116, 139, 1)',
+                            borderWidth: 1
+                        },
+                        {
+                            label: 'Actual Jul 26 (KL)',
+                            data: actualDataKL,
+                            backgroundColor: 'rgba(14, 165, 233, 0.85)',
+                            borderColor: 'rgba(14, 165, 233, 1)',
+                            borderWidth: 1
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    layout: {
+                        padding: {
+                            top: 25 // Ruang di atas grafik agar angka tidak terpotong
+                        }
+                    },
+                    plugins: {
+                        legend: { 
+                            labels: { color: '#94a3b8', font: { size: 11 } } 
+                        },
+                        // MENAMPILKAN ANGKA DI ATAS BATANG GRAFIK
+                        datalabels: {
+                            anchor: 'end',
+                            align: 'top',
+                            color: '#f8fafc',
+                            font: {
+                                weight: 'bold',
+                                size: 10
+                            },
+                            formatter: function(value) {
+                                if (value === 0) return '';
+                                return formatNum(value) + ' KL';
+                            }
+                        }
+                    },
+                    scales: {
+                        x: { 
+                            ticks: { color: '#94a3b8', font: { size: 10 } }, 
+                            grid: { display: false } // Menghilangkan garis background X
+                        },
+                        y: { 
+                            ticks: { 
+                                color: '#94a3b8', 
+                                font: { size: 10 },
+                                callback: function(value) { return value + ' KL'; }
+                            }, 
+                            grid: { display: false } // Menghilangkan garis background Y
+                        }
+                    }
+                }
+            });
         }
     </script>
 </body>
