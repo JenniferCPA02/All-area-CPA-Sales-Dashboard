@@ -307,6 +307,21 @@
         }
         .hidden { display: none !important; }
 
+        /* FOOTER / NAMA DI TENGAH BAWAH */
+        .footer {
+            margin-top: 32px;
+            margin-bottom: 12px;
+            text-align: center;
+            color: #8d99ae;
+            font-size: 12px;
+            font-weight: 500;
+            letter-spacing: 0.5px;
+        }
+        .footer strong {
+            color: #d4af37; /* Warna Gold */
+            font-weight: 700;
+        }
+
         @media (max-width: 768px) {
             .header {
                 flex-direction: column;
@@ -318,20 +333,15 @@
 <body>
 
     <div class="container">
-        <!-- HEADER WITH LOGOS (UPDATED FILE NAMES) -->
+        <!-- HEADER WITH LOGOS -->
         <div class="header">
-            <!-- LOGO SHELL LUBRICANTS (KIRI) -->
             <div class="logo-box">
                 <img src="LOGO_SHELL.png" alt="Shell Lubricants Logo">
             </div>
-
-            <!-- JUDUL HEADER (TENGAH) -->
             <div class="header-center">
                 <h1>Sales Performance</h1>
                 <p>Summary Report Sell Out DSR | Real-Time Operational Dashboard</p>
             </div>
-
-            <!-- LOGO PT CAHAYA PENGAJARAN ABADI (KANAN) -->
             <div class="logo-box">
                 <img src="LOGO_CPA.png" alt="PT Cahaya Pengajaran Abadi Logo">
             </div>
@@ -435,11 +445,15 @@
                 </button>
             </div>
         </div>
+
+        <!-- FOOTER DENGAN NAMA DI TENGAH BAWAH -->
+        <div class="footer">
+            Developed & Managed by <strong>Jennifer</strong> | PT Cahaya Pengajaran Abadi
+        </div>
     </div>
 
     <!-- SCRIPT FUNCTIONALITY -->
     <script>
-        // URL Google Sheets Publik Milik Anda
         const SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQ7ZrrcD9z_Iwj3QWGAHq0usQd20cth9Y8pdfNiuBeWLaX-uqAFlpdZt6J8ggkYx0uCK2cnOJcYzM_5/pub?output=csv';
 
         const AREA_SHORT_NAMES = {
