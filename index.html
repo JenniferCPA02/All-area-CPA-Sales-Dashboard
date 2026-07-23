@@ -3,12 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DSR Volume Performance Dashboard</title>
-    <!-- Tailwind CSS CDN -->
+    <title>DSR Volume Performance Summary</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Chart.js CDN -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <!-- PapaParse CDN -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
 </head>
 <body class="bg-slate-900 text-slate-100 min-h-screen p-4 md:p-6 font-sans">
@@ -17,11 +14,9 @@
     <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4 border-b border-slate-700 pb-4">
         <div>
             <h1 class="text-2xl font-bold tracking-wide text-white flex items-center gap-2">
-                📊 DSR VOLUME PERFORMANCE DASHBOARD
+                📊 DSR VOLUME PERFORMANCE SUMMARY
             </h1>
-            <p class="text-slate-400 text-sm mt-1">
-                Volume Tracking in Liters (L) | Workplace & DSR Analysis
-            </p>
+            <p class="text-slate-400 text-sm mt-1">Summary Performa Volume per DSR Active (Litres)</p>
         </div>
         <div class="flex items-center gap-3">
             <label for="workplaceFilter" class="text-xs uppercase tracking-wider text-slate-400 font-semibold">Filter Workplace:</label>
@@ -31,15 +26,15 @@
         </div>
     </div>
 
-    <!-- Status Indicator -->
+    <!-- Status Badge -->
     <div class="max-w-7xl mx-auto mb-4 flex justify-between items-center text-xs">
         <span id="statusBadge" class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-yellow-500/10 text-yellow-400 border border-yellow-500/20 font-medium">
-            <span class="w-2 h-2 rounded-full bg-yellow-400 animate-pulse"></span> Connecting to Google Sheets...
+            <span class="w-2 h-2 rounded-full bg-yellow-400 animate-pulse"></span> Mengolah Data Google Sheets...
         </span>
-        <span class="text-slate-500">Auto-Synced with Google Sheets</span>
+        <span class="text-slate-500">Auto-Grouped by DSR</span>
     </div>
 
-    <!-- KPI Cards -->
+    <!-- KPI Summary Cards -->
     <div class="max-w-7xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         <div class="bg-slate-800/80 border border-slate-700 p-4 rounded-xl shadow-lg">
             <h3 class="text-slate-400 text-xs font-bold uppercase">Total Target Volume</h3>
@@ -54,45 +49,44 @@
         <div class="bg-slate-800/80 border border-slate-700 p-4 rounded-xl shadow-lg">
             <h3 class="text-slate-400 text-xs font-bold uppercase">MoM Growth</h3>
             <p id="kpiMom" class="text-2xl font-black text-emerald-400 mt-1">0%</p>
-            <p id="kpiMomVal" class="text-slate-400 text-xs mt-2">↑ 0 L Growth</p>
+            <p id="kpiMomVal" class="text-slate-400 text-xs mt-2">0 L</p>
         </div>
         <div class="bg-slate-800/80 border border-slate-700 p-4 rounded-xl shadow-lg">
             <h3 class="text-slate-400 text-xs font-bold uppercase">YTD Growth</h3>
             <p id="kpiYoy" class="text-2xl font-black text-emerald-400 mt-1">0%</p>
-            <p id="kpiYoyVal" class="text-slate-400 text-xs mt-2">↑ 0 L Growth</p>
+            <p id="kpiYoyVal" class="text-slate-400 text-xs mt-2">0 L</p>
         </div>
     </div>
 
-    <!-- Chart Visualisation -->
+    <!-- Chart -->
     <div class="max-w-7xl mx-auto bg-slate-800/80 border border-slate-700 p-5 rounded-xl mb-6 shadow-lg">
-        <h2 class="text-sm font-bold text-slate-200 uppercase tracking-wide mb-4">Visualisasi Target vs Actual Volume (Liter)</h2>
-        <div class="h-64 relative">
+        <h2 class="text-sm font-bold text-slate-200 uppercase tracking-wide mb-4">Grafik Target vs Actual per DSR</h2>
+        <div class="h-72 relative">
             <canvas id="salesChart"></canvas>
         </div>
     </div>
 
-    <!-- Data Table -->
+    <!-- Summary Table -->
     <div class="max-w-7xl mx-auto bg-slate-800/80 border border-slate-700 rounded-xl overflow-hidden shadow-lg">
         <div class="p-4 border-b border-slate-700">
-            <h2 class="text-sm font-bold text-slate-200 uppercase tracking-wide">Rincian Performa Volume per DSR & Workplace</h2>
+            <h2 class="text-sm font-bold text-slate-200 uppercase tracking-wide">Summary Volume per DSR Active</h2>
         </div>
         <div class="overflow-x-auto">
             <table class="w-full text-left text-xs text-slate-300">
                 <thead class="bg-slate-900/80 text-slate-400 uppercase text-[10px] tracking-wider border-b border-slate-700">
                     <tr>
-                        <th class="p-3">Workplace / DSR Name</th>
+                        <th class="p-3">Nama DSR</th>
+                        <th class="p-3">Workplace</th>
                         <th class="p-3 text-right">Target (L)</th>
                         <th class="p-3 text-right">Actual (L)</th>
                         <th class="p-3 text-center">% Achieve</th>
-                        <th class="p-3 text-right">Actual Prev Month (L)</th>
+                        <th class="p-3 text-right">Prev Month (L)</th>
                         <th class="p-3 text-center">MoM Growth</th>
-                        <th class="p-3 text-right">Actual Prev YTD (L)</th>
+                        <th class="p-3 text-right">Prev YTD (L)</th>
                         <th class="p-3 text-center">YTD Growth</th>
                     </tr>
                 </thead>
-                <tbody id="dataTableBody" class="divide-y divide-slate-700/50">
-                    <!-- Data injected here -->
-                </tbody>
+                <tbody id="dataTableBody" class="divide-y divide-slate-700/50"></tbody>
             </table>
         </div>
     </div>
@@ -100,34 +94,10 @@
     <script>
         const SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQ7ZrrcD9z_Iwj3QWGAHq0usQd20cth9Y8pdfNiuBeWLaX-uqAFlpdZt6J8ggkYx0uCK2cnOJcYzM_5/pub?output=csv';
 
-        let rawData = [];
+        let dsrSummaryData = [];
         let salesChartInstance = null;
 
-        document.addEventListener("DOMContentLoaded", fetchGoogleSheetsData);
-
-        function fetchGoogleSheetsData() {
-            Papa.parse(SHEET_CSV_URL, {
-                download: true,
-                header: true,
-                skipEmptyLines: true,
-                complete: function(results) {
-                    rawData = results.data;
-                    document.getElementById('statusBadge').className = 'inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-medium';
-                    document.getElementById('statusBadge').innerHTML = '🟢 Live Synced with Google Sheets';
-                    
-                    populateFilterOptions();
-                    applyFilter();
-                },
-                error: function(err) {
-                    document.getElementById('statusBadge').className = 'inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-rose-500/10 text-rose-400 border border-rose-500/20 font-medium';
-                    document.getElementById('statusBadge').innerHTML = '❌ Failed to load Google Sheets Data';
-                }
-            });
-        }
-
-        function formatLiter(number) {
-            return new Intl.NumberFormat('id-ID', { maximumFractionDigits: 0 }).format(number || 0) + ' L';
-        }
+        document.addEventListener("DOMContentLoaded", fetchAndProcessData);
 
         function cleanNum(val) {
             if (!val) return 0;
@@ -135,27 +105,74 @@
             return parseFloat(str) || 0;
         }
 
-        function getValue(row, possibleKeys) {
-            for (let key of possibleKeys) {
-                for (let actualKey in row) {
-                    if (actualKey.trim().toLowerCase().includes(key.toLowerCase())) {
-                        return row[actualKey];
+        // Fungsi fleksibel mencari kolom header
+        function getProp(row, keywords) {
+            for (let key in row) {
+                let cleanKey = key.trim().toLowerCase();
+                for (let kw of keywords) {
+                    if (cleanKey.includes(kw.toLowerCase())) {
+                        return row[key];
                     }
                 }
             }
             return '';
         }
 
+        function fetchAndProcessData() {
+            Papa.parse(SHEET_CSV_URL, {
+                download: true,
+                header: true,
+                skipEmptyLines: true,
+                complete: function(results) {
+                    const rows = results.data;
+                    const grouped = {};
+
+                    // PROSES AGREGASI / GROUPING BY DSR
+                    rows.forEach(row => {
+                        let dsrName = getProp(row, ['dsr', 'nama', 'salesman', 'agent', 'employee']) || 'Unknown DSR';
+                        let workplace = getProp(row, ['workplace', 'area', 'cabang', 'lokasi']) || 'Unassigned';
+                        
+                        dsrName = dsrName.trim();
+                        if (!dsrName || dsrName === 'Unknown DSR') return;
+
+                        if (!grouped[dsrName]) {
+                            grouped[dsrName] = {
+                                dsr: dsrName,
+                                workplace: workplace,
+                                target: 0,
+                                actual: 0,
+                                prevMonth: 0,
+                                prevYtd: 0
+                            };
+                        }
+
+                        // Mengakumulasi angka transaksi harian menjadi total
+                        grouped[dsrName].target += cleanNum(getProp(row, ['target']));
+                        grouped[dsrName].actual += cleanNum(getProp(row, ['actual', 'volume', 'qty', 'liter', 'sales']));
+                        grouped[dsrName].prevMonth += cleanNum(getProp(row, ['june', 'juni', 'prev month', 'bln lalu']));
+                        grouped[dsrName].prevYtd += cleanNum(getProp(row, ['2025', 'prev ytd', 'thn lalu']));
+                    });
+
+                    dsrSummaryData = Object.values(grouped);
+
+                    document.getElementById('statusBadge').className = 'inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-medium';
+                    document.getElementById('statusBadge').innerHTML = '🟢 Live Synced & Grouped';
+
+                    populateFilterOptions();
+                    applyFilter();
+                },
+                error: function() {
+                    document.getElementById('statusBadge').className = 'inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-rose-500/10 text-rose-400 border border-rose-500/20 font-medium';
+                    document.getElementById('statusBadge').innerHTML = '❌ Gagal Mengambil Data Google Sheets';
+                }
+            });
+        }
+
         function populateFilterOptions() {
             const select = document.getElementById('workplaceFilter');
             select.innerHTML = '<option value="ALL">Semua Workplace (ALL)</option>';
             
-            let workplaces = new Set();
-            rawData.forEach(row => {
-                let wp = getValue(row, ['workplace', 'area', 'cabang', 'lokasi']);
-                if (wp) workplaces.add(wp.trim());
-            });
-
+            let workplaces = [...new Set(dsrSummaryData.map(d => d.workplace))].sort();
             workplaces.forEach(wp => {
                 let opt = document.createElement('option');
                 opt.value = wp;
@@ -166,89 +183,80 @@
 
         function applyFilter() {
             const selectedWp = document.getElementById('workplaceFilter').value;
-            
-            const filteredData = selectedWp === 'ALL' 
-                ? rawData 
-                : rawData.filter(item => getValue(item, ['workplace', 'area', 'cabang']).trim() === selectedWp);
+            const filtered = selectedWp === 'ALL' 
+                ? dsrSummaryData 
+                : dsrSummaryData.filter(d => d.workplace === selectedWp);
 
-            updateKPIs(filteredData);
-            updateTable(filteredData);
-            updateChart(filteredData);
+            updateKPIs(filtered);
+            updateTable(filtered);
+            updateChart(filtered);
+        }
+
+        function formatLiter(num) {
+            return new Intl.NumberFormat('id-ID', { maximumFractionDigits: 0 }).format(num || 0) + ' L';
         }
 
         function updateKPIs(data) {
-            let totalTarget = 0, totalActual = 0, totalMom = 0, totalYoy = 0;
+            let totalTarget = 0, totalActual = 0, totalPrevMonth = 0, totalPrevYtd = 0;
 
-            data.forEach(row => {
-                totalTarget += cleanNum(getValue(row, ['target']));
-                totalActual += cleanNum(getValue(row, ['actual july', 'actual', 'pencapaian']));
-                totalMom += cleanNum(getValue(row, ['actual june', 'juni', 'june', 'prev month']));
-                totalYoy += cleanNum(getValue(row, ['ytd 2025', '2025', 'prev ytd']));
+            data.forEach(d => {
+                totalTarget += d.target;
+                totalActual += d.actual;
+                totalPrevMonth += d.prevMonth;
+                totalPrevYtd += d.prevYtd;
             });
 
             const achievePct = totalTarget > 0 ? ((totalActual / totalTarget) * 100).toFixed(1) : 0;
-            const momPct = totalMom > 0 ? (((totalActual - totalMom) / totalMom) * 100).toFixed(1) : 0;
-            const yoyPct = totalYoy > 0 ? (((totalActual - totalYoy) / totalYoy) * 100).toFixed(1) : 0;
+            const momPct = totalPrevMonth > 0 ? (((totalActual - totalPrevMonth) / totalPrevMonth) * 100).toFixed(1) : 0;
+            const ytdPct = totalPrevYtd > 0 ? (((totalActual - totalPrevYtd) / totalPrevYtd) * 100).toFixed(1) : 0;
 
             document.getElementById('kpiTarget').innerText = formatLiter(totalTarget);
             document.getElementById('kpiDsrCount').innerText = `${data.length} DSR Active`;
             
             document.getElementById('kpiActual').innerText = formatLiter(totalActual);
             document.getElementById('kpiAchieve').innerText = `${achievePct}% Achieve`;
-            
+
             document.getElementById('kpiMom').innerText = `${momPct >= 0 ? '+' : ''}${momPct}%`;
-            document.getElementById('kpiMomVal').innerText = `${momPct >= 0 ? '↑' : '↓'} ${formatLiter(totalActual - totalMom)} Growth`;
-            
-            document.getElementById('kpiYoy').innerText = `${yoyPct >= 0 ? '+' : ''}${yoyPct}%`;
-            document.getElementById('kpiYoyVal').innerText = `${yoyPct >= 0 ? '↑' : '↓'} ${formatLiter(totalActual - totalYoy)} Growth`;
+            document.getElementById('kpiMomVal').innerText = `${momPct >= 0 ? '↑' : '↓'} ${formatLiter(totalActual - totalPrevMonth)}`;
+
+            document.getElementById('kpiYoy').innerText = `${ytdPct >= 0 ? '+' : ''}${ytdPct}%`;
+            document.getElementById('kpiYoyVal').innerText = `${ytdPct >= 0 ? '↑' : '↓'} ${formatLiter(totalActual - totalPrevYtd)}`;
         }
 
         function updateTable(data) {
             const tbody = document.getElementById('dataTableBody');
             tbody.innerHTML = '';
 
-            data.forEach(row => {
-                const name = getValue(row, ['dsr', 'nama', 'salesman']) || 'N/A';
-                const wp = getValue(row, ['workplace', 'area', 'cabang']) || '-';
-                const target = cleanNum(getValue(row, ['target']));
-                const actual = cleanNum(getValue(row, ['actual july', 'actual']));
-                const prevMonth = cleanNum(getValue(row, ['actual june', 'juni', 'june']));
-                const prevYtd = cleanNum(getValue(row, ['ytd 2025', '2025']));
-
-                const achieve = target > 0 ? ((actual / target) * 100).toFixed(1) : 0;
-                const momPct = prevMonth > 0 ? (((actual - prevMonth) / prevMonth) * 100).toFixed(1) : 0;
-                const ytdPct = prevYtd > 0 ? (((actual - prevYtd) / prevYtd) * 100).toFixed(1) : 0;
+            data.forEach(d => {
+                const achieve = d.target > 0 ? ((d.actual / d.target) * 100).toFixed(1) : 0;
+                const mom = d.prevMonth > 0 ? (((d.actual - d.prevMonth) / d.prevMonth) * 100).toFixed(1) : 0;
+                const ytd = d.prevYtd > 0 ? (((d.actual - d.prevYtd) / d.prevYtd) * 100).toFixed(1) : 0;
 
                 const tr = document.createElement('tr');
                 tr.className = 'hover:bg-slate-700/30 transition';
                 tr.innerHTML = `
-                    <td class="p-3 font-semibold text-white">
-                        👤 ${name} <span class="text-[10px] text-slate-400 font-normal border border-slate-600 rounded px-1.5 py-0.5 ml-1">${wp}</span>
-                    </td>
-                    <td class="p-3 text-right font-mono">${formatLiter(target)}</td>
-                    <td class="p-3 text-right font-mono font-bold text-white">${formatLiter(actual)}</td>
+                    <td class="p-3 font-semibold text-white">👤 ${d.dsr}</td>
+                    <td class="p-3 text-slate-400">${d.workplace}</td>
+                    <td class="p-3 text-right font-mono">${formatLiter(d.target)}</td>
+                    <td class="p-3 text-right font-mono font-bold text-white">${formatLiter(d.actual)}</td>
                     <td class="p-3 text-center">
                         <span class="px-2 py-0.5 rounded text-[10px] font-bold ${achieve >= 100 ? 'bg-emerald-500/20 text-emerald-400' : 'bg-amber-500/20 text-amber-400'}">
                             ${achieve}%
                         </span>
                     </td>
-                    <td class="p-3 text-right font-mono text-slate-400">${formatLiter(prevMonth)}</td>
-                    <td class="p-3 text-center font-semibold ${momPct >= 0 ? 'text-emerald-400' : 'text-rose-400'}">
-                        ${momPct >= 0 ? '+' : ''}${momPct}%
-                    </td>
-                    <td class="p-3 text-right font-mono text-slate-400">${formatLiter(prevYtd)}</td>
-                    <td class="p-3 text-center font-semibold ${ytdPct >= 0 ? 'text-emerald-400' : 'text-rose-400'}">
-                        ${ytdPct >= 0 ? '+' : ''}${ytdPct}%
-                    </td>
+                    <td class="p-3 text-right font-mono text-slate-400">${formatLiter(d.prevMonth)}</td>
+                    <td class="p-3 text-center font-semibold ${mom >= 0 ? 'text-emerald-400' : 'text-rose-400'}">${mom >= 0 ? '+' : ''}${mom}%</td>
+                    <td class="p-3 text-right font-mono text-slate-400">${formatLiter(d.prevYtd)}</td>
+                    <td class="p-3 text-center font-semibold ${ytd >= 0 ? 'text-emerald-400' : 'text-rose-400'}">${ytd >= 0 ? '+' : ''}${ytd}%</td>
                 `;
                 tbody.appendChild(tr);
             });
         }
 
         function updateChart(data) {
-            const labels = data.map(r => getValue(r, ['dsr', 'nama', 'salesman']) || 'DSR');
-            const targetData = data.map(r => cleanNum(getValue(r, ['target'])));
-            const actualData = data.map(r => cleanNum(getValue(r, ['actual july', 'actual'])));
+            const labels = data.map(d => d.dsr);
+            const targetData = data.map(d => d.target);
+            const actualData = data.map(d => d.actual);
 
             const ctx = document.getElementById('salesChart').getContext('2d');
             if (salesChartInstance) salesChartInstance.destroy();
@@ -267,7 +275,7 @@
                     maintainAspectRatio: false,
                     plugins: { legend: { labels: { color: '#94a3b8' } } },
                     scales: {
-                        x: { ticks: { color: '#94a3b8' }, grid: { color: '#334155' } },
+                        x: { ticks: { color: '#94a3b8', font: { size: 10 } }, grid: { display: false } },
                         y: { ticks: { color: '#94a3b8' }, grid: { color: '#334155' } }
                     }
                 }
