@@ -34,29 +34,38 @@
             justify-content: space-between;
             align-items: center;
             border-bottom: 2px solid #d4af37; /* Warm Gold Accent Border */
-            padding-bottom: 20px;
+            padding: 16px 20px;
             margin-bottom: 24px;
             gap: 16px;
             background-color: #151d33;
-            padding: 16px 20px;
             border-radius: 12px;
             box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
         }
         .logo-box {
             background-color: #ffffff;
-            padding: 6px 12px;
+            padding: 6px 14px;
             border-radius: 8px;
             display: flex;
             align-items: center;
             justify-content: center;
-            height: 48px;
+            height: 52px;
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+            flex-shrink: 0;
         }
-        .logo-box img {
+        .logo-box svg {
             height: 100%;
-            max-height: 38px;
+            max-height: 40px;
             width: auto;
-            object-fit: contain;
+        }
+        .cpa-text-logo {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #003399;
+            font-weight: 800;
+            font-size: 11px;
+            line-height: 1.2;
+            text-align: left;
         }
         .header-center {
             text-align: center;
@@ -76,7 +85,7 @@
             font-weight: 500;
         }
 
-        /* FILTER AREA IN HEADER OR BELOW */
+        /* FILTER AREA */
         .filter-bar {
             display: flex;
             justify-content: flex-end;
@@ -87,7 +96,7 @@
         .filter-bar label {
             font-size: 11px;
             text-transform: uppercase;
-            color: #d4af37; /* Gold Accent */
+            color: #d4af37;
             font-weight: 700;
             letter-spacing: 0.6px;
         }
@@ -307,14 +316,10 @@
         }
         .hidden { display: none !important; }
 
-        /* RESPONSIVE HEADER MEDIA QUERY */
         @media (max-width: 768px) {
             .header {
                 flex-direction: column;
                 text-align: center;
-            }
-            .logo-box {
-                height: 40px;
             }
         }
     </style>
@@ -322,11 +327,21 @@
 <body>
 
     <div class="container">
-        <!-- HEADER WITH DUAL LOGOS -->
+        <!-- HEADER WITH INLINE VECTOR LOGOS -->
         <div class="header">
             <!-- LOGO SHELL (KIRI) -->
-            <div class="logo-box">
-                <img src="https://upload.wikimedia.org/wikipedia/en/e/e8/Shell_logo.svg" alt="Shell Lubricant Solutions">
+            <div class="logo-box" title="Shell Lubricant Solutions">
+                <svg viewBox="0 0 200 180" xmlns="http://www.w3.org/2000/svg">
+                    <!-- Shell Pecten Icon -->
+                    <path fill="#DD1D21" d="M100,10 C120,10 145,25 165,50 C180,70 185,95 180,120 L160,115 C165,95 160,75 148,58 C132,36 112,25 100,25 C88,25 68,36 52,58 C40,75 35,95 40,115 L20,120 C15,95 20,70 35,50 C55,25 80,10 100,10 Z"/>
+                    <path fill="#FFD500" d="M100,25 C112,25 132,36 148,58 C160,75 165,95 160,115 L140,110 C143,95 139,80 130,68 C118,52 105,43 100,43 C95,43 82,52 70,68 C61,80 57,95 60,110 L40,115 C35,95 40,75 52,58 C68,36 88,25 100,25 Z"/>
+                    <path fill="#DD1D21" d="M100,43 C105,43 118,52 130,68 C139,80 143,95 140,110 L120,105 C122,95 119,85 112,76 C105,66 98,60 100,60 C98,60 95,66 88,76 C81,85 78,95 80,105 L60,110 C57,95 61,80 70,68 C82,52 95,43 100,43 Z"/>
+                    <polygon fill="#FFD500" points="100,60 112,76 120,105 100,100 80,105 88,76"/>
+                    <path fill="#DD1D21" d="M30,125 L170,125 L160,155 L40,155 Z"/>
+                </svg>
+                <div style="font-weight: 900; color: #DD1D21; font-size: 11px; margin-left: 6px; text-align: left; line-height: 1.1;">
+                    SHELL<br><span style="color: #003399; font-size: 8px; font-weight: 700;">LUBRICANTS</span>
+                </div>
             </div>
 
             <!-- JUDUL HEADER (TENGAH) -->
@@ -336,8 +351,21 @@
             </div>
 
             <!-- LOGO CPA (KANAN) -->
-            <div class="logo-box">
-                <img src="https://cahayapengajaran.com/wp-content/uploads/2021/04/Logo-CPA-web.png" alt="PT Cahaya Pengajaran Abadi">
+            <div class="logo-box" title="PT Cahaya Pengajaran Abadi">
+                <div class="cpa-text-logo">
+                    <!-- Globe SVG Icon for CPA -->
+                    <svg viewBox="0 0 100 100" width="36" height="36" xmlns="http://www.w3.org/2000/svg">
+                        <rect width="100" height="100" fill="#003399" rx="10"/>
+                        <circle cx="50" cy="50" r="38" fill="none" stroke="#FFD500" stroke-width="5"/>
+                        <path d="M 12 50 Q 50 20 88 50" fill="none" stroke="#FFD500" stroke-width="4"/>
+                        <path d="M 12 50 Q 50 80 88 50" fill="none" stroke="#FFD500" stroke-width="4"/>
+                        <line x1="50" y1="12" x2="50" y2="88" stroke="#FFD500" stroke-width="4"/>
+                        <line x1="12" y1="50" x2="88" y2="50" stroke="#FFD500" stroke-width="4"/>
+                    </svg>
+                    <div>
+                        PT Cahaya<br>Pengajaran<br><span style="color: #FFD500;">Abadi</span>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -749,7 +777,7 @@
                         {
                             label: 'Actual Jul 26 (KL)',
                             data: actualDataKL,
-                            backgroundColor: 'rgba(212, 175, 55, 0.85)', /* Warm Gold */
+                            backgroundColor: 'rgba(212, 175, 55, 0.85)',
                             borderColor: 'rgba(212, 175, 55, 1)',
                             borderWidth: 1,
                             borderRadius: 4
