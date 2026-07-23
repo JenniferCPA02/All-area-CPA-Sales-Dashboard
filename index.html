@@ -29,9 +29,9 @@
     <!-- Status Badge -->
     <div class="max-w-7xl mx-auto mb-4 flex justify-between items-center text-xs">
         <span id="statusBadge" class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-yellow-500/10 text-yellow-400 border border-yellow-500/20 font-medium">
-            <span class="w-2 h-2 rounded-full bg-yellow-400 animate-pulse"></span> Mengolah Data Google Sheets...
+            <span class="w-2 h-2 rounded-full bg-yellow-400 animate-pulse"></span> Memproses Data Google Sheets...
         </span>
-        <span class="text-slate-500">Auto-Grouped by DSR</span>
+        <span class="text-slate-500">Auto-Grouped Smart Parser</span>
     </div>
 
     <!-- KPI Summary Cards -->
@@ -105,13 +105,12 @@
             return parseFloat(str) || 0;
         }
 
-        // Fungsi fleksibel mencari kolom header
-        function getProp(row, keywords) {
-            for (let key in row) {
-                let cleanKey = key.trim().toLowerCase();
-                for (let kw of keywords) {
-                    if (cleanKey.includes(kw.toLowerCase())) {
-                        return row[key];
+        function findVal(row, keys) {
+            for (let k in row) {
+                let cleanK = k.trim().toLowerCase();
+                for (let key of keys) {
+                    if (cleanK.includes(key.toLowerCase())) {
+                        return row[k];
                     }
                 }
             }
@@ -125,15 +124,21 @@
                 skipEmptyLines: true,
                 complete: function(results) {
                     const rows = results.data;
+                    if (!rows || rows.length === 0) return;
+
+                    const keys = Object.keys(rows[0]);
+                    
+                    // Deteksi Kolom Otomatis
+                    const dsrKey = keys.find(k => /dsr|nama|sales|agent|employee|person/i.test(k)) || keys[0];
+                    const wpKey = keys.find(k => /workplace|area|cabang|lokasi|branch|region/i.test(k)) || '';
+
                     const grouped = {};
 
-                    // PROSES AGREGASI / GROUPING BY DSR
                     rows.forEach(row => {
-                        let dsrName = getProp(row, ['dsr', 'nama', 'salesman', 'agent', 'employee']) || 'Unknown DSR';
-                        let workplace = getProp(row, ['workplace', 'area', 'cabang', 'lokasi']) || 'Unassigned';
-                        
-                        dsrName = dsrName.trim();
-                        if (!dsrName || dsrName === 'Unknown DSR') return;
+                        let dsrName = row[dsrKey] ? row[dsrKey].toString().trim() : '';
+                        if (!dsrName || dsrName.toLowerCase().includes('total') || dsrName.toLowerCase().includes('grand')) return;
+
+                        let workplace = wpKey && row[wpKey] ? row[wpKey].toString().trim() : 'General';
 
                         if (!grouped[dsrName]) {
                             grouped[dsrName] = {
@@ -146,17 +151,21 @@
                             };
                         }
 
-                        // Mengakumulasi angka transaksi harian menjadi total
-                        grouped[dsrName].target += cleanNum(getProp(row, ['target']));
-                        grouped[dsrName].actual += cleanNum(getProp(row, ['actual', 'volume', 'qty', 'liter', 'sales']));
-                        grouped[dsrName].prevMonth += cleanNum(getProp(row, ['june', 'juni', 'prev month', 'bln lalu']));
-                        grouped[dsrName].prevYtd += cleanNum(getProp(row, ['2025', 'prev ytd', 'thn lalu']));
+                        grouped[dsrName].target += cleanNum(findVal(row, ['target', 'trg', 'tgt']));
+                        grouped[dsrName].actual += cleanNum(findVal(row, ['actual', 'july', 'juli', 'act', 'vol', 'qty', 'liter', 'sales', 'pencapaian']));
+                        grouped[dsrName].prevMonth += cleanNum(findVal(row, ['june', 'juni', 'prev', 'bln']));
+                        grouped[dsrName].prevYtd += cleanNum(findVal(row, ['2025', 'ytd', 'thn']));
                     });
 
                     dsrSummaryData = Object.values(grouped);
 
-                    document.getElementById('statusBadge').className = 'inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-medium';
-                    document.getElementById('statusBadge').innerHTML = '🟢 Live Synced & Grouped';
+                    if (dsrSummaryData.length > 0) {
+                        document.getElementById('statusBadge').className = 'inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-medium';
+                        document.getElementById('statusBadge').innerHTML = '🟢 Live Synced & Grouped';
+                    } else {
+                        document.getElementById('statusBadge').className = 'inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-rose-500/10 text-rose-400 border border-rose-500/20 font-medium';
+                        document.getElementById('statusBadge').innerHTML = '⚠️ Data Kosong / Header Tidak Cocok';
+                    }
 
                     populateFilterOptions();
                     applyFilter();
@@ -172,7 +181,7 @@
             const select = document.getElementById('workplaceFilter');
             select.innerHTML = '<option value="ALL">Semua Workplace (ALL)</option>';
             
-            let workplaces = [...new Set(dsrSummaryData.map(d => d.workplace))].sort();
+            let workplaces = [...new Set(dsrSummaryData.map(d => d.workplace))].filter(Boolean).sort();
             workplaces.forEach(wp => {
                 let opt = document.createElement('option');
                 opt.value = wp;
