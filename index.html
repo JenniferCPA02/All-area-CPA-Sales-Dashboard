@@ -181,9 +181,9 @@
                 </div>
             </div>
 
-            <!-- Target Win Table -->
+            <!-- Target Win Table & Filters Section -->
             <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
-                <div class="flex justify-between items-center border-b pb-3">
+                <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b pb-4">
                     <div class="flex items-center gap-2">
                         <h3 class="text-xs font-black text-slate-800 uppercase tracking-wide">DETAIL TARGET WIN & SUCCESSION RATIO PER PRODUCT</h3>
                     </div>
@@ -192,6 +192,49 @@
                         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
                     </a>
                 </div>
+
+                <!-- NEW: TOOLBAR MULTI-FILTER UNTUK TABEL -->
+                <div class="bg-slate-50 p-3.5 rounded-xl border border-slate-200 flex flex-wrap items-center gap-3 text-xs">
+                    
+                    <!-- Search Input -->
+                    <div class="flex-1 min-w-[200px] relative">
+                        <input type="text" id="twSearchInput" onkeyup="filterTargetWinData()" placeholder="🔍 Cari DSR atau Nama Produk..." class="w-full bg-white border border-slate-300 rounded-lg pl-3 pr-3 py-1.5 text-xs font-semibold focus:ring-2 focus:ring-blue-600 outline-none">
+                    </div>
+
+                    <!-- Filter DSR -->
+                    <div class="flex items-center gap-1.5">
+                        <label class="font-bold text-slate-600 text-[11px]">DSR:</label>
+                        <select id="twDsrFilter" onchange="filterTargetWinData()" class="bg-white border border-slate-300 rounded-lg px-2.5 py-1.5 font-bold text-slate-700 outline-none focus:ring-2 focus:ring-blue-600">
+                            <option value="ALL">Semua DSR</option>
+                        </select>
+                    </div>
+
+                    <!-- Filter Competitor Brand -->
+                    <div class="flex items-center gap-1.5">
+                        <label class="font-bold text-slate-600 text-[11px]">Competitor:</label>
+                        <select id="twCompetitorFilter" onchange="filterTargetWinData()" class="bg-white border border-slate-300 rounded-lg px-2.5 py-1.5 font-bold text-slate-700 outline-none focus:ring-2 focus:ring-blue-600">
+                            <option value="ALL">Semua Brand</option>
+                        </select>
+                    </div>
+
+                    <!-- Filter Status Win -->
+                    <div class="flex items-center gap-1.5">
+                        <label class="font-bold text-slate-600 text-[11px]">Status Win:</label>
+                        <select id="twStatusFilter" onchange="filterTargetWinData()" class="bg-white border border-slate-300 rounded-lg px-2.5 py-1.5 font-bold text-slate-700 outline-none focus:ring-2 focus:ring-blue-600">
+                            <option value="ALL">Semua Status</option>
+                            <option value="HAS_TARGET">Memiliki Target WIN (>0)</option>
+                            <option value="HAS_WIN">Ada Realisasi WIN (>0)</option>
+                            <option value="NO_WIN">Belum WIN (=0)</option>
+                        </select>
+                    </div>
+
+                    <!-- Reset Filter Button -->
+                    <button onclick="resetTWFilters()" class="bg-slate-200 hover:bg-slate-300 text-slate-700 px-3 py-1.5 rounded-lg font-bold text-[11px] transition">
+                        🔄 Reset Filter
+                    </button>
+                </div>
+
+                <!-- Tabel Detail Data -->
                 <div class="overflow-x-auto border rounded-xl">
                     <table class="w-full text-left text-xs text-slate-600">
                         <thead class="bg-slate-100 text-slate-700 uppercase font-bold tracking-wider">
@@ -217,13 +260,13 @@
         const URL_SALES_CSV = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ7ZrrcD9z_Iwj3QWGAHq0usQd20cth9Y8pdfNiuBeWLaX-uqAFlpdZt6J8ggkYx0uCK2cnOJcYzM_5/pub?gid=1625392721&single=true&output=csv";
         const URL_TARGET_WIN_CSV = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTXXMZUwsOfUmKwgSVMf2u-3VbugnUo1gdO3r0y6lh4DIgkBH6K4wcyuOw6RbAHWHzh417iWdy0gBIz/pub?gid=1920770625&single=true&output=csv";
 
-        const CACHE_KEY_SALES = 'cache_sales_data_v10';
-        const CACHE_KEY_TW = 'cache_tw_data_v10';
-        const CACHE_TIME_KEY = 'cache_last_time_v10';
+        const CACHE_KEY_SALES = 'cache_sales_data_v12';
+        const CACHE_KEY_TW = 'cache_tw_data_v12';
+        const CACHE_TIME_KEY = 'cache_last_time_v12';
         const CACHE_DURATION = 5 * 60 * 1000;
 
         let rawSalesData = [];
-        let rawTargetWinArray = []; // Format Array (Array of Arrays)
+        let rawTargetWinArray = [];
         let salesChartInstance = null;
 
         function formatKL(val) { return ((val || 0) / 1000).toLocaleString('id-ID', { minimumFractionDigits: 1 }) + ' KL'; }
@@ -286,7 +329,6 @@
 
             Promise.all([
                 new Promise(resolve => Papa.parse(URL_SALES_CSV + cacheBuster, { download: true, header: true, skipEmptyLines: true, complete: res => resolve(res.data) })),
-                // PENTING: header: false agar membaca persis posisi kolom [0, 1, 2, dst]
                 new Promise(resolve => Papa.parse(URL_TARGET_WIN_CSV + cacheBuster, { download: true, header: false, skipEmptyLines: true, complete: res => resolve(res.data) }))
             ]).then(([salesData, twData]) => {
                 rawSalesData = salesData;
@@ -306,7 +348,11 @@
         function initDashboards() {
             populateAreaFilter(rawSalesData);
             filterSalesData();
+            
+            // Populate Dropdowns Target Win
             populateDistributorFilter(rawTargetWinArray);
+            populateTWSubFilters(rawTargetWinArray);
+            
             filterTargetWinData();
             showLoading(false);
         }
@@ -385,10 +431,8 @@
         function populateDistributorFilter(dataArray) {
             const select = document.getElementById('distributorFilter');
             const dists = new Set();
-            
-            // Kolom A (Index 0) atau Kolom B (Index 1) untuk Nama Workplace/Distributor
             dataArray.forEach((row, idx) => {
-                if (idx === 0) return; // Lewati Baris Header
+                if (idx === 0) return;
                 const dist = (row[0] || row[1] || '').trim();
                 if (dist && dist.length > 2 && !dist.toLowerCase().includes('dsr name')) {
                     dists.add(dist);
@@ -400,48 +444,103 @@
             sortedDists.forEach(d => select.innerHTML += `<option value="${d}">${d}</option>`);
         }
 
-        function filterTargetWinData() {
-            const selected = document.getElementById('distributorFilter').value;
-            let valid = [];
+        // FUNGSI BARU: MENGISI DROPDOWN FILTER DSR & COMPETITOR BRAND
+        function populateTWSubFilters(dataArray) {
+            const dsrSelect = document.getElementById('twDsrFilter');
+            const compSelect = document.getElementById('twCompetitorFilter');
 
-            // Membaca data berdasarkan Indeks Kolom Fisik Excel (A=0, B=1, C=2, dst.)
-            rawTargetWinArray.forEach((row, idx) => {
-                if (idx === 0) return; // Skip Header
+            const dsrs = new Set();
+            const comps = new Set();
 
-                const dsrName = (row[1] || '').trim();       // Kolom B: DSR Name
-                const prodName = (row[4] || '').trim();      // Kolom E: Product Name
-                const distName = (row[0] || '').trim();      // Kolom A/Distributor Name
+            dataArray.forEach((row, idx) => {
+                if (idx === 0) return;
+                const dsr = (row[1] || '').trim();
+                const comp = (row[5] || '').trim();
 
-                // Jika baris berisi header ulang atau kosong, lewati
-                if (!dsrName || dsrName.toLowerCase().includes('dsr name')) return;
-
-                if (selected === 'ALL' || distName === selected || dsrName === selected) {
-                    const compBrand = (row[5] || '').trim();            // Kolom F: Competitor Brand
-                    const compSellOut = parseNum(row[7]);               // Kolom H: YTD. Sell Out
-                    const targetWin = parseNum(row[9]);                 // Kolom J: JUL-TargetWinPerMonth
-                    const winVol = parseNum(row[10]);                   // Kolom K: JUL-WIN(Vol)
-                    
-                    let ratio = 0;
-                    if (row[11] !== undefined && row[11] !== '') {      // Kolom L: Succession Ratio
-                        ratio = parseNum(row[11]);
-                    } else if (targetWin > 0) {
-                        ratio = (winVol / targetWin) * 100;
-                    }
-
-                    valid.push({
-                        dsrName: dsrName || '-',
-                        distName: distName || '-',
-                        prodName: prodName || '-',
-                        compBrand: compBrand || '-',
-                        compSellOut: compSellOut,
-                        targetWin: targetWin,
-                        winVol: winVol,
-                        ratio: ratio
-                    });
-                }
+                if (dsr && !dsr.toLowerCase().includes('dsr name')) dsrs.add(dsr);
+                if (comp && !comp.toLowerCase().includes('competitor')) comps.add(comp);
             });
 
-            // Hitung Kartu KPI
+            dsrSelect.innerHTML = '<option value="ALL">Semua DSR</option>';
+            [...dsrs].sort().forEach(d => dsrSelect.innerHTML += `<option value="${d}">${d}</option>`);
+
+            compSelect.innerHTML = '<option value="ALL">Semua Brand</option>';
+            [...comps].sort().forEach(c => compSelect.innerHTML += `<option value="${c}">${c}</option>`);
+        }
+
+        function resetTWFilters() {
+            document.getElementById('twSearchInput').value = '';
+            document.getElementById('twDsrFilter').value = 'ALL';
+            document.getElementById('twCompetitorFilter').value = 'ALL';
+            document.getElementById('twStatusFilter').value = 'ALL';
+            filterTargetWinData();
+        }
+
+        function filterTargetWinData() {
+            const selectedDist = document.getElementById('distributorFilter').value;
+            const selectedDsr = document.getElementById('twDsrFilter').value;
+            const selectedComp = document.getElementById('twCompetitorFilter').value;
+            const selectedStatus = document.getElementById('twStatusFilter').value;
+            const searchKeyword = (document.getElementById('twSearchInput').value || '').toLowerCase().trim();
+
+            let valid = [];
+
+            rawTargetWinArray.forEach((row, idx) => {
+                if (idx === 0) return;
+
+                const distName = (row[0] || '').trim();
+                const dsrName = (row[1] || '').trim();
+                const prodName = (row[4] || '').trim();
+                const compBrand = (row[5] || '').trim();
+
+                if (!dsrName || dsrName.toLowerCase().includes('dsr name')) return;
+
+                // 1. Filter Distributor
+                if (selectedDist !== 'ALL' && distName !== selectedDist && dsrName !== selectedDist) return;
+
+                // 2. Filter DSR
+                if (selectedDsr !== 'ALL' && dsrName !== selectedDsr) return;
+
+                // 3. Filter Competitor
+                if (selectedComp !== 'ALL' && compBrand !== selectedComp) return;
+
+                // 4. Search Keyword
+                if (searchKeyword !== '') {
+                    const matchSearch = dsrName.toLowerCase().includes(searchKeyword) || 
+                                        prodName.toLowerCase().includes(searchKeyword) ||
+                                        compBrand.toLowerCase().includes(searchKeyword);
+                    if (!matchSearch) return;
+                }
+
+                const compSellOut = parseNum(row[7]);
+                const targetWin = parseNum(row[9]);
+                const winVol = parseNum(row[10]);
+
+                // 5. Filter Status
+                if (selectedStatus === 'HAS_TARGET' && targetWin <= 0) return;
+                if (selectedStatus === 'HAS_WIN' && winVol <= 0) return;
+                if (selectedStatus === 'NO_WIN' && winVol > 0) return;
+
+                let ratio = 0;
+                if (row[11] !== undefined && row[11] !== '') {
+                    ratio = parseNum(row[11]);
+                } else if (targetWin > 0) {
+                    ratio = (winVol / targetWin) * 100;
+                }
+
+                valid.push({
+                    dsrName: dsrName || '-',
+                    distName: distName || '-',
+                    prodName: prodName || '-',
+                    compBrand: compBrand || '-',
+                    compSellOut: compSellOut,
+                    targetWin: targetWin,
+                    winVol: winVol,
+                    ratio: ratio
+                });
+            });
+
+            // Hitung Kartu KPI Berdasarkan Data Terfilter
             let totalTargetWinAll = 0;
             let totalActualWinAll = 0;
             let totalRatioSum = 0;
@@ -463,11 +562,11 @@
             tbody.innerHTML = '';
 
             if (valid.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="7" class="p-5 text-center text-slate-400 font-bold">Tidak ada data Target Win yang ditemukan.</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="7" class="p-6 text-center text-slate-400 font-bold">Tidak ada data Target Win yang sesuai filter.</td></tr>';
                 return;
             }
 
-            // Tampilkan Ke Tabel
+            // Render Hasil ke Tabel
             valid.forEach((r, i) => {
                 tbody.innerHTML += `
                     <tr class="hover:bg-slate-50">
