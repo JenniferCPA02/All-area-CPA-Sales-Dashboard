@@ -157,12 +157,12 @@
                 </div>
             </div>
 
-            <!-- Target Win KPI Cards (ALL AREA / TOTAL KESELURUHAN) -->
+            <!-- Target Win KPI Cards -->
             <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
                 <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm border-l-4 border-l-blue-600">
                     <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">TOTAL TARGET WIN</p>
                     <h3 id="tw-kpi-targetwin" class="text-2xl font-black text-slate-900 mt-1">0</h3>
-                    <p class="text-[10px] text-slate-400 mt-0.5">Target Penjualan WIN (> 0)</p>
+                    <p class="text-[10px] text-slate-400 mt-0.5">Target Penjualan WIN</p>
                 </div>
                 <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm border-l-4 border-l-emerald-500">
                     <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">TOTAL ACTUAL WIN</p>
@@ -181,7 +181,7 @@
                 </div>
             </div>
 
-            <!-- Target Win Table (ALL ITEMS DISPLAY) -->
+            <!-- Target Win Table -->
             <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
                 <div class="flex justify-between items-center border-b pb-3">
                     <div class="flex items-center gap-2">
@@ -218,7 +218,7 @@
         const URL_TARGET_WIN_CSV = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTXXMZUwsOfUmKwgSVMf2u-3VbugnUo1gdO3r0y6lh4DIgkBH6K4wcyuOw6RbAHWHzh417iWdy0gBIz/pub?gid=1920770625&single=true&output=csv";
 
         const CACHE_KEY_SALES = 'cache_sales_data';
-        const CACHE_KEY_TW = 'cache_tw_data_v4';
+        const CACHE_KEY_TW = 'cache_tw_data_v5';
         const CACHE_TIME_KEY = 'cache_last_time';
         const CACHE_DURATION = 5 * 60 * 1000;
 
@@ -229,6 +229,7 @@
         function formatKL(val) { return ((val || 0) / 1000).toLocaleString('id-ID', { minimumFractionDigits: 1 }) + ' KL'; }
         function parseNum(val) { return parseFloat((val || '0').toString().replace(/[^0-9.-]+/g, '')) || 0; }
 
+        // MENCARI NAMA KOLOM DENGAN DUKUNGAN LEBIH BANYAK VARIASI
         function getColValue(row, possibleNames) {
             const keys = Object.keys(row);
             for (let name of possibleNames) {
@@ -302,7 +303,7 @@
 
         function populateAreaFilter(data) {
             const select = document.getElementById('salesAreaFilter');
-            const areas = [...new Set(data.map(r => getColValue(r, ['Workplace Name', 'Workplace', 'Area'])).filter(Boolean))];
+            const areas = [...new Set(data.map(r => getColValue(r, ['Workplace Name', 'Workplace', 'Area', 'Distributor'])).filter(Boolean))];
             select.innerHTML = '<option value="ALL">Semua Workplace (ALL)</option>';
             areas.forEach(a => select.innerHTML += `<option value="${a}">${a}</option>`);
         }
@@ -311,7 +312,7 @@
             const selected = document.getElementById('salesAreaFilter').value;
             let filtered = rawSalesData;
             if (selected !== 'ALL') {
-                filtered = rawSalesData.filter(r => getColValue(r, ['Workplace Name', 'Workplace', 'Area']) === selected);
+                filtered = rawSalesData.filter(r => getColValue(r, ['Workplace Name', 'Workplace', 'Area', 'Distributor']) === selected);
             }
 
             let target = 0, actual = 0, dsrCount = 0, areaAgg = {};
@@ -321,7 +322,7 @@
                 target += t; actual += a;
                 if ((getColValue(r, ['Active']) || '').toUpperCase() === 'YES') dsrCount++;
 
-                const area = getColValue(r, ['Workplace Name', 'Area']) || 'Other';
+                const area = getColValue(r, ['Workplace Name', 'Area', 'Distributor']) || 'Other';
                 if (!areaAgg[area]) areaAgg[area] = { target: 0, actual: 0 };
                 areaAgg[area].target += t;
                 areaAgg[area].actual += a;
@@ -373,7 +374,7 @@
 
         function populateDistributorFilter(data) {
             const select = document.getElementById('distributorFilter');
-            const dists = [...new Set(data.map(r => getColValue(r, ['Distributor', 'Distributor Name'])).filter(Boolean))].sort();
+            const dists = [...new Set(data.map(r => getColValue(r, ['Distributor', 'Distributor Name', 'Workplace', 'Workplace Name'])).filter(Boolean))].sort();
             select.innerHTML = '<option value="ALL">Semua Distributor (ALL)</option>';
             dists.forEach(d => select.innerHTML += `<option value="${d}">${d}</option>`);
         }
@@ -382,39 +383,40 @@
             const selected = document.getElementById('distributorFilter').value;
             let valid = [];
 
-            // 1. Ambil dan kumpulkan data
+            // 1. Ambil data TANPA menyaring targetWin > 0
             rawTargetWinData.forEach(row => {
-                const targetWin = parseNum(getColValue(row, ['Target WIN', 'Target Win', 'TARGET WIN']));
-                const dist = getColValue(row, ['Distributor', 'Distributor Name']);
-                
-                if (selected === 'ALL' || dist === selected) {
-                    const winVol = parseNum(getColValue(row, ['WIN (VOL)', 'Win Vol', 'WIN VOL', 'Win (Vol)']));
-                    const compSellOut = parseNum(getColValue(row, ['Compet YTD Sell Out', 'Compet YTD. Sell Out', 'COMPET YTD SELL OUT / HARGA']));
+                const dist = getColValue(row, ['Distributor', 'Distributor Name', 'Workplace', 'Workplace Name']);
+                const dsrName = getColValue(row, ['DSR Name', 'DSR', 'Sales Name', 'Sales']);
+                const prodName = getColValue(row, ['Product Name', 'Product', 'Nama Produk']);
+
+                // Pastikan setidaknya baris memiliki nama distributor atau produk
+                if ((selected === 'ALL' || dist === selected) && (dsrName || prodName || dist)) {
+                    const targetWin = parseNum(getColValue(row, ['Target WIN', 'Target Win', 'TARGET WIN', 'Target']));
+                    const winVol = parseNum(getColValue(row, ['WIN (VOL)', 'Win Vol', 'WIN VOL', 'Win (Vol)', 'Actual']));
+                    const compSellOut = parseNum(getColValue(row, ['Compet YTD Sell Out', 'Compet YTD. Sell Out', 'COMPET YTD SELL OUT / HARGA', 'Competitor Sell Out']));
                     
                     let ratio = 0;
-                    const rawRatio = getColValue(row, ['Succession Ratio', 'Succesion Ratio', 'SUCCESSION RATIO']);
+                    const rawRatio = getColValue(row, ['Succession Ratio', 'Succesion Ratio', 'SUCCESSION RATIO', 'Ratio']);
                     if (rawRatio !== '') {
                         ratio = parseNum(rawRatio);
                     } else if (targetWin > 0) {
                         ratio = (winVol / targetWin) * 100;
                     }
 
-                    if (targetWin > 0 || winVol > 0) {
-                        valid.push({
-                            dsrName: getColValue(row, ['DSR Name', 'DSR', 'Sales Name']) || '-',
-                            distName: dist || '-',
-                            prodName: getColValue(row, ['Product Name', 'Product']) || '-',
-                            compBrand: getColValue(row, ['Competitor Brand', 'Competitor Product Brand']) || '-',
-                            compSellOut: compSellOut,
-                            targetWin: targetWin,
-                            winVol: winVol,
-                            ratio: ratio
-                        });
-                    }
+                    valid.push({
+                        dsrName: dsrName || '-',
+                        distName: dist || '-',
+                        prodName: prodName || '-',
+                        compBrand: getColValue(row, ['Competitor Brand', 'Competitor Product Brand', 'Competitor']) || '-',
+                        compSellOut: compSellOut,
+                        targetWin: targetWin,
+                        winVol: winVol,
+                        ratio: ratio
+                    });
                 }
             });
 
-            // 2. Hitung KPI Card untuk SEMUA data
+            // 2. Hitung KPI Card
             let totalTargetWinAll = 0;
             let totalActualWinAll = 0;
             let totalRatioSum = 0;
@@ -431,19 +433,16 @@
             document.getElementById('tw-kpi-win').innerText = totalActualWinAll.toLocaleString('id-ID');
             document.getElementById('tw-kpi-ratio').innerText = avgRatioAll.toFixed(1) + '%';
             document.getElementById('tw-kpi-records').innerText = valid.length + ' Item';
-            document.getElementById('tw-kpi-subtext').innerText = 'Semua Item Ditampilkan';
-
-            // 3. Urutkan berdasarkan Target WIN terbesar (TAMPILKAN SEMUA TANPA CUT OFF)
-            valid.sort((a, b) => b.targetWin - a.targetWin);
 
             const tbody = document.getElementById('targetWinTableBody');
             tbody.innerHTML = '';
 
             if (valid.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="7" class="p-5 text-center text-slate-400 font-bold">Tidak ada data Target Win yang ditemukan.</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="7" class="p-5 text-center text-slate-400 font-bold">Tidak ada data Target Win yang ditemukan. Pastikan spreadsheet memiliki data.</td></tr>';
                 return;
             }
 
+            // Tampilkan seluruh baris
             valid.forEach((r, i) => {
                 tbody.innerHTML += `
                     <tr class="hover:bg-slate-50">
