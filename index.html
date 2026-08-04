@@ -7,230 +7,195 @@
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Chart.js -->
+    
+    <!-- 1. Chart.js Utama -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <!-- Chart.js DataLabels Plugin (Membuat Angka Tampil di Atas Batang Chart) -->
+    <!-- 2. Chart.js DataLabels Plugin -->
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0"></script>
+    
     <!-- PapaParse -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
 
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap');
-        body { font-family: 'Inter', sans-serif; }
-        .active-tab { border-bottom: 3px solid #1E40AF; color: #1E40AF; font-weight: 700; }
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; color: #0f172a; }
+        .active-tab { border-bottom: 3px solid #1e3a8a; color: #1e3a8a; font-weight: 800; }
     </style>
 </head>
-<body class="bg-slate-100 font-sans text-slate-800 antialiased relative">
+<body class="bg-slate-50 font-sans text-slate-900 antialiased relative pb-12">
 
     <!-- LOADING OVERLAY -->
-    <div id="loadingOverlay" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex flex-col justify-center items-center text-white">
+    <div id="loadingOverlay" class="fixed inset-0 bg-slate-900/30 backdrop-blur-sm z-50 flex flex-col justify-center items-center text-slate-800">
         <div class="w-12 h-12 border-4 border-amber-500 border-t-transparent rounded-full animate-spin mb-3"></div>
-        <p class="text-sm font-bold tracking-wide">Memuat Data Terbaru...</p>
+        <p class="text-xs font-black uppercase tracking-wider text-slate-800">Memuat Data Terbaru...</p>
     </div>
 
-    <!-- TOP NAVIGATION BAR -->
-    <nav class="bg-white border-b border-slate-200 sticky top-0 z-40 shadow-sm">
-        <div class="max-w-7xl mx-auto px-6 py-2.5 flex justify-between items-center">
+    <!-- TOP NAVIGATION BAR / HEADER -->
+    <header class="bg-white border-b border-slate-200 sticky top-0 z-40 shadow-sm">
+        <div class="max-w-7xl mx-auto px-6 py-3 flex justify-between items-center">
             
-            <!-- SEBELAH KIRI: LOGO SHELL & JUDUL -->
+            <!-- LOGO SHELL & TITLE -->
             <div class="flex items-center space-x-3">
-                <img src="LOGO_SHELL.png" alt="Logo Shell" class="h-10 w-auto object-contain">
-                
-                <div class="border-l border-slate-200 pl-3">
-                    <h1 class="text-sm font-black leading-tight text-slate-900 tracking-tight">PT CAHAYA PENGAJARAN ABADI</h1>
-                    <p class="text-[11px] text-slate-500 font-medium">Real-Time Operational Dashboard</p>
+                <img src="LOGO_SHELL.png" alt="Shell Logo" class="h-10 w-auto object-contain" onerror="this.src='https://upload.wikimedia.org/wikipedia/en/e/e8/Shell_logo.svg'">
+                <div class="border-l-2 border-slate-200 pl-3">
+                    <h1 class="text-base font-black leading-tight text-slate-900 tracking-tight">SALES PERFORMANCE</h1>
+                    <p class="text-[11px] text-slate-500 font-bold">Summary Report Sell Out DSR | Real-Time Operational Dashboard</p>
                 </div>
             </div>
 
-            <!-- TABS SWITCHER (TENGAH) -->
-            <div class="flex space-x-6 text-xs font-bold uppercase tracking-wider">
+            <!-- TABS SWITCHER -->
+            <div class="flex space-x-6 text-xs font-black uppercase tracking-wider">
                 <button id="tab-sales" onclick="switchDashboard('sales')" class="py-2 px-3 active-tab transition flex items-center gap-1.5">
                     📊 Sales Performance
                 </button>
-                <button id="tab-targetwin" onclick="switchDashboard('targetwin')" class="py-2 px-3 text-slate-400 hover:text-blue-900 transition flex items-center gap-1.5">
+                <button id="tab-targetwin" onclick="switchDashboard('targetwin')" class="py-2 px-3 text-slate-400 hover:text-slate-800 transition flex items-center gap-1.5">
                     🎯 Target Win Accuracy
                 </button>
             </div>
 
-            <!-- SEBELAH KANAN: REFRESH BUTTON & LOGO CPA -->
+            <!-- REFRESH & LOGO CPA -->
             <div class="flex items-center space-x-4">
-                <button onclick="refreshAllData(true)" title="Paksa Ambil Data Baru Dari Google Sheets" class="bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold px-3 py-1.5 rounded-xl border border-slate-300 text-xs transition flex items-center gap-2 active:scale-95 shadow-sm">
+                <button onclick="refreshAllData(true)" class="bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold px-3 py-1.5 rounded-xl border border-slate-300 text-xs transition flex items-center gap-2 shadow-sm">
                     <svg class="w-4 h-4 text-slate-600" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
-                    <span>Refresh Data</span>
+                    <span>Refresh</span>
                 </button>
-
-                <div class="border-l border-slate-200 pl-4">
-                    <img src="LOGO_CPA.png" alt="Logo PT CPA" class="h-10 w-auto object-contain">
+                <div class="border-l-2 border-slate-200 pl-3">
+                    <img src="LOGO_CPA.png" alt="PT CPA Logo" class="h-10 w-auto object-contain" onerror="this.style.display='none'">
                 </div>
             </div>
 
         </div>
-    </nav>
+    </header>
 
     <div class="max-w-7xl mx-auto px-6 py-6">
 
         <!-- DASHBOARD 1: SALES PERFORMANCE -->
         <div id="dashboard-sales" class="space-y-6">
-            <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-wrap justify-between items-center gap-4">
-                <div>
-                    <h2 class="text-xl font-black text-slate-900 tracking-tight uppercase">SALES PERFORMANCE DASHBOARD</h2>
-                    <p class="text-xs text-slate-500 font-medium">Summary Report Sell Out DSR</p>
-                </div>
-                <div class="flex items-center gap-3">
-                    <label class="text-xs font-extrabold text-slate-700 uppercase tracking-wider">WORKPLACE / AREA:</label>
-                    <select id="salesAreaFilter" onchange="filterSalesData()" class="bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2 text-xs font-bold text-slate-800 outline-none">
-                        <option value="ALL">Semua Workplace (ALL)</option>
-                    </select>
-                </div>
+            
+            <!-- WORKPLACE / AREA FILTER -->
+            <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex justify-between items-center">
+                <span class="text-xs font-black text-amber-600 uppercase tracking-widest">WORKPLACE / AREA:</span>
+                <select id="salesAreaFilter" onchange="filterSalesData()" class="bg-slate-50 border border-slate-300 rounded-xl px-4 py-2 text-xs font-bold text-slate-800 outline-none focus:ring-2 focus:ring-amber-500">
+                    <option value="ALL">Semua Workplace (ALL)</option>
+                </select>
             </div>
 
-            <!-- KPI Cards -->
+            <!-- KPI CARDS -->
             <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-                <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm border-l-4 border-l-blue-600">
-                    <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">TOTAL TARGET (KL)</p>
-                    <h3 id="kpi-target" class="text-2xl font-black text-slate-900 mt-1">0 KL</h3>
+                <!-- TOTAL TARGET -->
+                <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+                    <p class="text-[11px] font-extrabold text-slate-400 uppercase tracking-wider">TOTAL TARGET (JUL 26)</p>
+                    <h3 id="kpi-target" class="text-2xl font-black text-slate-900 mt-1">0,0 KL</h3>
+                    <p class="text-[10px] font-bold text-slate-400 mt-1">Target Penjualan Bulanan</p>
                 </div>
-                <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm border-l-4 border-l-amber-500">
-                    <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">TOTAL ACTUAL (KL)</p>
-                    <h3 id="kpi-actual" class="text-2xl font-black text-amber-600 mt-1">0 KL</h3>
+                
+                <!-- TOTAL ACTUAL -->
+                <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+                    <p class="text-[11px] font-extrabold text-slate-400 uppercase tracking-wider">TOTAL ACTUAL (JUL 26)</p>
+                    <h3 id="kpi-actual" class="text-2xl font-black text-slate-900 mt-1">0,0 KL</h3>
+                    <p class="text-[10px] font-bold text-slate-400 mt-1">Pencapaian Real-Time</p>
                 </div>
-                <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm border-l-4 border-l-emerald-500">
-                    <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">% ACHIEVEMENT</p>
-                    <h3 id="kpi-ach" class="text-2xl font-black text-emerald-600 mt-1">0%</h3>
+
+                <!-- % MONTHLY ACHIEVEMENT -->
+                <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+                    <p class="text-[11px] font-extrabold text-slate-400 uppercase tracking-wider">% MONTHLY ACHIEVEMENT</p>
+                    <h3 id="kpi-ach" class="text-2xl font-black text-rose-600 mt-1">0%</h3>
+                    <p id="kpi-status" class="text-[10px] font-bold text-rose-500 mt-1">Status: Need Attention 🔴</p>
                 </div>
-                <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm border-l-4 border-l-purple-600">
-                    <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">ACTIVE DSR COUNT</p>
-                    <h3 id="kpi-dsr" class="text-2xl font-black text-purple-600 mt-1">0</h3>
+
+                <!-- ACTIVE DSR COUNT -->
+                <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+                    <p class="text-[11px] font-extrabold text-slate-400 uppercase tracking-wider">ACTIVE DSR COUNT</p>
+                    <h3 id="kpi-dsr" class="text-2xl font-black text-emerald-600 mt-1">0</h3>
+                    <p class="text-[10px] font-bold text-slate-400 mt-1">Total Sales Person Active</p>
                 </div>
             </div>
 
-            <!-- Chart -->
-            <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
-                <h3 class="text-xs font-black text-slate-800 uppercase tracking-wide mb-4">GRAFIK TARGET VS ACTUAL PER AREA (DALAM KL)</h3>
-                <div class="relative h-96"><canvas id="salesChart"></canvas></div>
+            <!-- PROGRAM YANG SEDANG BERJALAN -->
+            <div class="bg-white p-4 rounded-2xl border border-amber-200/80 shadow-sm flex items-center space-x-3">
+                <div class="text-amber-500 flex items-center gap-1 font-black text-xs uppercase tracking-wider shrink-0">
+                    <span>✨</span> PROGRAM YANG SEDANG BERJALAN
+                </div>
+                <div class="flex flex-wrap gap-2 text-[11px] font-extrabold">
+                    <span class="bg-amber-50 border border-amber-200 text-amber-900 px-3 py-1 rounded-full"><span>•</span> KASIP</span>
+                    <span class="bg-amber-50 border border-amber-200 text-amber-900 px-3 py-1 rounded-full"><span>•</span> PANCANAKA</span>
+                    <span class="bg-amber-50 border border-amber-200 text-amber-900 px-3 py-1 rounded-full"><span>•</span> Beat the Target</span>
+                    <span class="bg-amber-50 border border-amber-200 text-amber-900 px-3 py-1 rounded-full"><span>•</span> SEBAT</span>
+                    <span class="bg-amber-50 border border-amber-200 text-amber-900 px-3 py-1 rounded-full"><span>•</span> MBG</span>
+                </div>
             </div>
 
-            <!-- Table -->
-            <div class="bg-[#111827] text-slate-100 p-6 rounded-2xl border border-slate-800 shadow-xl space-y-4">
-                <h3 class="text-xs font-extrabold uppercase tracking-wider text-slate-200">🔥 TOP DSR ACTIVE BY ACHIEVEMENT</h3>
+            <!-- GRAFIK TARGET VS ACTUAL -->
+            <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+                <h3 class="text-xs font-black text-slate-800 uppercase tracking-wider">GRAFIK TARGET VS ACTUAL PER WORKPLACE / AREA (JUL 26) - DALAM KL</h3>
+                <div class="relative h-96">
+                    <canvas id="salesChart"></canvas>
+                </div>
+            </div>
+
+            <!-- TABEL TOP 10 DSR ACTIVE -->
+            <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+                <div class="flex justify-between items-center">
+                    <h3 class="text-xs font-black text-slate-800 uppercase tracking-wider">TOP 10 DSR ACTIVE BY % MONTHLY ACHIEVEMENT (JUL 26)</h3>
+                </div>
+
                 <div class="overflow-x-auto">
-                    <table class="w-full text-left text-xs text-slate-300">
-                        <thead class="bg-slate-900/80 text-slate-400 uppercase text-[10px] font-bold tracking-wider">
-                            <tr>
+                    <table class="w-full text-left text-[11px] border-collapse">
+                        <thead>
+                            <tr class="bg-slate-100 text-slate-600 font-extrabold uppercase tracking-wider border-b border-slate-200">
                                 <th class="p-3">SALES NAME / WORKPLACE</th>
                                 <th class="p-3 text-center">ACTIVE</th>
-                                <th class="p-3 text-right">TARGET</th>
-                                <th class="p-3 text-right">ACTUAL</th>
+                                <th class="p-3 text-right">TARGET JUL 26</th>
+                                <th class="p-3 text-right">ACTUAL JUL 26</th>
                                 <th class="p-3 text-center">% MONTHLY</th>
+                                <th class="p-3 text-right">PREV MONTH</th>
+                                <th class="p-3 text-center">MOM GROWTH</th>
+                                <th class="p-3 text-right">TARGET YTD</th>
+                                <th class="p-3 text-right">ACTUAL YTD</th>
+                                <th class="p-3 text-center">% YTD</th>
+                                <th class="p-3 text-right">PREV YTD</th>
+                                <th class="p-3 text-center">YTD GROWTH</th>
                             </tr>
                         </thead>
-                        <tbody id="dsrTableBody" class="divide-y divide-slate-800/60 font-medium"></tbody>
+                        <tbody id="dsrTableBody" class="divide-y divide-slate-100 font-medium">
+                            <!-- Populated by JavaScript -->
+                        </tbody>
                     </table>
                 </div>
+
+                <div class="text-center pt-2">
+                    <button id="btnToggleDsr" onclick="toggleDsrTable()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs px-5 py-2 rounded-xl border border-slate-300 transition">
+                        Tampilkan Seluruh DSR
+                    </button>
+                </div>
             </div>
+
         </div>
 
         <!-- DASHBOARD 2: TARGET WIN ACCURACY -->
         <div id="dashboard-targetwin" class="space-y-6 hidden">
-            <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-wrap justify-between items-center gap-4">
+            <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex justify-between items-center">
                 <div>
-                    <h2 class="text-xl font-black text-slate-900 tracking-tight uppercase">TARGET WIN ACCURACY DASHBOARD</h2>
-                    <p class="text-xs text-slate-500 font-medium">Analisa Succession Rate Penjualan & Penetrasi Competitor</p>
+                    <h2 class="text-base font-black text-slate-900 uppercase">TARGET WIN ACCURACY DASHBOARD</h2>
+                    <p class="text-xs text-slate-500 font-bold">Analisa Succession Rate Penjualan & Penetrasi Competitor</p>
                 </div>
-                <div class="flex items-center gap-3">
-                    <label class="text-xs font-extrabold text-slate-700 uppercase tracking-wider">DISTRIBUTOR:</label>
-                    <select id="distributorFilter" onchange="filterTargetWinData()" class="bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2 text-xs font-bold text-slate-800 outline-none">
-                        <option value="ALL">Semua Distributor (ALL)</option>
-                    </select>
-                </div>
+                <select id="distributorFilter" onchange="filterTargetWinData()" class="bg-slate-50 border border-slate-300 rounded-xl px-4 py-2 text-xs font-bold text-slate-800 outline-none">
+                    <option value="ALL">Semua Distributor (ALL)</option>
+                </select>
             </div>
 
-            <!-- Target Win KPI Cards -->
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-                <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm border-l-4 border-l-blue-600">
-                    <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">TOTAL TARGET WIN</p>
-                    <h3 id="tw-kpi-targetwin" class="text-2xl font-black text-slate-900 mt-1">0</h3>
-                </div>
-                <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm border-l-4 border-l-emerald-500">
-                    <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">TOTAL ACTUAL WIN</p>
-                    <h3 id="tw-kpi-win" class="text-2xl font-black text-emerald-600 mt-1">0</h3>
-                </div>
-                <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm border-l-4 border-l-amber-500">
-                    <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">AVG SUCCESSION RATIO</p>
-                    <h3 id="tw-kpi-ratio" class="text-2xl font-black text-amber-600 mt-1">0%</h3>
-                </div>
-                <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm border-l-4 border-l-purple-600">
-                    <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">TOTAL ITEMS</p>
-                    <h3 id="tw-kpi-records" class="text-2xl font-black text-purple-600 mt-1">0 Item</h3>
-                </div>
-            </div>
-
-            <!-- Target Win Table & Filters Section -->
-            <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
-                <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b pb-4">
-                    <h3 class="text-xs font-black text-slate-800 uppercase tracking-wide">DETAIL TARGET WIN & SUCCESSION RATIO PER PRODUCT</h3>
-                    <a href="https://docs.google.com/spreadsheets/d/1rY81FzzMN95cVsH59_EKzkfGRbrmhuoypn6V0KcQxBY/edit?usp=sharing" target="_blank" class="text-xs font-bold text-blue-600 hover:underline flex items-center gap-1">
-                        <span>📊 Update/Upload di Google Spreadsheet</span>
-                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
-                    </a>
-                </div>
-
-                <!-- TOOLBAR MULTI-FILTER DENGAN OPSI PARTIAL WIN & FULL WIN -->
-                <div class="bg-slate-50 p-3.5 rounded-xl border border-slate-200 flex flex-wrap items-center gap-3 text-xs">
-                    
-                    <!-- Search Input -->
-                    <div class="flex-1 min-w-[200px]">
-                        <input type="text" id="twSearchInput" onkeyup="filterTargetWinData()" placeholder="🔍 Cari DSR atau Nama Produk..." class="w-full bg-white border border-slate-300 rounded-lg px-3 py-1.5 font-semibold outline-none focus:ring-2 focus:ring-blue-600">
-                    </div>
-
-                    <!-- Filter DSR -->
-                    <div class="flex items-center gap-1.5">
-                        <label class="font-bold text-slate-600">DSR:</label>
-                        <select id="twDsrFilter" onchange="filterTargetWinData()" class="bg-white border border-slate-300 rounded-lg px-2.5 py-1.5 font-bold text-slate-700 outline-none">
-                            <option value="ALL">Semua DSR</option>
-                        </select>
-                    </div>
-
-                    <!-- Filter Competitor Brand -->
-                    <div class="flex items-center gap-1.5">
-                        <label class="font-bold text-slate-600">Competitor:</label>
-                        <select id="twCompetitorFilter" onchange="filterTargetWinData()" class="bg-white border border-slate-300 rounded-lg px-2.5 py-1.5 font-bold text-slate-700 outline-none">
-                            <option value="ALL">Semua Brand</option>
-                        </select>
-                    </div>
-
-                    <!-- Filter Status Win -->
-                    <div class="flex items-center gap-1.5">
-                        <label class="font-bold text-slate-600">Status Win:</label>
-                        <select id="twStatusFilter" onchange="filterTargetWinData()" class="bg-white border border-slate-300 rounded-lg px-2.5 py-1.5 font-bold text-slate-700 outline-none focus:ring-2 focus:ring-blue-600">
-                            <option value="ALL">Semua Status</option>
-                            <option value="PARTIAL_WIN">⚠️ PARTIAL WIN (Ada WIN, Tapi Ratio < 100%)</option>
-                            <option value="FULL_WIN">✅ FULL WIN (Sudah Capai Target Ratio ≥ 100%)</option>
-                            <option value="LOSS">❌ LOSS (Ada Target WIN, tapi Win = 0)</option>
-                            <option value="HAS_WIN">🟢 Semua WIN (Realisasi WIN > 0)</option>
-                            <option value="HAS_TARGET">🎯 Memiliki Target WIN (> 0)</option>
-                            <option value="NO_TARGET">⚪ Tidak Ada Target WIN (= 0)</option>
-                        </select>
-                    </div>
-
-                    <!-- Reset Filter Button -->
-                    <button onclick="resetTWFilters()" class="bg-slate-200 hover:bg-slate-300 text-slate-700 px-3 py-1.5 rounded-lg font-bold transition">
-                        🔄 Reset Filter
-                    </button>
-                </div>
-
-                <!-- Tabel Detail Data -->
-                <div class="overflow-x-auto border rounded-xl">
+            <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+                <div class="overflow-x-auto">
                     <table class="w-full text-left text-xs text-slate-600">
-                        <thead class="bg-slate-100 text-slate-700 uppercase font-bold tracking-wider border-b">
+                        <thead class="bg-slate-100 text-slate-700 font-bold uppercase tracking-wider border-b">
                             <tr>
                                 <th class="p-3.5">DSR NAME / DISTRIBUTOR</th>
                                 <th class="p-3.5">PRODUCT NAME</th>
                                 <th class="p-3.5">COMPETITOR BRAND</th>
-                                <th class="p-3.5 text-right">COMPET YTD SELL OUT / HARGA</th>
+                                <th class="p-3.5 text-right">COMPET YTD SELL OUT</th>
                                 <th class="p-3.5 text-right">TARGET WIN</th>
                                 <th class="p-3.5 text-right">WIN (VOL)</th>
-                                <th class="p-3.5 text-center">SUCCESSION RATIO / STATUS</th>
+                                <th class="p-3.5 text-center">STATUS</th>
                             </tr>
                         </thead>
                         <tbody id="targetWinTableBody" class="divide-y divide-slate-100 font-medium"></tbody>
@@ -238,28 +203,33 @@
                 </div>
             </div>
         </div>
+
     </div>
 
-    <!-- JAVASCRIPT LOGIC -->
+    <!-- JAVASCRIPT -->
     <script>
-        // Registrasi plugin datalabels untuk Chart.js
-        Chart.register(ChartDataLabels);
-
         const URL_SALES_CSV = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ7ZrrcD9z_Iwj3QWGAHq0usQd20cth9Y8pdfNiuBeWLaX-uqAFlpdZt6J8ggkYx0uCK2cnOJcYzM_5/pub?gid=1625392721&single=true&output=csv";
         const URL_TARGET_WIN_CSV = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTXXMZUwsOfUmKwgSVMf2u-3VbugnUo1gdO3r0y6lh4DIgkBH6K4wcyuOw6RbAHWHzh417iWdy0gBIz/pub?gid=1920770625&single=true&output=csv";
 
         let rawSalesData = [];
         let rawTargetWinArray = [];
         let salesChartInstance = null;
+        let showAllDsr = false;
 
-        function formatKL(val) { return ((val || 0) / 1000).toLocaleString('id-ID', { minimumFractionDigits: 1 }) + ' KL'; }
-        
         function parseNum(val) { 
             if (val === undefined || val === null) return 0;
             let str = val.toString().replace(/%/g, '').trim();
             if (str.includes(',') && !str.includes('.')) { str = str.replace(',', '.'); } 
             else { str = str.replace(/,/g, ''); }
             return parseFloat(str) || 0; 
+        }
+
+        function formatKL(val) { 
+            return (val / 1000).toLocaleString('id-ID', { minimumFractionDigits: 1, maximumFractionDigits: 1 }) + ' KL'; 
+        }
+
+        function formatVol(val) {
+            return val.toLocaleString('id-ID', { minimumFractionDigits: 0, maximumFractionDigits: 3 });
         }
 
         function getColValue(row, possibleNames) {
@@ -271,7 +241,9 @@
             return '';
         }
 
-        function showLoading(show) { document.getElementById('loadingOverlay').style.display = show ? 'flex' : 'none'; }
+        function showLoading(show) { 
+            document.getElementById('loadingOverlay').style.display = show ? 'flex' : 'none'; 
+        }
 
         function switchDashboard(type) {
             document.getElementById('dashboard-sales').classList.toggle('hidden', type !== 'sales');
@@ -295,10 +267,6 @@
 
                 populateAreaFilter(rawSalesData);
                 filterSalesData();
-                populateDistributorFilter(rawTargetWinArray);
-                populateTWSubFilters(rawTargetWinArray);
-                filterTargetWinData();
-                
                 showLoading(false);
             }).catch(err => {
                 console.error("Gagal memuat data:", err);
@@ -333,72 +301,86 @@
                 areaAgg[area].actual += a;
             });
 
+            const overallAch = target > 0 ? ((actual / target) * 100) : 0;
+
             document.getElementById('kpi-target').innerText = formatKL(target);
             document.getElementById('kpi-actual').innerText = formatKL(actual);
-            document.getElementById('kpi-ach').innerText = (target > 0 ? ((actual / target) * 100).toFixed(1) : 0) + '%';
+            document.getElementById('kpi-ach').innerText = overallAch.toFixed(1) + '%';
+            
+            const statusElem = document.getElementById('kpi-status');
+            if(overallAch >= 100) {
+                statusElem.innerText = "Status: Good Performance 🟢";
+                statusElem.className = "text-[10px] font-bold text-emerald-600 mt-1";
+            } else {
+                statusElem.innerText = "Status: Need Attention 🔴";
+                statusElem.className = "text-[10px] font-bold text-rose-500 mt-1";
+            }
+
             document.getElementById('kpi-dsr').innerText = dsrCount || filtered.length;
 
             renderSalesChart(Object.keys(areaAgg), Object.values(areaAgg).map(x => x.target), Object.values(areaAgg).map(x => x.actual));
             renderDsrTable(filtered);
         }
 
-        // FUNGSI UTAMA UNTUK MENAMPILKAN ANGKA & % PADA GRAFIK
+        // RENDER GRAFIK DENGAN WAKTU & KONTRAST LIGHT MODE
         function renderSalesChart(labels, targetData, actualData) {
             const ctx = document.getElementById('salesChart').getContext('2d');
-            if (salesChartInstance) salesChartInstance.destroy();
+            
+            if (salesChartInstance) {
+                salesChartInstance.destroy();
+            }
 
             const targetKL = targetData.map(v => v / 1000);
             const actualKL = actualData.map(v => v / 1000);
 
             salesChartInstance = new Chart(ctx, {
                 type: 'bar',
+                plugins: [ChartDataLabels],
                 data: {
                     labels: labels.map(l => l.replace('PT CAHAYA PENGAJARAN ABADI-', '')),
                     datasets: [
                         { 
-                            label: 'Target (KL)', 
+                            label: 'Target Jul 26 (KL)', 
                             data: targetKL, 
-                            backgroundColor: '#94A3B8', 
-                            borderRadius: 6 
+                            backgroundColor: '#94A3B8', // Muted Grey
+                            borderRadius: 4 
                         },
                         { 
-                            label: 'Actual (KL)', 
+                            label: 'Actual Jul 26 (KL)', 
                             data: actualKL, 
-                            backgroundColor: '#EA580C', 
-                            borderRadius: 6 
+                            backgroundColor: '#D97706', // Shell Gold/Amber
+                            borderRadius: 4 
                         }
                     ]
                 },
                 options: { 
                     responsive: true, 
                     maintainAspectRatio: false,
-                    layout: {
-                        padding: { top: 25 } // Ruang atas agar angka tidak terpotong
-                    },
+                    layout: { padding: { top: 35 } },
                     plugins: {
+                        legend: {
+                            display: true,
+                            position: 'top',
+                            labels: { font: { weight: 'bold', size: 11 }, color: '#334155' }
+                        },
                         datalabels: {
+                            display: true,
                             anchor: 'end',
                             align: 'top',
-                            offset: 2,
-                            font: {
-                                weight: 'bold',
-                                size: 10
-                            },
+                            offset: 4,
+                            font: { size: 10, weight: 'bold' },
                             formatter: function(value, context) {
-                                if (value === 0) return '';
-                                
-                                // Jika ini batang Actual, tampilkan Volume KL & Persentase Achievement
+                                if (value === 0 || value === null) return '';
+
                                 if (context.datasetIndex === 1) {
                                     const targetVal = targetKL[context.dataIndex];
-                                    const ach = targetVal > 0 ? ((value / targetVal) * 100).toFixed(0) : 0;
-                                    return value.toLocaleString('id-ID', { maximumFractionDigits: 1 }) + ' KL\n(' + ach + '%)';
+                                    const ach = targetVal > 0 ? Math.round((value / targetVal) * 100) : 0;
+                                    return `${value.toLocaleString('id-ID', { maximumFractionDigits: 1 })} KL\n(${ach}%)`;
                                 }
-                                
-                                // Jika ini batang Target, tampilkan Volume KL saja
-                                return value.toLocaleString('id-ID', { maximumFractionDigits: 1 }) + ' KL';
+                                return `${value.toLocaleString('id-ID', { maximumFractionDigits: 1 })} KL`;
                             },
                             color: function(context) {
-                                return context.datasetIndex === 1 ? '#C2410C' : '#475569';
+                                return context.datasetIndex === 1 ? '#B45309' : '#475569';
                             },
                             textAlign: 'center'
                         }
@@ -406,183 +388,102 @@
                     scales: {
                         y: {
                             beginAtZero: true,
-                            grace: '15%' // Ruang ekstra di Y-Axis agar angka teratas tidak terpotong
+                            grace: '20%',
+                            ticks: { color: '#64748B', font: { weight: 'bold' } },
+                            grid: { color: '#F1F5F9' }
+                        },
+                        x: {
+                            ticks: { color: '#334155', font: { weight: 'bold', size: 10 } },
+                            grid: { display: false }
                         }
                     }
                 }
             });
         }
 
+        function toggleDsrTable() {
+            showAllDsr = !showAllDsr;
+            filterSalesData();
+        }
+
         function renderDsrTable(data) {
             const tbody = document.getElementById('dsrTableBody');
             tbody.innerHTML = '';
-            data.slice(0, 10).forEach((row, i) => {
-                const target = parseNum(getColValue(row, ['Target Jul 26', 'Target']));
-                const actual = parseNum(getColValue(row, ['Actual Jul 26', 'Actual']));
-                const ach = target > 0 ? (actual / target) * 100 : 0;
-                tbody.innerHTML += `
-                    <tr class="hover:bg-slate-800/40">
-                        <td class="p-3 font-bold text-slate-100">#${i+1} ${getColValue(row, ['Sales Name', 'DSR Name', 'Sales']) || 'DSR'}</td>
-                        <td class="p-3 text-center"><span class="bg-emerald-900/60 text-emerald-300 text-[10px] px-2 py-0.5 rounded">${getColValue(row, ['Active']) || 'YES'}</span></td>
-                        <td class="p-3 text-right text-slate-300">${formatKL(target)}</td>
-                        <td class="p-3 text-right font-bold text-amber-400">${formatKL(actual)}</td>
-                        <td class="p-3 text-center font-bold text-emerald-400">${ach.toFixed(0)}%</td>
-                    </tr>
-                `;
-            });
-        }
 
-        function populateDistributorFilter(dataArray) {
-            const select = document.getElementById('distributorFilter');
-            const dists = new Set();
-            dataArray.forEach((row, idx) => {
-                if (idx === 0) return;
-                const dist = (row[0] || row[1] || '').trim();
-                if (dist && dist.length > 2 && !dist.toLowerCase().includes('dsr name')) dists.add(dist);
-            });
-            select.innerHTML = '<option value="ALL">Semua Distributor (ALL)</option>';
-            [...dists].sort().forEach(d => select.innerHTML += `<option value="${d}">${d}</option>`);
-        }
+            // Sort data berdasarkan % Monthly Achievement
+            let sorted = [...data].sort((a,b) => {
+                const tA = parseNum(getColValue(a, ['Target Jul 26', 'Target']));
+                const aA = parseNum(getColValue(a, ['Actual Jul 26', 'Actual']));
+                const achA = tA > 0 ? (aA / tA) : 0;
 
-        function populateTWSubFilters(dataArray) {
-            const dsrSelect = document.getElementById('twDsrFilter');
-            const compSelect = document.getElementById('twCompetitorFilter');
+                const tB = parseNum(getColValue(b, ['Target Jul 26', 'Target']));
+                const aB = parseNum(getColValue(b, ['Actual Jul 26', 'Actual']));
+                const achB = tB > 0 ? (aB / tB) : 0;
 
-            const dsrs = new Set();
-            const comps = new Set();
-
-            dataArray.forEach((row, idx) => {
-                if (idx === 0) return;
-                const dsr = (row[1] || '').trim();
-                const comp = (row[5] || '').trim();
-
-                if (dsr && !dsr.toLowerCase().includes('dsr name')) dsrs.add(dsr);
-                if (comp && !comp.toLowerCase().includes('competitor')) comps.add(comp);
+                return achB - achA;
             });
 
-            dsrSelect.innerHTML = '<option value="ALL">Semua DSR</option>';
-            [...dsrs].sort().forEach(d => dsrSelect.innerHTML += `<option value="${d}">${d}</option>`);
+            const limit = showAllDsr ? sorted.length : 10;
+            const displayData = sorted.slice(0, limit);
 
-            compSelect.innerHTML = '<option value="ALL">Semua Brand</option>';
-            [...comps].sort().forEach(c => compSelect.innerHTML += `<option value="${c}">${c}</option>`);
-        }
+            document.getElementById('btnToggleDsr').innerText = showAllDsr 
+                ? "Tampilkan 10 Terbaik" 
+                : `Tampilkan Seluruh DSR (${sorted.length - 10 > 0 ? sorted.length - 10 : 0} DSR Lainnya)`;
 
-        function resetTWFilters() {
-            document.getElementById('twSearchInput').value = '';
-            document.getElementById('twDsrFilter').value = 'ALL';
-            document.getElementById('twCompetitorFilter').value = 'ALL';
-            document.getElementById('twStatusFilter').value = 'ALL';
-            filterTargetWinData();
-        }
+            displayData.forEach((row, i) => {
+                const name = getColValue(row, ['Sales Name', 'DSR Name', 'Sales']) || 'DSR';
+                const code = getColValue(row, ['Sales Code', 'DSR Code', 'Code']) || '';
+                const workplace = getColValue(row, ['Workplace Name', 'Area', 'Workplace']) || '';
+                const active = (getColValue(row, ['Active']) || 'YES').toUpperCase();
 
-        function filterTargetWinData() {
-            const selectedDist = document.getElementById('distributorFilter').value;
-            const selectedDsr = document.getElementById('twDsrFilter').value;
-            const selectedComp = document.getElementById('twCompetitorFilter').value;
-            const selectedStatus = document.getElementById('twStatusFilter').value;
-            const searchKeyword = (document.getElementById('twSearchInput').value || '').toLowerCase().trim();
+                const targetMonth = parseNum(getColValue(row, ['Target Jul 26', 'Target']));
+                const actualMonth = parseNum(getColValue(row, ['Actual Jul 26', 'Actual']));
+                const achMonth = targetMonth > 0 ? ((actualMonth / targetMonth) * 100) : 0;
 
-            let valid = [];
+                const prevMonth = parseNum(getColValue(row, ['Prev Month', 'Actual Jun 26']));
+                const momGrowth = prevMonth > 0 ? (((actualMonth - prevMonth) / prevMonth) * 100) : 0;
 
-            rawTargetWinArray.forEach((row, idx) => {
-                if (idx === 0) return;
+                const targetYtd = parseNum(getColValue(row, ['Target YTD']));
+                const actualYtd = parseNum(getColValue(row, ['Actual YTD']));
+                const achYtd = targetYtd > 0 ? ((actualYtd / targetYtd) * 100) : 0;
 
-                const distName = (row[0] || '').trim();
-                const dsrName = (row[1] || '').trim();
-                const prodName = (row[4] || '').trim();
-                const compBrand = (row[5] || '').trim();
+                const prevYtd = parseNum(getColValue(row, ['Prev YTD']));
+                const ytdGrowth = prevYtd > 0 ? (((actualYtd - prevYtd) / prevYtd) * 100) : 0;
 
-                if (!dsrName || dsrName.toLowerCase().includes('dsr name')) return;
+                // Color styling for Badges
+                let achMonthBadge = "bg-rose-100 text-rose-800 border-rose-200";
+                if(achMonth >= 100) achMonthBadge = "bg-emerald-100 text-emerald-800 border-emerald-200";
+                else if(achMonth >= 70) achMonthBadge = "bg-amber-100 text-amber-800 border-amber-200";
 
-                if (selectedDist !== 'ALL' && distName !== selectedDist && dsrName !== selectedDist) return;
-                if (selectedDsr !== 'ALL' && dsrName !== selectedDsr) return;
-                if (selectedComp !== 'ALL' && compBrand !== selectedComp) return;
+                let achYtdBadge = "bg-rose-100 text-rose-800 border-rose-200";
+                if(achYtd >= 100) achYtdBadge = "bg-amber-100 text-amber-800 border-amber-200";
 
-                if (searchKeyword !== '') {
-                    const matchSearch = dsrName.toLowerCase().includes(searchKeyword) || 
-                                        prodName.toLowerCase().includes(searchKeyword) ||
-                                        compBrand.toLowerCase().includes(searchKeyword);
-                    if (!matchSearch) return;
-                }
-
-                const compSellOut = parseNum(row[7]);
-                const targetWin = parseNum(row[9]);
-                const winVol = parseNum(row[10]);
-
-                let ratio = 0;
-                if (targetWin > 0) {
-                    ratio = (winVol / targetWin) * 100;
-                } else if (winVol > 0) {
-                    ratio = 100;
-                }
-
-                if (selectedStatus === 'PARTIAL_WIN' && !(winVol > 0 && ratio < 100)) return;
-                if (selectedStatus === 'FULL_WIN' && !(winVol > 0 && ratio >= 100)) return;
-                if (selectedStatus === 'LOSS' && !(targetWin > 0 && winVol === 0)) return;
-                if (selectedStatus === 'HAS_WIN' && winVol <= 0) return;
-                if (selectedStatus === 'HAS_TARGET' && targetWin <= 0) return;
-                if (selectedStatus === 'NO_TARGET' && targetWin > 0) return;
-
-                valid.push({
-                    dsrName: dsrName || '-',
-                    distName: distName || '-',
-                    prodName: prodName || '-',
-                    compBrand: compBrand || '-',
-                    compSellOut: compSellOut,
-                    targetWin: targetWin,
-                    winVol: winVol,
-                    ratio: ratio
-                });
-            });
-
-            valid.sort((a, b) => b.targetWin - a.targetWin || b.winVol - a.winVol);
-
-            let totalTargetWinAll = 0;
-            let totalActualWinAll = 0;
-            let totalRatioSum = 0;
-
-            valid.forEach(r => {
-                totalTargetWinAll += r.targetWin;
-                totalActualWinAll += r.winVol;
-                totalRatioSum += r.ratio;
-            });
-
-            const avgRatioAll = valid.length > 0 ? (totalRatioSum / valid.length) : 0;
-
-            document.getElementById('tw-kpi-targetwin').innerText = totalTargetWinAll.toLocaleString('id-ID');
-            document.getElementById('tw-kpi-win').innerText = totalActualWinAll.toLocaleString('id-ID');
-            document.getElementById('tw-kpi-ratio').innerText = avgRatioAll.toFixed(1) + '%';
-            document.getElementById('tw-kpi-records').innerText = valid.length + ' Item';
-
-            const tbody = document.getElementById('targetWinTableBody');
-            tbody.innerHTML = '';
-
-            if (valid.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="7" class="p-6 text-center text-slate-400 font-bold">Tidak ada data Target Win yang sesuai filter status ini.</td></tr>';
-                return;
-            }
-
-            valid.forEach((r, i) => {
-                let badgeHTML = '';
-                if (r.targetWin > 0 && r.winVol === 0) {
-                    badgeHTML = `<span class="bg-red-100 text-red-800 border border-red-300 px-2.5 py-1 rounded-full font-black text-[10px] tracking-wider">❌ LOSS (0%)</span>`;
-                } else if (r.winVol > 0 && r.ratio < 100) {
-                    badgeHTML = `<span class="bg-amber-100 text-amber-800 border border-amber-300 px-2.5 py-1 rounded-full font-black text-[10px] tracking-wider">⚠️ WIN (${r.ratio.toFixed(0)}%)</span>`;
-                } else if (r.winVol > 0 && r.ratio >= 100) {
-                    badgeHTML = `<span class="bg-emerald-100 text-emerald-800 border border-emerald-300 px-2.5 py-1 rounded-full font-black text-[10px] tracking-wider">✅ WIN (${r.ratio.toFixed(0)}%)</span>`;
-                } else {
-                    badgeHTML = `<span class="bg-slate-100 text-slate-600 border border-slate-300 px-2.5 py-1 rounded-full font-bold text-[10px]">⚪ 0%</span>`;
-                }
+                let momColor = momGrowth >= 0 ? "text-emerald-600" : "text-rose-600";
+                let ytdColor = ytdGrowth >= 0 ? "text-emerald-600" : "text-rose-600";
 
                 tbody.innerHTML += `
-                    <tr class="hover:bg-slate-50 transition">
-                        <td class="p-3.5 font-bold">#${i+1} ${r.dsrName} <br><span class="text-[10px] text-slate-400 font-normal">${r.distName}</span></td>
-                        <td class="p-3.5 font-bold text-slate-800">${r.prodName}</td>
-                        <td class="p-3.5"><span class="bg-slate-100 px-2 py-0.5 rounded text-[11px] font-semibold">${r.compBrand}</span></td>
-                        <td class="p-3.5 text-right font-semibold text-slate-600">${r.compSellOut.toLocaleString('id-ID')}</td>
-                        <td class="p-3.5 text-right font-black text-blue-900">${r.targetWin.toLocaleString('id-ID')}</td>
-                        <td class="p-3.5 text-right font-black ${r.winVol > 0 ? 'text-emerald-600' : 'text-slate-400'}">${r.winVol.toLocaleString('id-ID')}</td>
-                        <td class="p-3.5 text-center">${badgeHTML}</td>
+                    <tr class="hover:bg-slate-50 transition border-b border-slate-100">
+                        <td class="p-3 font-bold text-slate-800">
+                            #${i+1} ${name}
+                            <div class="text-[9px] text-slate-400 font-normal">${code} | ${workplace}</div>
+                        </td>
+                        <td class="p-3 text-center">
+                            <span class="bg-emerald-100 text-emerald-800 border border-emerald-200 text-[10px] font-black px-2 py-0.5 rounded-full">${active}</span>
+                        </td>
+                        <td class="p-3 text-right font-semibold text-slate-600">${formatVol(targetMonth)}</td>
+                        <td class="p-3 text-right font-black text-slate-900">${formatVol(actualMonth)}</td>
+                        <td class="p-3 text-center">
+                            <span class="${achMonthBadge} border text-[10px] font-black px-2 py-0.5 rounded-md">${achMonth.toFixed(0)}%</span>
+                        </td>
+                        <td class="p-3 text-right font-medium text-slate-400">${formatVol(prevMonth)}</td>
+                        <td class="p-3 text-center font-bold ${momColor}">${momGrowth >= 0 ? '+' : ''}${momGrowth.toFixed(0)}%</td>
+                        <td class="p-3 text-right font-semibold text-slate-600">${formatVol(targetYtd)}</td>
+                        <td class="p-3 text-right font-black text-slate-900">${formatVol(actualYtd)}</td>
+                        <td class="p-3 text-center">
+                            <span class="${achYtdBadge} border text-[10px] font-black px-2 py-0.5 rounded-md">${achYtd.toFixed(0)}%</span>
+                        </td>
+                        <td class="p-3 text-right font-medium text-slate-400">${formatVol(prevYtd)}</td>
+                        <td class="p-3 text-center font-bold ${ytdColor}">${ytdGrowth >= 0 ? '+' : ''}${ytdGrowth.toFixed(0)}%</td>
                     </tr>
                 `;
             });
