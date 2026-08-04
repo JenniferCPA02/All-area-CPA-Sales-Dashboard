@@ -152,7 +152,7 @@
                 <div class="flex items-center gap-3">
                     <label class="text-xs font-extrabold text-slate-700 uppercase tracking-wider">DISTRIBUTOR:</label>
                     <select id="distributorFilter" onchange="filterTargetWinData()" class="bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2 text-xs font-bold text-slate-800 focus:ring-2 focus:ring-blue-600 outline-none transition">
-                        <option value="ALL">Semua Distributor (TOP 20 ALL)</option>
+                        <option value="ALL">Semua Distributor (ALL)</option>
                     </select>
                 </div>
             </div>
@@ -175,18 +175,17 @@
                     <p class="text-[10px] text-slate-400 mt-0.5">Rata-rata Keberhasilan</p>
                 </div>
                 <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm border-l-4 border-l-purple-600">
-                    <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">VALID PRODUCT RECORDS</p>
+                    <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">TOTAL ITEMS</p>
                     <h3 id="tw-kpi-records" class="text-2xl font-black text-purple-600 mt-1">0 Item</h3>
-                    <p id="tw-kpi-subtext" class="text-[10px] text-slate-400 mt-0.5">Top 20 Item Ditampilkan</p>
+                    <p id="tw-kpi-subtext" class="text-[10px] text-slate-400 mt-0.5">Semua Item Ditampilkan</p>
                 </div>
             </div>
 
-            <!-- Target Win Table (TOP LIST DISPLAY) -->
+            <!-- Target Win Table (ALL ITEMS DISPLAY) -->
             <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
                 <div class="flex justify-between items-center border-b pb-3">
                     <div class="flex items-center gap-2">
                         <h3 class="text-xs font-black text-slate-800 uppercase tracking-wide">DETAIL TARGET WIN & SUCCESSION RATIO PER PRODUCT</h3>
-                        <span class="bg-rose-100 text-rose-700 text-[10px] font-bold px-2 py-0.5 rounded-full border border-rose-200">Priority: Lowest Ratio + Highest Target WIN (TOP 20 ALL)</span>
                     </div>
                     <a href="https://docs.google.com/spreadsheets/d/1rY81FzzMN95cVsH59_EKzkfGRbrmhuoypn6V0KcQxBY/edit?usp=sharing" target="_blank" class="text-xs font-bold text-blue-600 hover:underline flex items-center gap-1">
                         <span>📊 Update/Upload di Google Spreadsheet</span>
@@ -219,7 +218,7 @@
         const URL_TARGET_WIN_CSV = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTXXMZUwsOfUmKwgSVMf2u-3VbugnUo1gdO3r0y6lh4DIgkBH6K4wcyuOw6RbAHWHzh417iWdy0gBIz/pub?gid=1920770625&single=true&output=csv";
 
         const CACHE_KEY_SALES = 'cache_sales_data';
-        const CACHE_KEY_TW = 'cache_tw_data_v3';
+        const CACHE_KEY_TW = 'cache_tw_data_v4';
         const CACHE_TIME_KEY = 'cache_last_time';
         const CACHE_DURATION = 5 * 60 * 1000;
 
@@ -375,7 +374,7 @@
         function populateDistributorFilter(data) {
             const select = document.getElementById('distributorFilter');
             const dists = [...new Set(data.map(r => getColValue(r, ['Distributor', 'Distributor Name'])).filter(Boolean))].sort();
-            select.innerHTML = '<option value="ALL">Semua Distributor (TOP 20 ALL)</option>';
+            select.innerHTML = '<option value="ALL">Semua Distributor (ALL)</option>';
             dists.forEach(d => select.innerHTML += `<option value="${d}">${d}</option>`);
         }
 
@@ -383,7 +382,7 @@
             const selected = document.getElementById('distributorFilter').value;
             let valid = [];
 
-            // 1. Filter dan kumpulkan SEMUA data
+            // 1. Ambil dan kumpulkan data
             rawTargetWinData.forEach(row => {
                 const targetWin = parseNum(getColValue(row, ['Target WIN', 'Target Win', 'TARGET WIN']));
                 const dist = getColValue(row, ['Distributor', 'Distributor Name']);
@@ -415,7 +414,7 @@
                 }
             });
 
-            // 2. HITUNG KPI CARD BERDASARKAN KESELURUHAN (ALL AREA/DATA)
+            // 2. Hitung KPI Card untuk SEMUA data
             let totalTargetWinAll = 0;
             let totalActualWinAll = 0;
             let totalRatioSum = 0;
@@ -432,21 +431,20 @@
             document.getElementById('tw-kpi-win').innerText = totalActualWinAll.toLocaleString('id-ID');
             document.getElementById('tw-kpi-ratio').innerText = avgRatioAll.toFixed(1) + '%';
             document.getElementById('tw-kpi-records').innerText = valid.length + ' Item';
-            document.getElementById('tw-kpi-subtext').innerText = 'Top 20 Item Ditampilkan';
+            document.getElementById('tw-kpi-subtext').innerText = 'Semua Item Ditampilkan';
 
-            // 3. URUTKAN DAN BATI ISI TABEL HANYA TOP 20 ITEM
+            // 3. Urutkan berdasarkan Target WIN terbesar (TAMPILKAN SEMUA TANPA CUT OFF)
             valid.sort((a, b) => b.targetWin - a.targetWin);
-            const displayTable = valid.slice(0, 20);
 
             const tbody = document.getElementById('targetWinTableBody');
             tbody.innerHTML = '';
 
-            if (displayTable.length === 0) {
+            if (valid.length === 0) {
                 tbody.innerHTML = '<tr><td colspan="7" class="p-5 text-center text-slate-400 font-bold">Tidak ada data Target Win yang ditemukan.</td></tr>';
                 return;
             }
 
-            displayTable.forEach((r, i) => {
+            valid.forEach((r, i) => {
                 tbody.innerHTML += `
                     <tr class="hover:bg-slate-50">
                         <td class="p-3.5 font-bold">#${i+1} ${r.dsrName} <br><span class="text-[10px] text-slate-400 font-normal">${r.distName}</span></td>
