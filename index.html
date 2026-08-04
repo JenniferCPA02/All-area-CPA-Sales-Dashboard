@@ -217,19 +217,28 @@
         const URL_SALES_CSV = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ7ZrrcD9z_Iwj3QWGAHq0usQd20cth9Y8pdfNiuBeWLaX-uqAFlpdZt6J8ggkYx0uCK2cnOJcYzM_5/pub?gid=1625392721&single=true&output=csv";
         const URL_TARGET_WIN_CSV = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTXXMZUwsOfUmKwgSVMf2u-3VbugnUo1gdO3r0y6lh4DIgkBH6K4wcyuOw6RbAHWHzh417iWdy0gBIz/pub?gid=1920770625&single=true&output=csv";
 
-        const CACHE_KEY_SALES = 'cache_sales_data_v6';
-        const CACHE_KEY_TW = 'cache_tw_data_v6';
-        const CACHE_TIME_KEY = 'cache_last_time_v6';
+        const CACHE_KEY_SALES = 'cache_sales_data_v10';
+        const CACHE_KEY_TW = 'cache_tw_data_v10';
+        const CACHE_TIME_KEY = 'cache_last_time_v10';
         const CACHE_DURATION = 5 * 60 * 1000;
 
         let rawSalesData = [];
-        let rawTargetWinData = [];
+        let rawTargetWinArray = []; // Format Array (Array of Arrays)
         let salesChartInstance = null;
 
         function formatKL(val) { return ((val || 0) / 1000).toLocaleString('id-ID', { minimumFractionDigits: 1 }) + ' KL'; }
-        function parseNum(val) { return parseFloat((val || '0').toString().replace(/[^0-9.-]+/g, '')) || 0; }
+        
+        function parseNum(val) { 
+            if (val === undefined || val === null) return 0;
+            let str = val.toString().replace(/%/g, '').trim();
+            if (str.includes(',') && !str.includes('.')) {
+                str = str.replace(',', '.');
+            } else {
+                str = str.replace(/,/g, '');
+            }
+            return parseFloat(str) || 0; 
+        }
 
-        // MENCARI VALUE KOLOM DENGAN CHECK MULTIPLE HEADER ALIAS
         function getColValue(row, possibleNames) {
             const keys = Object.keys(row);
             for (let name of possibleNames) {
@@ -266,7 +275,7 @@
 
                 if (cachedSales && cachedTW) {
                     rawSalesData = JSON.parse(cachedSales);
-                    rawTargetWinData = JSON.parse(cachedTW);
+                    rawTargetWinArray = JSON.parse(cachedTW);
                     initDashboards();
                     return;
                 }
@@ -277,10 +286,11 @@
 
             Promise.all([
                 new Promise(resolve => Papa.parse(URL_SALES_CSV + cacheBuster, { download: true, header: true, skipEmptyLines: true, complete: res => resolve(res.data) })),
-                new Promise(resolve => Papa.parse(URL_TARGET_WIN_CSV + cacheBuster, { download: true, header: true, skipEmptyLines: true, complete: res => resolve(res.data) }))
+                // PENTING: header: false agar membaca persis posisi kolom [0, 1, 2, dst]
+                new Promise(resolve => Papa.parse(URL_TARGET_WIN_CSV + cacheBuster, { download: true, header: false, skipEmptyLines: true, complete: res => resolve(res.data) }))
             ]).then(([salesData, twData]) => {
                 rawSalesData = salesData;
-                rawTargetWinData = twData;
+                rawTargetWinArray = twData;
 
                 localStorage.setItem(CACHE_KEY_SALES, JSON.stringify(salesData));
                 localStorage.setItem(CACHE_KEY_TW, JSON.stringify(twData));
@@ -296,7 +306,7 @@
         function initDashboards() {
             populateAreaFilter(rawSalesData);
             filterSalesData();
-            populateDistributorFilter(rawTargetWinData);
+            populateDistributorFilter(rawTargetWinArray);
             filterTargetWinData();
             showLoading(false);
         }
@@ -372,41 +382,57 @@
             });
         }
 
-        function populateDistributorFilter(data) {
+        function populateDistributorFilter(dataArray) {
             const select = document.getElementById('distributorFilter');
-            const dists = [...new Set(data.map(r => getColValue(r, ['Distributor', 'Distributor Name', 'Workplace', 'Workplace Name'])).filter(Boolean))].sort();
+            const dists = new Set();
+            
+            // Kolom A (Index 0) atau Kolom B (Index 1) untuk Nama Workplace/Distributor
+            dataArray.forEach((row, idx) => {
+                if (idx === 0) return; // Lewati Baris Header
+                const dist = (row[0] || row[1] || '').trim();
+                if (dist && dist.length > 2 && !dist.toLowerCase().includes('dsr name')) {
+                    dists.add(dist);
+                }
+            });
+
+            const sortedDists = [...dists].sort();
             select.innerHTML = '<option value="ALL">Semua Distributor (ALL)</option>';
-            dists.forEach(d => select.innerHTML += `<option value="${d}">${d}</option>`);
+            sortedDists.forEach(d => select.innerHTML += `<option value="${d}">${d}</option>`);
         }
 
         function filterTargetWinData() {
             const selected = document.getElementById('distributorFilter').value;
             let valid = [];
 
-            rawTargetWinData.forEach(row => {
-                const dist = getColValue(row, ['Distributor', 'Distributor Name', 'Workplace', 'Workplace Name']);
-                const dsrName = getColValue(row, ['DSR Name', 'DSR', 'Sales Name', 'Sales']);
-                const prodName = getColValue(row, ['Product Name', 'Product', 'Nama Produk']);
+            // Membaca data berdasarkan Indeks Kolom Fisik Excel (A=0, B=1, C=2, dst.)
+            rawTargetWinArray.forEach((row, idx) => {
+                if (idx === 0) return; // Skip Header
 
-                if (selected === 'ALL' || dist === selected) {
-                    // MAPPING HEADER H, J, K YANG SESUAI DENGAN GOOGLE SHEETS
-                    const compSellOut = parseNum(getColValue(row, ['YTD. Sell Out', 'YTD Sell Out', 'Compet YTD Sell Out']));
-                    const targetWin = parseNum(getColValue(row, ['JUL-TargetWinPerMonth', 'TargetWINPerMonth', 'Target WIN']));
-                    const winVol = parseNum(getColValue(row, ['JUL-WIN(Vol)', 'JUL-WIN Vol', 'WIN (Vol)', 'Win Vol']));
+                const dsrName = (row[1] || '').trim();       // Kolom B: DSR Name
+                const prodName = (row[4] || '').trim();      // Kolom E: Product Name
+                const distName = (row[0] || '').trim();      // Kolom A/Distributor Name
 
+                // Jika baris berisi header ulang atau kosong, lewati
+                if (!dsrName || dsrName.toLowerCase().includes('dsr name')) return;
+
+                if (selected === 'ALL' || distName === selected || dsrName === selected) {
+                    const compBrand = (row[5] || '').trim();            // Kolom F: Competitor Brand
+                    const compSellOut = parseNum(row[7]);               // Kolom H: YTD. Sell Out
+                    const targetWin = parseNum(row[9]);                 // Kolom J: JUL-TargetWinPerMonth
+                    const winVol = parseNum(row[10]);                   // Kolom K: JUL-WIN(Vol)
+                    
                     let ratio = 0;
-                    if (targetWin > 0) {
+                    if (row[11] !== undefined && row[11] !== '') {      // Kolom L: Succession Ratio
+                        ratio = parseNum(row[11]);
+                    } else if (targetWin > 0) {
                         ratio = (winVol / targetWin) * 100;
-                    } else {
-                        const rawRatio = getColValue(row, ['Succession Ratio', 'Succesion Ratio']);
-                        ratio = parseNum(rawRatio);
                     }
 
                     valid.push({
                         dsrName: dsrName || '-',
-                        distName: dist || '-',
+                        distName: distName || '-',
                         prodName: prodName || '-',
-                        compBrand: getColValue(row, ['Competitor Product Brand', 'Competitor Brand', 'Competitor']) || '-',
+                        compBrand: compBrand || '-',
                         compSellOut: compSellOut,
                         targetWin: targetWin,
                         winVol: winVol,
@@ -415,16 +441,18 @@
                 }
             });
 
-            // Hitung KPI
+            // Hitung Kartu KPI
             let totalTargetWinAll = 0;
             let totalActualWinAll = 0;
+            let totalRatioSum = 0;
 
             valid.forEach(r => {
                 totalTargetWinAll += r.targetWin;
                 totalActualWinAll += r.winVol;
+                totalRatioSum += r.ratio;
             });
 
-            const avgRatioAll = totalTargetWinAll > 0 ? (totalActualWinAll / totalTargetWinAll) * 100 : 0;
+            const avgRatioAll = valid.length > 0 ? (totalRatioSum / valid.length) : 0;
 
             document.getElementById('tw-kpi-targetwin').innerText = totalTargetWinAll.toLocaleString('id-ID');
             document.getElementById('tw-kpi-win').innerText = totalActualWinAll.toLocaleString('id-ID');
@@ -439,7 +467,7 @@
                 return;
             }
 
-            // Render Table
+            // Tampilkan Ke Tabel
             valid.forEach((r, i) => {
                 tbody.innerHTML += `
                     <tr class="hover:bg-slate-50">
