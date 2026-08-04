@@ -206,12 +206,12 @@
                 <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm border-l-4 border-l-blue-600">
                     <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">TOTAL TARGET WIN</p>
                     <h3 id="tw-kpi-targetwin" class="text-2xl font-black text-slate-900 mt-1">0</h3>
-                    <p class="text-xs text-slate-500 font-medium mt-1">Target Penjualan (Pcs / Vol)</p>
+                    <p class="text-xs text-slate-500 font-medium mt-1">Target Penjualan WIN</p>
                 </div>
                 <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm border-l-4 border-l-emerald-500">
                     <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">TOTAL ACTUAL WIN</p>
                     <h3 id="tw-kpi-win" class="text-2xl font-black text-emerald-600 mt-1">0</h3>
-                    <p class="text-xs text-slate-500 font-medium mt-1">Realilasi Win (Pcs / Vol)</p>
+                    <p class="text-xs text-slate-500 font-medium mt-1">Realisasi Win (Vol)</p>
                 </div>
                 <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm border-l-4 border-l-amber-500">
                     <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">AVG SUCCESSION RATIO</p>
@@ -232,7 +232,6 @@
                         <h3 class="text-xs font-black text-slate-800 uppercase tracking-wide">DETAIL TARGET WIN & SUCCESSION RATIO PER PRODUCT</h3>
                         <span class="text-[10px] bg-rose-100 text-rose-800 border border-rose-300 px-2.5 py-0.5 rounded-md font-bold">Priority: Lowest Ratio + Highest Target WIN</span>
                     </div>
-                    <span class="text-[10px] bg-slate-100 text-slate-600 border border-slate-200 px-2.5 py-1 rounded-md font-bold">10 Customer Pertama Di-Show (Scroll Ke Bawah Untuk Lainnya)</span>
                 </div>
                 
                 <!-- CONTAINER TABEL (SCROLLABLE & HEADER STICKY) -->
@@ -599,11 +598,18 @@
             let validItems = [];
 
             filtered.forEach(row => {
-                const targetWin = parseNum(row['JUL-TargetWin']);
+                // FLEXIBLE HEADER CHECKING UNTUK TARGET WIN VOLUME
+                const targetWin = parseNum(
+                    row['JUL-Target WIN(Vol)'] || 
+                    row['JUL-Target WIN (Vol)'] || 
+                    row['JUL-Target WIN'] || 
+                    row['JUL-TargetWin'] || 
+                    row['Target WIN'] || 
+                    row['TargetWin']
+                );
                 
-                // SKENARIO: Jika tidak ada Target WIN (Target WIN = 0), ABAIKAN dari daftar TOP
                 if (targetWin > 0) {
-                    const winVol = parseNum(row['JUL-WIN(Vol)']);
+                    const winVol = parseNum(row['JUL-WIN(Vol)'] || row['JUL-WIN (Vol)'] || row['JUL-WIN']);
                     let ratioVal = 0;
                     
                     if (row['Succesion Ratio'] !== undefined && row['Succesion Ratio'] !== '') {
@@ -624,9 +630,9 @@
             // 3. LOGIKA SORTING KHUSUS: LOWEST RATIO + HIGHEST TARGET WIN
             validItems.sort((a, b) => {
                 if (a._parsedRatio === b._parsedRatio) {
-                    return b._parsedTargetWin - a._parsedTargetWin; // Jika ratio sama, yang Target WIN lebih tinggi di atas
+                    return b._parsedTargetWin - a._parsedTargetWin; 
                 }
-                return a._parsedRatio - b._parsedRatio; // Urutkan dari ratio terendah
+                return a._parsedRatio - b._parsedRatio; 
             });
 
             // Hitung ringkasan KPI
@@ -652,7 +658,7 @@
                 return;
             }
 
-            // 4. RENDER SEMUA BARIS (10 Pertama Terlihat Langsung, Sisanya Scroll Ke Bawah)
+            // 4. RENDER BARIS TABEL
             validItems.forEach((row, idx) => {
                 const dsrName = row['DSR Name'] || '-';
                 const distName = row['Distributor'] || '-';
@@ -667,13 +673,11 @@
                                    ratioVal > 0 ? 'bg-amber-100 text-amber-800 border-amber-300' : 
                                    'bg-rose-100 text-rose-800 border-rose-300';
 
-                // Tandai 10 pertama dengan sedikit sorotan visual
                 const isTop10 = idx < 10;
                 const rowBg = isTop10 ? (ratioVal === 0 ? 'bg-rose-50/50 hover:bg-rose-100/60' : 'hover:bg-slate-50') : 'bg-white hover:bg-slate-50 opacity-90';
 
                 tbody.innerHTML += `
                     <tr class="${rowBg} transition">
-                        <!-- MENAMPILKAN KEMBALI DSR NAME / DISTRIBUTOR -->
                         <td class="p-3.5">
                             <div class="flex items-center gap-1.5 font-bold text-slate-900">
                                 ${isTop10 ? `<span class="text-[9px] bg-slate-800 text-white font-black px-1.5 py-0.5 rounded">#${idx+1}</span>` : `<span class="text-[10px] text-slate-400 font-bold">#${idx+1}</span>`}
