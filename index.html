@@ -3,87 +3,241 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard Performa Sales (Fast & Optimized)</title>
+    <title>Executive Sales & Competitor Dashboard - CPA</title>
+    
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
-</head>
-<body class="bg-slate-100 font-sans text-slate-800 p-6">
 
-    <div class="max-w-7xl mx-auto space-y-6">
-        
-        <!-- Header Section -->
-        <div class="flex flex-col md:flex-row justify-between items-center bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- PapaParse -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
+
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .active-tab {
+            border-bottom: 3px solid #1E40AF;
+            color: #1E40AF;
+            font-weight: 700;
+        }
+        @keyframes spin-fast {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .spin-active {
+            animation: spin-fast 0.8s linear infinite;
+        }
+    </style>
+</head>
+<body class="bg-slate-100 font-sans text-slate-800 antialiased">
+
+    <!-- TOP NAVIGATION BAR WITH LOGOS & REFRESH BUTTON -->
+    <nav class="bg-white border-b border-slate-200 sticky top-0 z-50 shadow-sm">
+        <div class="max-w-7xl mx-auto px-6 py-2.5 flex justify-between items-center">
+            
+            <!-- Left Logo & Title -->
             <div class="flex items-center space-x-4">
-                <img id="logo" src="https://lh3.googleusercontent.com/d/1_S5-p8s8c5c-X3m9-A82I9xZ4w1w6Z8" 
-                     onerror="this.src='https://via.placeholder.com/60?text=CPA'" 
-                     alt="CPA Logo" class="h-12 w-auto">
-                <div>
-                    <h1 class="text-2xl font-bold text-slate-900">Dashboard Performa Sales</h1>
-                    <p class="text-sm text-slate-500" id="status-loading">Siap memuat data...</p>
+                <!-- Shell Official SVG Logo -->
+                <svg class="h-9 w-auto" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M50 5C25.1 5 5 25.1 5 50C5 74.9 25.1 95 50 95C74.9 95 95 74.9 95 50C95 25.1 74.9 5 50 5Z" fill="#DD1D21"/>
+                    <path d="M50 12C29 12 12 29 12 50C12 71 29 88 50 88C71 88 88 71 88 50C88 29 71 12 50 12Z" fill="#FFD500"/>
+                    <path d="M50 18C32.3 18 18 32.3 18 50C18 67.7 32.3 82 50 82C67.7 82 82 67.7 82 50C82 32.3 67.7 18 50 18Z" fill="#DD1D21"/>
+                </svg>
+                <div class="border-l border-slate-200 pl-4">
+                    <h1 class="text-sm font-black leading-tight text-slate-900 tracking-tight">PT CAHAYA PENGAJARAN ABADI</h1>
+                    <p class="text-[11px] text-slate-500 font-medium">Real-Time Operational Dashboard</p>
                 </div>
             </div>
-            <button id="btn-refresh" onclick="loadData()" class="mt-4 md:mt-0 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition flex items-center gap-2">
-                <span id="icon-spin" class="hidden animate-spin">🔄</span>
-                <span>Refresh Data</span>
-            </button>
-        </div>
 
-        <!-- Summary Metric Cards -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
-                <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Total Target</p>
-                <h2 class="text-3xl font-extrabold text-slate-800 mt-2" id="metric-target">0</h2>
+            <!-- Tabs Switcher -->
+            <div class="flex space-x-6 text-xs font-bold uppercase tracking-wider">
+                <button id="tab-sales" onclick="switchDashboard('sales')" class="py-2 px-3 active-tab transition flex items-center gap-1.5">
+                    📊 Sales Performance
+                </button>
+                <button id="tab-competitor" onclick="switchDashboard('competitor')" class="py-2 px-3 text-slate-400 hover:text-blue-900 transition flex items-center gap-1.5">
+                    ⚔️ Competitor Movement
+                </button>
             </div>
-            <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
-                <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Total Actual</p>
-                <h2 class="text-3xl font-extrabold text-blue-600 mt-2" id="metric-actual">0</h2>
-            </div>
-            <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
-                <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Pencapaian (%)</p>
-                <h2 class="text-3xl font-extrabold text-emerald-600 mt-2" id="metric-achievement">0%</h2>
+
+            <!-- Right CPA Logo & Refresh Button -->
+            <div class="flex items-center space-x-3">
+                <!-- REFRESH DATA BUTTON WITH SPIN ICON -->
+                <button onclick="refreshAllData()" title="Refresh Data Dari Google Sheets" class="bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold px-3 py-1.5 rounded-xl border border-slate-300 text-xs transition flex items-center gap-2 active:scale-95 shadow-sm">
+                    <svg id="refreshIcon" class="w-4 h-4 text-slate-600" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M160 80 A80 80 0 1 0 240 160" transform="scale(0.07) translate(40, 40)"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                    </svg>
+                    <span>Refresh</span>
+                </button>
+
+                <div class="h-6 w-px bg-slate-200"></div>
+
+                <img src="https://lh3.googleusercontent.com/d/1_S5-p8s8c5c-X3m9-A82I9xZ4w1w6Z8" alt="PT CPA Logo" class="h-9 w-auto object-contain onerror-hide" onerror="this.src='https://via.placeholder.com/100x40?text=PT+CPA'">
             </div>
         </div>
+    </nav>
 
-        <!-- Tables Section: Top 10 Workplace & Top 5 DSR -->
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <div class="max-w-7xl mx-auto px-6 py-6">
+
+        <!-- ========================================================================= -->
+        <!-- DASHBOARD 1: SALES PERFORMANCE -->
+        <!-- ========================================================================= -->
+        <div id="dashboard-sales" class="space-y-6">
             
-            <!-- TOP 10 Workplace -->
-            <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
-                <h3 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
-                    🏆 Top 10 Workplace (Actual Terbesar)
-                </h3>
+            <!-- Header Filter -->
+            <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-wrap justify-between items-center gap-4">
+                <div>
+                    <h2 class="text-xl font-black text-slate-900 tracking-tight uppercase">SALES PERFORMANCE DASHBOARD</h2>
+                    <p class="text-xs text-slate-500 font-medium">Summary Report Sell Out DSR</p>
+                </div>
+                <div class="flex items-center gap-3">
+                    <label class="text-xs font-extrabold text-slate-700 uppercase tracking-wider">WORKPLACE / AREA:</label>
+                    <select id="salesAreaFilter" onchange="filterSalesData()" class="bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2 text-xs font-bold text-slate-800 focus:ring-2 focus:ring-blue-600 outline-none transition">
+                        <option value="ALL">Semua Workplace (ALL)</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- KPI Cards -->
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm border-l-4 border-l-blue-600">
+                    <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">TOTAL TARGET (KL)</p>
+                    <h3 id="kpi-target" class="text-2xl font-black text-slate-900 mt-1">0 KL</h3>
+                    <p class="text-xs text-slate-500 font-medium mt-1">Target Penjualan Bulanan</p>
+                </div>
+                <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm border-l-4 border-l-amber-500">
+                    <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">TOTAL ACTUAL (KL)</p>
+                    <h3 id="kpi-actual" class="text-2xl font-black text-amber-600 mt-1">0 KL</h3>
+                    <p class="text-xs text-slate-500 font-medium mt-1">Pencapaian Real-Time</p>
+                </div>
+                <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm border-l-4 border-l-emerald-500">
+                    <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">% ACHIEVEMENT</p>
+                    <h3 id="kpi-ach" class="text-2xl font-black text-emerald-600 mt-1">0%</h3>
+                    <p id="kpi-status" class="text-xs font-bold mt-1 text-slate-500">Status: -</p>
+                </div>
+                <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm border-l-4 border-l-purple-600">
+                    <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">ACTIVE DSR COUNT</p>
+                    <h3 id="kpi-dsr" class="text-2xl font-black text-purple-600 mt-1">0</h3>
+                    <p class="text-xs text-slate-500 font-medium mt-1">Total Sales Person Active</p>
+                </div>
+            </div>
+
+            <!-- Quick Drill Down Banner -->
+            <div class="bg-amber-50/60 border border-amber-200/80 p-4 rounded-2xl flex flex-wrap items-center justify-between gap-3 shadow-sm">
+                <div class="flex items-center gap-2">
+                    <span class="text-amber-600">⚡</span>
+                    <h4 class="text-xs font-extrabold text-amber-900 uppercase tracking-wider">QUICK DRILL-DOWN ANALYSIS (KLIK UNTUK DETAIL):</h4>
+                </div>
+                <div>
+                    <button onclick="openModal('topDsrModal')" class="bg-white hover:bg-amber-100 text-amber-900 font-extrabold px-5 py-2 rounded-xl border border-amber-300 shadow-sm text-xs transition flex items-center gap-2">
+                        🏆 TOP 5 DSR
+                    </button>
+                </div>
+            </div>
+
+            <!-- Chart Section -->
+            <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+                <h3 class="text-xs font-black text-slate-800 uppercase tracking-wide mb-4">GRAFIK TARGET VS ACTUAL PER AREA (DALAM KL)</h3>
+                <div class="relative h-80">
+                    <canvas id="salesChart"></canvas>
+                </div>
+            </div>
+
+            <!-- TOP 10 DSR ACTIVE TABLE (DARK THEME) -->
+            <div class="bg-[#111827] text-slate-100 p-6 rounded-2xl border border-slate-800 shadow-xl space-y-4">
+                <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+                    <h3 class="text-xs font-extrabold uppercase tracking-wider text-slate-200 flex items-center gap-2">
+                        <span>🔥</span> TOP 10 DSR ACTIVE BY % MONTHLY ACHIEVEMENT (JUL 26)
+                    </h3>
+                    <span class="text-[10px] bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2.5 py-1 rounded-md font-semibold">Active Representatives</span>
+                </div>
+
                 <div class="overflow-x-auto">
-                    <table class="w-full text-left text-sm text-slate-600">
-                        <thead class="bg-slate-50 text-xs uppercase text-slate-500 border-b">
+                    <table class="w-full text-left text-xs text-slate-300">
+                        <thead class="bg-slate-900/80 text-slate-400 uppercase text-[10px] font-bold tracking-wider">
                             <tr>
-                                <th class="p-3">#</th>
-                                <th class="p-3">Workplace Name</th>
-                                <th class="p-3 text-right">Actual</th>
+                                <th class="p-3 rounded-l-lg">SALES NAME / WORKPLACE</th>
+                                <th class="p-3 text-center">ACTIVE</th>
+                                <th class="p-3 text-right">TARGET JUL 26</th>
+                                <th class="p-3 text-right">ACTUAL JUL 26</th>
+                                <th class="p-3 text-center">% MONTHLY</th>
+                                <th class="p-3 text-right">PREV MONTH</th>
+                                <th class="p-3 text-center">MOM GROWTH</th>
+                                <th class="p-3 text-right">TARGET YTD</th>
+                                <th class="p-3 text-right">ACTUAL YTD</th>
+                                <th class="p-3 text-center">% YTD</th>
+                                <th class="p-3 text-right">PREV YTD</th>
+                                <th class="p-3 text-center rounded-r-lg">YTD GROWTH</th>
                             </tr>
                         </thead>
-                        <tbody id="table-top-workplace">
-                            <tr><td colspan="3" class="p-4 text-center text-slate-400">Belum ada data</td></tr>
+                        <tbody id="dsrTableBody" class="divide-y divide-slate-800/60 font-medium">
+                            <!-- Rows inserted dynamically -->
                         </tbody>
                     </table>
                 </div>
+
+                <!-- Toggle Show All DSR Button -->
+                <div class="text-center pt-2">
+                    <button id="toggleDsrBtn" onclick="toggleDsrRows()" class="bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 px-5 py-2 rounded-xl text-xs font-bold transition">
+                        Tampilkan Seluruh DSR (<span id="hiddenDsrCount">0</span> DSR Lainnya) ▾
+                    </button>
+                </div>
             </div>
 
-            <!-- TOP 5 DSR -->
-            <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
-                <h3 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
-                    🌟 Top 5 DSR (Actual Terbesar)
-                </h3>
+        </div>
+
+
+        <!-- ========================================================================= -->
+        <!-- DASHBOARD 2: COMPETITOR MOVEMENT -->
+        <!-- ========================================================================= -->
+        <div id="dashboard-competitor" class="space-y-6 hidden">
+            
+            <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-wrap justify-between items-center gap-4">
+                <div>
+                    <h2 class="text-xl font-black text-slate-900 tracking-tight">MONITORING COMPETITOR MOVEMENT</h2>
+                    <p class="text-xs text-slate-500 font-medium">Pelacakan Aktivitas Kompetitor & Risk Assessment Market Share</p>
+                </div>
+            </div>
+
+            <!-- Competitor KPI Cards -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm border-l-4 border-l-red-500">
+                    <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">TOTAL COMPETITOR SELL OUT</p>
+                    <h3 id="comp-kpi-sellout" class="text-2xl font-black text-slate-900 mt-1">0 KL</h3>
+                    <p class="text-xs text-slate-500 font-medium mt-1">Volume Pasar Terdeteksi</p>
+                </div>
+                <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm border-l-4 border-l-amber-500">
+                    <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">TARGET WIN-BACK VOLUME</p>
+                    <h3 id="comp-kpi-winback" class="text-2xl font-black text-amber-600 mt-1">0 KL</h3>
+                    <p class="text-xs text-slate-500 font-medium mt-1">Potensi Pasar Direbut Kembali</p>
+                </div>
+                <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm border-l-4 border-l-indigo-600">
+                    <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">TOTAL RECORDS LOGGED</p>
+                    <h3 id="comp-kpi-records" class="text-2xl font-black text-indigo-600 mt-1">0 Entry</h3>
+                    <p class="text-xs text-slate-500 font-medium mt-1">Laporan DSR Terdaftar</p>
+                </div>
+            </div>
+
+            <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+                <h3 class="text-xs font-black text-slate-800 uppercase tracking-wide mb-4">MONITORING AKTIVITAS KOMPETITOR PER DSR & DISTRIBUTOR</h3>
                 <div class="overflow-x-auto">
-                    <table class="w-full text-left text-sm text-slate-600">
-                        <thead class="bg-slate-50 text-xs uppercase text-slate-500 border-b">
+                    <table class="w-full text-left text-xs text-slate-600">
+                        <thead class="bg-slate-50 text-slate-700 uppercase font-bold tracking-wider">
                             <tr>
-                                <th class="p-3">#</th>
-                                <th class="p-3">DSR Name</th>
-                                <th class="p-3 text-right">Actual</th>
+                                <th class="p-3.5 rounded-l-lg">DISTRIBUTOR / REGION</th>
+                                <th class="p-3.5">DSR NAME</th>
+                                <th class="p-3.5">COMPETITOR SELL OUT</th>
+                                <th class="p-3.5 rounded-r-lg">TARGET WIN-BACK</th>
                             </tr>
                         </thead>
-                        <tbody id="table-top-dsr">
-                            <tr><td colspan="3" class="p-4 text-center text-slate-400">Belum ada data</td></tr>
+                        <tbody id="competitorTableBody" class="divide-y divide-slate-100 font-medium">
+                            <tr><td colspan="4" class="p-4 text-center text-slate-400">Memuat data competitor...</td></tr>
                         </tbody>
                     </table>
                 </div>
@@ -93,119 +247,348 @@
 
     </div>
 
+    <!-- MODAL TOP 5 DSR -->
+    <div id="topDsrModal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex justify-center items-center p-4">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg p-6 border border-slate-100">
+            <div class="flex justify-between items-center mb-4 border-b pb-3">
+                <h3 class="text-sm font-black text-slate-900 uppercase flex items-center gap-2">
+                    🏆 TOP 5 DSR (% ACHIEVEMENT HIGHEST)
+                </h3>
+                <button onclick="closeModal('topDsrModal')" class="text-slate-400 hover:text-slate-600 text-2xl font-bold">&times;</button>
+            </div>
+            <div id="topDsrList" class="space-y-3">
+                <!-- Dynamically Inserted -->
+            </div>
+        </div>
+    </div>
+
+    <!-- JAVASCRIPT LOGIC -->
     <script>
-        const BASE_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vR_EXAMPLE_URL_HERE/pub?output=csv';
+        const URL_SALES_CSV = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ7ZrrcD9z_Iwj3QWGAHq0usQd20cth9Y8pdfNiuBeWLaX-uqAFlpdZt6J8ggkYx0uCK2cnOJcYzM_5/pub?gid=1625392721&single=true&output=csv";
+        const URL_COMPETITOR_CSV = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTXXMZUwsOfUmKwgSVMf2u-3VbugnUo1gdO3r0y6lh4DIgkBH6K4wcyuOw6RbAHWHzh417iWdy0gBIz/pub?gid=1920770625&single=true&output=csv";
+
+        let rawSalesData = [];
+        let salesChartInstance = null;
+        let showAllDsr = false;
+
+        function formatKL(valueInLiters) {
+            const kl = valueInLiters / 1000;
+            return kl.toLocaleString('id-ID', { minimumFractionDigits: 1, maximumFractionDigits: 1 }) + ' KL';
+        }
 
         function parseNum(val) {
             if (!val) return 0;
-            let cleaned = val.toString().replace(/[^0-9.-]+/g, "");
+            const cleaned = val.toString().replace(/[^0-9.-]+/g,"");
             return parseFloat(cleaned) || 0;
         }
 
-        function setLoadingState(isLoading) {
-            const btn = document.getElementById('btn-refresh');
-            const icon = document.getElementById('icon-spin');
-            const status = document.getElementById('status-loading');
+        function switchDashboard(type) {
+            const salesDash = document.getElementById('dashboard-sales');
+            const compDash = document.getElementById('dashboard-competitor');
+            const tabSales = document.getElementById('tab-sales');
+            const tabComp = document.getElementById('tab-competitor');
 
-            if (isLoading) {
-                btn.disabled = true;
-                btn.classList.add('opacity-50', 'cursor-not-allowed');
-                icon.classList.remove('hidden');
-                status.innerText = "Mengunduh & memproses data terbaru...";
+            if (type === 'sales') {
+                salesDash.classList.remove('hidden');
+                compDash.classList.add('hidden');
+                tabSales.classList.add('active-tab');
+                tabSales.classList.remove('text-slate-400');
+                tabComp.classList.remove('active-tab');
+                tabComp.classList.add('text-slate-400');
             } else {
-                btn.disabled = false;
-                btn.classList.remove('opacity-50', 'cursor-not-allowed');
-                icon.classList.add('hidden');
+                salesDash.classList.add('hidden');
+                compDash.classList.remove('hidden');
+                tabComp.classList.add('active-tab');
+                tabComp.classList.remove('text-slate-400');
+                tabSales.classList.remove('active-tab');
+                tabSales.classList.add('text-slate-400');
             }
         }
 
-        function loadData() {
-            setLoadingState(true);
+        function openModal(id) { document.getElementById(id).classList.remove('hidden'); }
+        function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
 
-            // Trik Cache-Busting: Tambahkan parameter timestamp agar request tidak di-cache oleh browser
-            const freshUrl = BASE_CSV_URL + '&t=' + new Date().getTime();
+        window.onload = function() {
+            refreshAllData();
+        };
 
-            Papa.parse(freshUrl, {
+        // REFRESH DATA FUNCTION WITH ANIMATION
+        function refreshAllData() {
+            const icon = document.getElementById('refreshIcon');
+            icon.classList.add('spin-active');
+
+            // Add timestamp query parameter to bypass browser cache
+            const cacheBuster = "&t=" + new Date().getTime();
+
+            let salesDone = false;
+            let compDone = false;
+
+            function checkDone() {
+                if (salesDone && compDone) {
+                    setTimeout(() => {
+                        icon.classList.remove('spin-active');
+                    }, 500);
+                }
+            }
+
+            // Load Sales
+            Papa.parse(URL_SALES_CSV + cacheBuster, {
                 download: true,
                 header: true,
-                skipEmptyLines: 'greedy', // Hapus baris kosong agar memori lebih hemat
-                fastMode: true,           // Aktifkan mode cepat jika format CSV standar
+                skipEmptyLines: true,
                 complete: function(results) {
-                    // Gunakan setTimeout agar UI browser sempat bernapas (tidak freeze)
-                    setTimeout(() => {
-                        processAllData(results.data);
-                        setLoadingState(false);
-                        document.getElementById('status-loading').innerText = "Diperbarui: " + new Date().toLocaleTimeString();
-                    }, 50);
-                },
-                error: function(err) {
-                    console.error(err);
-                    setLoadingState(false);
-                    document.getElementById('status-loading').innerText = "Gagal memuat data. Periksa koneksi/URL.";
+                    rawSalesData = results.data;
+                    populateAreaFilter(rawSalesData);
+                    filterSalesData();
+                    populateTopDsrModal(rawSalesData);
+                    salesDone = true;
+                    checkDone();
+                }
+            });
+
+            // Load Competitor
+            Papa.parse(URL_COMPETITOR_CSV + cacheBuster, {
+                download: true,
+                header: true,
+                skipEmptyLines: true,
+                complete: function(results) {
+                    loadCompetitorData(results.data);
+                    compDone = true;
+                    checkDone();
                 }
             });
         }
 
-        // Proses agregasi sekaligus dalam 1 x looping (Sangat Menghemat Performa)
-        function processAllData(data) {
-            let totalTarget = 0;
-            let totalActual = 0;
-            const workplaceMap = {};
-            const dsrMap = {};
+        function populateAreaFilter(data) {
+            const filterSelect = document.getElementById('salesAreaFilter');
+            const currentVal = filterSelect.value;
+            const areas = [...new Set(data.map(row => row['Workplace Name'] || row['Workplace'] || row['Area']).filter(Boolean))];
+            
+            filterSelect.innerHTML = '<option value="ALL">Semua Workplace (ALL)</option>';
+            areas.forEach(area => {
+                const option = document.createElement('option');
+                option.value = area;
+                option.textContent = area;
+                filterSelect.appendChild(option);
+            });
 
-            for (let i = 0; i < data.length; i++) {
-                const row = data[i];
-                const target = parseNum(row['Target Jul 26']);
-                const actual = parseNum(row['Actual Jul 26']);
-                
-                totalTarget += target;
-                totalActual += actual;
-
-                // Group Workplace
-                const wp = row['Workplace Name'];
-                if (wp) workplaceMap[wp] = (workplaceMap[wp] || 0) + actual;
-
-                // Group DSR
-                const dsr = row['DSR Name'];
-                if (dsr) dsrMap[dsr] = (dsrMap[dsr] || 0) + actual;
+            if (areas.includes(currentVal)) {
+                filterSelect.value = currentVal;
             }
-
-            // Render Metrics
-            const achievement = totalTarget > 0 ? ((totalActual / totalTarget) * 100).toFixed(1) : 0;
-            document.getElementById('metric-target').innerText = totalTarget.toLocaleString('id-ID');
-            document.getElementById('metric-actual').innerText = totalActual.toLocaleString('id-ID');
-            document.getElementById('metric-achievement').innerText = achievement + '%';
-
-            // Render Workplace TOP 10
-            const sortedWp = Object.keys(workplaceMap)
-                .map(key => ({ name: key, actual: workplaceMap[key] }))
-                .sort((a, b) => b.actual - a.actual)
-                .slice(0, 10);
-
-            document.getElementById('table-top-workplace').innerHTML = sortedWp.map((item, index) => `
-                <tr class="border-b hover:bg-slate-50 transition">
-                    <td class="p-3 font-semibold text-slate-400">${index + 1}</td>
-                    <td class="p-3 font-medium text-slate-800">${item.name}</td>
-                    <td class="p-3 text-right font-bold text-blue-600">${item.actual.toLocaleString('id-ID')}</td>
-                </tr>
-            `).join('');
-
-            // Render DSR TOP 5
-            const sortedDsr = Object.keys(dsrMap)
-                .map(key => ({ name: key, actual: dsrMap[key] }))
-                .sort((a, b) => b.actual - a.actual)
-                .slice(0, 5);
-
-            document.getElementById('table-top-dsr').innerHTML = sortedDsr.map((item, index) => `
-                <tr class="border-b hover:bg-slate-50 transition">
-                    <td class="p-3 font-semibold text-slate-400">${index + 1}</td>
-                    <td class="p-3 font-medium text-slate-800">${item.name}</td>
-                    <td class="p-3 text-right font-bold text-emerald-600">${item.actual.toLocaleString('id-ID')}</td>
-                </tr>
-            `).join('');
         }
 
-        window.onload = loadData;
+        function filterSalesData() {
+            const selectedArea = document.getElementById('salesAreaFilter').value;
+            let filtered = rawSalesData;
+
+            if (selectedArea !== 'ALL') {
+                filtered = rawSalesData.filter(row => (row['Workplace Name'] || row['Workplace'] || row['Area']) === selectedArea);
+            }
+
+            let totalTarget = 0;
+            let totalActual = 0;
+            let activeDsrCount = 0;
+            let areaAgg = {};
+
+            filtered.forEach(row => {
+                const targetVal = parseNum(row['Target Jul 26'] || row['Target']);
+                const actualVal = parseNum(row['Actual Jul 26'] || row['Actual']);
+
+                totalTarget += targetVal;
+                totalActual += actualVal;
+
+                if (row['Active'] && row['Active'].toString().toUpperCase() === 'YES') {
+                    activeDsrCount++;
+                }
+
+                const areaName = row['Workplace Name'] || row['Area'] || 'Other';
+                if (!areaAgg[areaName]) { areaAgg[areaName] = { target: 0, actual: 0 }; }
+                areaAgg[areaName].target += targetVal;
+                areaAgg[areaName].actual += actualVal;
+            });
+
+            const achievement = totalTarget > 0 ? ((totalActual / totalTarget) * 100).toFixed(1) : 0;
+
+            document.getElementById('kpi-target').innerText = formatKL(totalTarget);
+            document.getElementById('kpi-actual').innerText = formatKL(totalActual);
+            document.getElementById('kpi-ach').innerText = achievement + '%';
+            document.getElementById('kpi-dsr').innerText = activeDsrCount || filtered.length;
+
+            const statusEl = document.getElementById('kpi-status');
+            if (achievement >= 100) {
+                statusEl.innerText = 'Status: Excellent Target Met 🟢';
+                statusEl.className = 'text-xs font-bold mt-1 text-emerald-600';
+            } else if (achievement >= 50) {
+                statusEl.innerText = 'Status: Need Attention 🟡';
+                statusEl.className = 'text-xs font-bold mt-1 text-amber-600';
+            } else {
+                statusEl.innerText = 'Status: Critical Warning 🔴';
+                statusEl.className = 'text-xs font-bold mt-1 text-rose-600';
+            }
+
+            renderSalesChart(Object.keys(areaAgg), Object.values(areaAgg).map(a => a.target), Object.values(areaAgg).map(a => a.actual));
+            renderDsrTable(filtered);
+        }
+
+        function renderSalesChart(labels, targetData, actualData) {
+            const ctx = document.getElementById('salesChart').getContext('2d');
+            if (salesChartInstance) { salesChartInstance.destroy(); }
+
+            salesChartInstance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels.map(l => l.replace('PT CAHAYA PENGAJARAN ABADI-', '')),
+                    datasets: [
+                        { label: 'Target Jul 26 (KL)', data: targetData.map(v => v/1000), backgroundColor: '#94A3B8', borderRadius: 6 },
+                        { label: 'Actual Jul 26 (KL)', data: actualData.map(v => v/1000), backgroundColor: '#EA580C', borderRadius: 6 }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { position: 'top' } }
+                }
+            });
+        }
+
+        function renderDsrTable(data) {
+            const tbody = document.getElementById('dsrTableBody');
+            tbody.innerHTML = '';
+
+            const sorted = [...data].sort((a, b) => {
+                const achA = parseNum(a['% Monthly']);
+                const achB = parseNum(b['% Monthly']);
+                return achB - achA;
+            });
+
+            const limit = showAllDsr ? sorted.length : 10;
+            const displayData = sorted.slice(0, limit);
+
+            displayData.forEach((row, index) => {
+                const name = row['Sales Name'] || 'DSR';
+                const code = row['Sales ID'] || '';
+                const workplace = row['Workplace Name'] || '';
+                const active = (row['Active'] || 'YES').toUpperCase();
+
+                const targetJul = parseNum(row['Target Jul 26']);
+                const actualJul = parseNum(row['Actual Jul 26']);
+                const achMonthly = parseNum(row['% Monthly']) || (targetJul > 0 ? (actualJul/targetJul)*100 : 0);
+                
+                const prevMonth = parseNum(row['Prev Month']);
+                const momGrowth = parseNum(row['MoM Growth']);
+                
+                const targetYtd = parseNum(row['Target YTD']);
+                const actualYtd = parseNum(row['Actual YTD']);
+                const achYtd = parseNum(row['% YTD']);
+                const prevYtd = parseNum(row['Prev YTD']);
+                const ytdGrowth = parseNum(row['YTD Growth']);
+
+                const achColor = achMonthly >= 100 ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30' : 
+                                 achMonthly >= 70 ? 'bg-amber-500/20 text-amber-400 border-amber-500/30' : 'bg-rose-500/20 text-rose-400 border-rose-500/30';
+
+                tbody.innerHTML += `
+                    <tr class="hover:bg-slate-800/40 transition">
+                        <td class="p-3">
+                            <div class="font-bold text-slate-100">#${index+1} ${name}</div>
+                            <div class="text-[10px] text-slate-500">${code} | ${workplace}</div>
+                        </td>
+                        <td class="p-3 text-center">
+                            <span class="bg-emerald-900/60 text-emerald-300 text-[10px] px-2 py-0.5 rounded font-bold">${active}</span>
+                        </td>
+                        <td class="p-3 text-right font-semibold text-slate-300">${formatKL(targetJul)}</td>
+                        <td class="p-3 text-right font-bold text-slate-100">${formatKL(actualJul)}</td>
+                        <td class="p-3 text-center">
+                            <span class="border px-2 py-0.5 rounded-full text-[11px] font-extrabold ${achColor}">${achMonthly.toFixed(0)}%</span>
+                        </td>
+                        <td class="p-3 text-right text-slate-400">${formatKL(prevMonth)}</td>
+                        <td class="p-3 text-center font-bold ${momGrowth >= 0 ? 'text-emerald-400' : 'text-rose-400'}">${momGrowth >= 0 ? '+' : ''}${momGrowth}%</td>
+                        <td class="p-3 text-right text-slate-400">${formatKL(targetYtd)}</td>
+                        <td class="p-3 text-right text-slate-200 font-bold">${formatKL(actualYtd)}</td>
+                        <td class="p-3 text-center">
+                            <span class="bg-slate-800 text-amber-300 px-2 py-0.5 rounded text-[11px] font-bold">${achYtd.toFixed(0)}%</span>
+                        </td>
+                        <td class="p-3 text-right text-slate-400">${formatKL(prevYtd)}</td>
+                        <td class="p-3 text-center font-bold ${ytdGrowth >= 0 ? 'text-emerald-400' : 'text-rose-400'}">${ytdGrowth >= 0 ? '+' : ''}${ytdGrowth}%</td>
+                    </tr>
+                `;
+            });
+
+            document.getElementById('hiddenDsrCount').innerText = Math.max(0, sorted.length - 10);
+        }
+
+        function toggleDsrRows() {
+            showAllDsr = !showAllDsr;
+            const btn = document.getElementById('toggleDsrBtn');
+            btn.innerHTML = showAllDsr ? 'Sembunyikan DSR ▲' : `Tampilkan Seluruh DSR (<span id="hiddenDsrCount">0</span> DSR Lainnya) ▾`;
+            filterSalesData();
+        }
+
+        function populateTopDsrModal(data) {
+            const sorted = [...data].sort((a, b) => {
+                const targetA = parseNum(a['Target Jul 26']);
+                const actualA = parseNum(a['Actual Jul 26']);
+                const achA = parseNum(a['% Monthly']) || (targetA > 0 ? (actualA/targetA)*100 : 0);
+
+                const targetB = parseNum(b['Target Jul 26']);
+                const actualB = parseNum(b['Actual Jul 26']);
+                const achB = parseNum(b['% Monthly']) || (targetB > 0 ? (actualB/targetB)*100 : 0);
+
+                return achB - achA;
+            });
+
+            const container = document.getElementById('topDsrList');
+            container.innerHTML = '';
+
+            sorted.slice(0, 5).forEach((item, index) => {
+                const name = item['Sales Name'] || `DSR ${index+1}`;
+                const workplace = item['Workplace Name'] || '';
+                const targetJul = parseNum(item['Target Jul 26']);
+                const actualJul = parseNum(item['Actual Jul 26']);
+                const ach = parseNum(item['% Monthly']) || (targetJul > 0 ? (actualJul/targetJul)*100 : 0);
+
+                container.innerHTML += `
+                    <div class="flex justify-between items-center p-3.5 bg-amber-50/80 rounded-xl border border-amber-200">
+                        <div>
+                            <p class="font-extrabold text-slate-900 text-xs">#${index+1} ${name}</p>
+                            <p class="text-[10px] text-slate-500 font-medium">${workplace}</p>
+                        </div>
+                        <div class="text-right">
+                            <span class="font-black text-amber-700 text-sm block">${ach.toFixed(1)}%</span>
+                            <span class="text-[10px] text-slate-500 font-semibold">${formatKL(actualJul)} / ${formatKL(targetJul)}</span>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        function loadCompetitorData(compData) {
+            let totalSellOut = 0;
+            let totalWinBack = 0;
+
+            const tbody = document.getElementById('competitorTableBody');
+            tbody.innerHTML = '';
+
+            compData.forEach(row => {
+                const sellVal = parseNum(row['Compet YTD Sell Out'] || row['Sell Out']);
+                const winVal = parseNum(row['JUL-TargetWin'] || row['Target Win']);
+
+                totalSellOut += sellVal;
+                totalWinBack += winVal;
+
+                tbody.innerHTML += `
+                    <tr class="hover:bg-slate-50 transition">
+                        <td class="p-3.5 font-bold text-slate-800">${row['Distributor'] || '-'}</td>
+                        <td class="p-3.5 font-medium">${row['DSR Name'] || '-'}</td>
+                        <td class="p-3.5 font-bold text-slate-700">${formatKL(sellVal)}</td>
+                        <td class="p-3.5 font-bold text-amber-600">${formatKL(winVal)}</td>
+                    </tr>
+                `;
+            });
+
+            document.getElementById('comp-kpi-sellout').innerText = formatKL(totalSellOut);
+            document.getElementById('comp-kpi-winback').innerText = formatKL(totalWinBack);
+            document.getElementById('comp-kpi-records').innerText = compData.length + ' Entry';
+        }
     </script>
 </body>
 </html>
