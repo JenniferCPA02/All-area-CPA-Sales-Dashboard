@@ -11,7 +11,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
     
     <style>
-        /* BASE RESET & MIDNIGHT LUXURY THEME */
+        /* BASE RESET & LIGHT FRIENDLY THEME */
         * {
             box-sizing: border-box;
             margin: 0;
@@ -19,8 +19,8 @@
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
         }
         body {
-            background-color: #0b132b; /* Deep Royal Navy */
-            color: #e0e1dd; /* Soft Platinum White */
+            background-color: #f8f9fa; /* Latar Belakang Terang Berih */
+            color: #212529; /* Teks Hitam Pekat Sangat Jelas */
             padding: 24px;
         }
         .container {
@@ -33,13 +33,13 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            border-bottom: 2px solid #d4af37; /* Warm Gold Accent Border */
-            padding: 16px 24px;
+            border-bottom: 3px solid #d4af37; /* Emas Tebal */
+            padding: 18px 24px;
             margin-bottom: 24px;
             gap: 16px;
-            background-color: #151d33;
+            background-color: #ffffff;
             border-radius: 12px;
-            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
         }
         .logo-box {
             background-color: #ffffff;
@@ -48,8 +48,8 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            height: 52px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+            height: 56px;
+            border: 1px solid #e9ecef;
             flex-shrink: 0;
         }
         .logo-box img {
@@ -63,17 +63,17 @@
             flex-grow: 1;
         }
         .header-center h1 {
-            font-size: 22px;
+            font-size: 24px;
             font-weight: 800;
-            color: #ffffff;
+            color: #0f172a;
             letter-spacing: -0.3px;
             text-transform: uppercase;
         }
         .header-center p {
-            color: #8d99ae;
-            font-size: 12px;
+            color: #475569;
+            font-size: 13px;
             margin-top: 4px;
-            font-weight: 500;
+            font-weight: 600;
         }
 
         /* FILTER AREA */
@@ -85,23 +85,23 @@
             gap: 10px;
         }
         .filter-bar label {
-            font-size: 11px;
+            font-size: 12px;
             text-transform: uppercase;
-            color: #d4af37;
-            font-weight: 700;
+            color: #0f172a;
+            font-weight: 800;
             letter-spacing: 0.6px;
         }
         select {
-            background-color: #1f2a44;
-            color: #ffffff;
-            border: 1px solid #3a4b7c;
-            padding: 8px 14px;
+            background-color: #ffffff;
+            color: #0f172a;
+            border: 2px solid #cbd5e1;
+            padding: 9px 16px;
             border-radius: 8px;
-            font-size: 13px;
-            font-weight: 600;
+            font-size: 14px;
+            font-weight: 700;
             outline: none;
             cursor: pointer;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
             transition: all 0.2s ease;
         }
         select:hover {
@@ -116,57 +116,57 @@
             margin-bottom: 20px;
         }
         .kpi-card {
-            background-color: #1f2a44;
-            border: 1px solid #2a3a5e;
+            background-color: #ffffff;
+            border: 1px solid #e2e8f0;
             border-radius: 14px;
-            padding: 18px;
-            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+            padding: 20px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
             transition: transform 0.2s ease;
         }
         .kpi-card:hover {
             transform: translateY(-2px);
-            border-color: #3a4b7c;
+            border-color: #cbd5e1;
         }
         .kpi-title {
-            font-size: 11px;
+            font-size: 12px;
             text-transform: uppercase;
-            color: #8d99ae;
-            font-weight: 700;
+            color: #64748b;
+            font-weight: 800;
             letter-spacing: 0.6px;
             margin-bottom: 6px;
         }
         .kpi-value {
-            font-size: 24px;
+            font-size: 26px;
             font-weight: 800;
-            color: #ffffff;
+            color: #0f172a;
         }
         .kpi-sub {
-            font-size: 11px;
-            color: #8d99ae;
+            font-size: 12px;
+            color: #64748b;
             margin-top: 4px;
-            font-weight: 500;
+            font-weight: 600;
         }
 
         /* BANNER PROGRAM BERJALAN */
         .program-card {
-            background: linear-gradient(135deg, #1c2541 0%, #151d33 100%);
-            border: 1px solid #d4af37;
-            border-left: 5px solid #d4af37;
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-left: 6px solid #d4af37;
             border-radius: 14px;
-            padding: 16px 20px;
+            padding: 18px 22px;
             margin-bottom: 24px;
-            box-shadow: 0 4px 16px rgba(212, 175, 55, 0.08);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
         }
         .program-header {
             display: flex;
             align-items: center;
             gap: 8px;
-            margin-bottom: 10px;
+            margin-bottom: 12px;
         }
         .program-title {
-            font-size: 12px;
+            font-size: 13px;
             font-weight: 800;
-            color: #d4af37;
+            color: #b45309; /* Warna Cokelat Emas Gelap agar Mudah Dibaca */
             text-transform: uppercase;
             letter-spacing: 0.6px;
         }
@@ -176,12 +176,12 @@
             gap: 8px;
         }
         .program-badge {
-            background-color: rgba(212, 175, 55, 0.12);
-            color: #f4e8c1;
-            border: 1px solid rgba(212, 175, 55, 0.35);
+            background-color: #fef3c7;
+            color: #78350f;
+            border: 1px solid #fde68a;
             padding: 6px 14px;
             border-radius: 20px;
-            font-size: 11px;
+            font-size: 12px;
             font-weight: 700;
             display: inline-flex;
             align-items: center;
@@ -189,31 +189,31 @@
         }
         .program-badge::before {
             content: "•";
-            color: #d4af37;
-            font-size: 14px;
+            color: #d97706;
+            font-size: 16px;
         }
 
         /* CARD WRAPPER */
         .card {
-            background-color: #1f2a44;
-            border: 1px solid #2a3a5e;
+            background-color: #ffffff;
+            border: 1px solid #e2e8f0;
             border-radius: 14px;
             margin-bottom: 24px;
             overflow: hidden;
-            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
         }
         .card-header {
             padding: 18px;
-            border-bottom: 1px solid #2a3a5e;
-            font-size: 13px;
+            border-bottom: 1px solid #e2e8f0;
+            font-size: 14px;
             font-weight: 800;
             text-transform: uppercase;
-            color: #ffffff;
+            color: #0f172a;
             letter-spacing: 0.6px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            background-color: #1a233a;
+            background-color: #f1f5f9;
         }
 
         /* CHART CONTAINER */
@@ -232,57 +232,60 @@
             width: 100%;
             border-collapse: collapse;
             text-align: left;
-            font-size: 12px;
-            color: #c5d1e5;
+            font-size: 13px;
+            color: #1e293b;
         }
         thead {
-            background-color: #151d33;
-            color: #8d99ae;
+            background-color: #f1f5f9;
+            color: #475569;
             text-transform: uppercase;
-            font-size: 10px;
+            font-size: 11px;
             letter-spacing: 0.6px;
-            border-bottom: 1px solid #2a3a5e;
+            border-bottom: 2px solid #cbd5e1;
         }
         th, td {
-            padding: 14px;
-            border-bottom: 1px solid #2a3a5e;
+            padding: 14px 16px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        tr:nth-child(even) {
+            background-color: #f8fafc; /* Efek Selang-Seling Agar Mudah Dibaca Barisnya */
         }
         tr:hover {
-            background-color: rgba(58, 75, 124, 0.25);
+            background-color: #e2e8f0;
         }
         .text-center { text-align: center; }
         .text-right { text-align: right; }
-        .text-main { color: #ffffff; font-weight: 700; }
-        .text-sub { font-size: 10px; color: #8d99ae; }
+        .text-main { color: #0f172a; font-weight: 800; }
+        .text-sub { font-size: 11px; color: #64748b; font-weight: 600; }
 
-        /* LUXURY BADGES */
+        /* LUXURY & CLEAR BADGES FOR LIGHT MODE */
         .badge {
             display: inline-block;
-            padding: 3px 9px;
+            padding: 4px 10px;
             border-radius: 6px;
-            font-size: 10px;
-            font-weight: 700;
+            font-size: 11px;
+            font-weight: 800;
         }
-        .badge-green { background-color: rgba(46, 204, 113, 0.2); color: #2ecc71; border: 1px solid rgba(46, 204, 113, 0.3); }
-        .badge-amber { background-color: rgba(241, 196, 15, 0.2); color: #f1c40f; border: 1px solid rgba(241, 196, 15, 0.3); }
-        .badge-red { background-color: rgba(231, 76, 60, 0.2); color: #e74c3c; border: 1px solid rgba(231, 76, 60, 0.3); }
-        .badge-gold { background-color: rgba(212, 175, 55, 0.2); color: #e5b769; border: 1px solid rgba(212, 175, 55, 0.4); }
+        .badge-green { background-color: #dcfce7; color: #15803d; border: 1px solid #bbf7d0; }
+        .badge-amber { background-color: #fef9c3; color: #a16207; border: 1px solid #fef08a; }
+        .badge-red { background-color: #fee2e2; color: #b91c1c; border: 1px solid #fca5a5; }
+        .badge-gold { background-color: #fef3c7; color: #b45309; border: 1px solid #fde68a; }
 
         /* SHOW MORE BUTTON */
         .toggle-container {
-            padding: 14px;
+            padding: 16px;
             text-align: center;
-            background-color: #1a233a;
-            border-top: 1px solid #2a3a5e;
+            background-color: #f1f5f9;
+            border-top: 1px solid #e2e8f0;
         }
         .toggle-btn {
-            background-color: #1f2a44;
-            color: #e5b769;
-            border: 1px solid #d4af37;
-            padding: 9px 18px;
+            background-color: #ffffff;
+            color: #b45309;
+            border: 2px solid #d4af37;
+            padding: 10px 20px;
             border-radius: 8px;
-            font-size: 12px;
-            font-weight: 700;
+            font-size: 13px;
+            font-weight: 800;
             cursor: pointer;
             display: inline-flex;
             align-items: center;
@@ -291,14 +294,14 @@
             transition: all 0.2s ease;
         }
         .toggle-btn:hover {
-            background-color: #2a3a5e;
+            background-color: #d4af37;
             color: #ffffff;
         }
         .icon-arrow {
-            width: 14px !important;
-            height: 14px !important;
+            width: 16px !important;
+            height: 16px !important;
             stroke: currentColor;
-            stroke-width: 2.5;
+            stroke-width: 3;
             fill: none;
             transition: transform 0.3s ease;
         }
@@ -310,16 +313,16 @@
         /* FOOTER / NAMA DI TENGAH BAWAH */
         .footer {
             margin-top: 32px;
-            margin-bottom: 12px;
+            margin-bottom: 16px;
             text-align: center;
-            color: #8d99ae;
-            font-size: 12px;
-            font-weight: 500;
+            color: #475569;
+            font-size: 13px;
+            font-weight: 600;
             letter-spacing: 0.5px;
         }
         .footer strong {
-            color: #d4af37; /* Warna Gold */
-            font-weight: 700;
+            color: #b45309; /* Cokelat Emas Kontras */
+            font-weight: 800;
         }
 
         @media (max-width: 768px) {
@@ -364,7 +367,7 @@
             </div>
             <div class="kpi-card">
                 <div class="kpi-title">Total Actual (Jul 26)</div>
-                <div class="kpi-value" id="kpiActual" style="color: #e5b769;">0 KL</div>
+                <div class="kpi-value" id="kpiActual" style="color: #b45309;">0 KL</div>
                 <div class="kpi-sub">Pencapaian Real-Time</div>
             </div>
             <div class="kpi-card">
@@ -374,7 +377,7 @@
             </div>
             <div class="kpi-card">
                 <div class="kpi-title">Active DSR Count</div>
-                <div class="kpi-value" id="kpiDsrCount" style="color: #2ecc71;">0</div>
+                <div class="kpi-value" id="kpiDsrCount" style="color: #15803d;">0</div>
                 <div class="kpi-sub">Total Sales Person Active</div>
             </div>
         </div>
@@ -382,7 +385,7 @@
         <!-- BANNER INFORMASI PROGRAM AKTIF -->
         <div class="program-card">
             <div class="program-header">
-                <span style="font-size: 15px;">⚜️</span>
+                <span style="font-size: 16px;">⚜️</span>
                 <span class="program-title">PROGRAM YANG SEDANG BERJALAN</span>
             </div>
             <div class="program-tags">
@@ -489,7 +492,7 @@
                 },
                 error: function(err) {
                     console.error("Gagal membaca Google Sheets:", err);
-                    document.getElementById('dataTableBody').innerHTML = `<tr><td colspan="12" class="text-center" style="color:#e74c3c;">Gagal mengambil data dari Google Sheets. Silakan periksa kembali link spreadsheet.</td></tr>`;
+                    document.getElementById('dataTableBody').innerHTML = `<tr><td colspan="12" class="text-center" style="color:#b91c1c;">Gagal mengambil data dari Google Sheets. Silakan periksa kembali link spreadsheet.</td></tr>`;
                 }
             });
         }
@@ -585,13 +588,13 @@
             achEl.innerText = `${achPercent}%`;
             
             if (achPercent >= 100) {
-                achEl.style.color = '#2ecc71';
+                achEl.style.color = '#15803d'; // Hijau Pekat
                 document.getElementById('kpiAchieveStatus').innerText = 'Status: Target Achieved 🎉';
             } else if (achPercent >= 70) {
-                achEl.style.color = '#f1c40f';
+                achEl.style.color = '#a16207'; // Kuning Kecokelatan Pekat
                 document.getElementById('kpiAchieveStatus').innerText = 'Status: On Progress 🟡';
             } else {
-                achEl.style.color = '#e74c3c';
+                achEl.style.color = '#b91c1c'; // Merah Pekat
                 document.getElementById('kpiAchieveStatus').innerText = 'Status: Need Attention 🔴';
             }
 
@@ -640,8 +643,8 @@
                 const ytdGrowth = prevYtd > 0 ? (((actualYtd - prevYtd) / prevYtd) * 100).toFixed(0) : cleanNum(getRowValue(row, ['YTD Growth']));
 
                 const mBadgeClass = mAchieveVal >= 100 ? 'badge-green' : (mAchieveVal >= 50 ? 'badge-amber' : 'badge-red');
-                const momColor = momGrowth >= 0 ? '#2ecc71' : '#e74c3c';
-                const ytdGrowthColor = ytdGrowth >= 0 ? '#2ecc71' : '#e74c3c';
+                const momColor = momGrowth >= 0 ? '#15803d' : '#b91c1c';
+                const ytdGrowthColor = ytdGrowth >= 0 ? '#15803d' : '#b91c1c';
 
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
@@ -658,7 +661,7 @@
                         <span class="badge ${mBadgeClass}">${mAchieveStr}%</span>
                     </td>
                     <td class="text-right text-sub">${formatNum(prevMonth)}</td>
-                    <td class="text-right" style="color: ${momColor}; font-weight: 700;">
+                    <td class="text-right" style="color: ${momColor}; font-weight: 800;">
                         ${momGrowth >= 0 ? '+' : ''}${momGrowth}%
                     </td>
                     <td class="text-right">${formatNum(targetYtd)}</td>
@@ -667,7 +670,7 @@
                         <span class="badge badge-gold">${ytdAchieve}%</span>
                     </td>
                     <td class="text-right text-sub">${formatNum(prevYtd)}</td>
-                    <td class="text-right" style="color: ${ytdGrowthColor}; font-weight: 700;">
+                    <td class="text-right" style="color: ${ytdGrowthColor}; font-weight: 800;">
                         ${ytdGrowth >= 0 ? '+' : ''}${ytdGrowth}%
                     </td>
                 `;
@@ -752,17 +755,17 @@
                         {
                             label: 'Target Jul 26 (KL)',
                             data: targetDataKL,
-                            backgroundColor: 'rgba(141, 153, 174, 0.5)',
-                            borderColor: 'rgba(141, 153, 174, 1)',
-                            borderWidth: 1,
+                            backgroundColor: 'rgba(100, 116, 139, 0.4)', // Abu-abu kontras terang
+                            borderColor: 'rgba(100, 116, 139, 1)',
+                            borderWidth: 1.5,
                             borderRadius: 4
                         },
                         {
                             label: 'Actual Jul 26 (KL)',
                             data: actualDataKL,
-                            backgroundColor: 'rgba(212, 175, 55, 0.85)',
-                            borderColor: 'rgba(212, 175, 55, 1)',
-                            borderWidth: 1,
+                            backgroundColor: 'rgba(212, 175, 55, 0.9)', // Warna Gold Emas Pekat
+                            borderColor: 'rgba(180, 83, 9, 1)',
+                            borderWidth: 1.5,
                             borderRadius: 4
                         }
                     ]
@@ -780,8 +783,8 @@
                         legend: { 
                             position: 'top',
                             labels: { 
-                                color: '#e0e1dd', 
-                                font: { size: 11, weight: '700' },
+                                color: '#0f172a', // Warna Teks Legend Hitam Gelap
+                                font: { size: 12, weight: '800' },
                                 boxWidth: 14,
                                 padding: 15
                             } 
@@ -790,10 +793,10 @@
                             anchor: 'end',
                             align: 'top',
                             offset: 4,
-                            color: '#ffffff',
+                            color: '#0f172a', // Teks Label Grafik Hitam Jelas
                             font: {
                                 weight: 'bold',
-                                size: 10
+                                size: 11
                             },
                             formatter: function(value, context) {
                                 if (value === 0) return '';
@@ -809,22 +812,21 @@
                         }
                     },
                     scales: {
-                        x: { 
-                            ticks: { 
-                                color: '#8d99ae', 
-                                font: { size: 10, weight: 'bold' },
-                                maxRotation: 0,
-                                minRotation: 0
-                            }, 
+                        x: {
+                            ticks: {
+                                color: '#334155',
+                                font: { size: 11, weight: '700' }
+                            },
                             grid: { display: false }
                         },
-                        y: { 
-                            grace: '18%',
-                            ticks: { 
-                                color: '#8d99ae', 
-                                font: { size: 10 }
-                            }, 
-                            grid: { color: 'rgba(42, 58, 94, 0.5)' }
+                        y: {
+                            ticks: {
+                                color: '#334155',
+                                font: { size: 11, weight: '700' }
+                            },
+                            grid: {
+                                color: '#e2e8f0'
+                            }
                         }
                     }
                 }
