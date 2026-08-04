@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Executive Sales & Competitor Dashboard - CPA</title>
+    <title>Executive Sales & Target Win Accuracy Dashboard - CPA</title>
     
     <!-- Google Fonts: Inter -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -43,7 +43,6 @@
             
             <!-- Left Logo & Title -->
             <div class="flex items-center space-x-4">
-                <!-- Shell Official SVG Logo -->
                 <svg class="h-9 w-auto" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <path d="M50 5C25.1 5 5 25.1 5 50C5 74.9 25.1 95 50 95C74.9 95 95 74.9 95 50C95 25.1 74.9 5 50 5Z" fill="#DD1D21"/>
                     <path d="M50 12C29 12 12 29 12 50C12 71 29 88 50 88C71 88 88 71 88 50C88 29 71 12 50 12Z" fill="#FFD500"/>
@@ -60,14 +59,13 @@
                 <button id="tab-sales" onclick="switchDashboard('sales')" class="py-2 px-3 active-tab transition flex items-center gap-1.5">
                     📊 Sales Performance
                 </button>
-                <button id="tab-competitor" onclick="switchDashboard('competitor')" class="py-2 px-3 text-slate-400 hover:text-blue-900 transition flex items-center gap-1.5">
-                    ⚔️ Competitor Movement
+                <button id="tab-targetwin" onclick="switchDashboard('targetwin')" class="py-2 px-3 text-slate-400 hover:text-blue-900 transition flex items-center gap-1.5">
+                    🎯 Target Win Accuracy
                 </button>
             </div>
 
             <!-- Right CPA Logo & Refresh Button -->
             <div class="flex items-center space-x-3">
-                <!-- REFRESH DATA BUTTON WITH SPIN ICON -->
                 <button onclick="refreshAllData()" title="Refresh Data Dari Google Sheets" class="bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold px-3 py-1.5 rounded-xl border border-slate-300 text-xs transition flex items-center gap-2 active:scale-95 shadow-sm">
                     <svg id="refreshIcon" class="w-4 h-4 text-slate-600" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M160 80 A80 80 0 1 0 240 160" transform="scale(0.07) translate(40, 40)"></path>
@@ -75,9 +73,7 @@
                     </svg>
                     <span>Refresh</span>
                 </button>
-
                 <div class="h-6 w-px bg-slate-200"></div>
-
                 <img src="https://lh3.googleusercontent.com/d/1_S5-p8s8c5c-X3m9-A82I9xZ4w1w6Z8" alt="PT CPA Logo" class="h-9 w-auto object-contain onerror-hide" onerror="this.src='https://via.placeholder.com/100x40?text=PT+CPA'">
             </div>
         </div>
@@ -90,7 +86,6 @@
         <!-- ========================================================================= -->
         <div id="dashboard-sales" class="space-y-6">
             
-            <!-- Header Filter -->
             <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-wrap justify-between items-center gap-4">
                 <div>
                     <h2 class="text-xl font-black text-slate-900 tracking-tight uppercase">SALES PERFORMANCE DASHBOARD</h2>
@@ -149,11 +144,11 @@
                 </div>
             </div>
 
-            <!-- TOP 10 DSR ACTIVE TABLE (DARK THEME) -->
+            <!-- TOP 10 DSR ACTIVE TABLE -->
             <div class="bg-[#111827] text-slate-100 p-6 rounded-2xl border border-slate-800 shadow-xl space-y-4">
                 <div class="flex justify-between items-center border-b border-slate-800 pb-3">
                     <h3 class="text-xs font-extrabold uppercase tracking-wider text-slate-200 flex items-center gap-2">
-                        <span>🔥</span> TOP 10 DSR ACTIVE BY % MONTHLY ACHIEVEMENT (JUL 26)
+                        <span>🔥</span> TOP 10 DSR ACTIVE BY % MONTHLY ACHIEVEMENT
                     </h3>
                     <span class="text-[10px] bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2.5 py-1 rounded-md font-semibold">Active Representatives</span>
                 </div>
@@ -164,8 +159,8 @@
                             <tr>
                                 <th class="p-3 rounded-l-lg">SALES NAME / WORKPLACE</th>
                                 <th class="p-3 text-center">ACTIVE</th>
-                                <th class="p-3 text-right">TARGET JUL 26</th>
-                                <th class="p-3 text-right">ACTUAL JUL 26</th>
+                                <th class="p-3 text-right">TARGET</th>
+                                <th class="p-3 text-right">ACTUAL</th>
                                 <th class="p-3 text-center">% MONTHLY</th>
                                 <th class="p-3 text-right">PREV MONTH</th>
                                 <th class="p-3 text-center">MOM GROWTH</th>
@@ -176,13 +171,10 @@
                                 <th class="p-3 text-center rounded-r-lg">YTD GROWTH</th>
                             </tr>
                         </thead>
-                        <tbody id="dsrTableBody" class="divide-y divide-slate-800/60 font-medium">
-                            <!-- Rows inserted dynamically -->
-                        </tbody>
+                        <tbody id="dsrTableBody" class="divide-y divide-slate-800/60 font-medium"></tbody>
                     </table>
                 </div>
 
-                <!-- Toggle Show All DSR Button -->
                 <div class="text-center pt-2">
                     <button id="toggleDsrBtn" onclick="toggleDsrRows()" class="bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 px-5 py-2 rounded-xl text-xs font-bold transition">
                         Tampilkan Seluruh DSR (<span id="hiddenDsrCount">0</span> DSR Lainnya) ▾
@@ -194,50 +186,69 @@
 
 
         <!-- ========================================================================= -->
-        <!-- DASHBOARD 2: COMPETITOR MOVEMENT -->
+        <!-- DASHBOARD 2: TARGET WIN ACCURACY -->
         <!-- ========================================================================= -->
-        <div id="dashboard-competitor" class="space-y-6 hidden">
+        <div id="dashboard-targetwin" class="space-y-6 hidden">
             
             <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-wrap justify-between items-center gap-4">
                 <div>
-                    <h2 class="text-xl font-black text-slate-900 tracking-tight">MONITORING COMPETITOR MOVEMENT</h2>
-                    <p class="text-xs text-slate-500 font-medium">Pelacakan Aktivitas Kompetitor & Risk Assessment Market Share</p>
+                    <h2 class="text-xl font-black text-slate-900 tracking-tight uppercase">TARGET WIN ACCURACY DASHBOARD</h2>
+                    <p class="text-xs text-slate-500 font-medium">Analisa Succession Rate Penjualan & Penetrasi Competitor</p>
+                </div>
+                <div class="flex items-center gap-3">
+                    <label class="text-xs font-extrabold text-slate-700 uppercase tracking-wider">DISTRIBUTOR / REGION:</label>
+                    <select id="distributorFilter" onchange="filterTargetWinData()" class="bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2 text-xs font-bold text-slate-800 focus:ring-2 focus:ring-blue-600 outline-none transition">
+                        <option value="ALL">Semua Distributor (ALL)</option>
+                    </select>
                 </div>
             </div>
 
-            <!-- Competitor KPI Cards -->
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm border-l-4 border-l-red-500">
-                    <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">TOTAL COMPETITOR SELL OUT</p>
-                    <h3 id="comp-kpi-sellout" class="text-2xl font-black text-slate-900 mt-1">0 KL</h3>
-                    <p class="text-xs text-slate-500 font-medium mt-1">Volume Pasar Terdeteksi</p>
+            <!-- Target Win KPI Cards -->
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm border-l-4 border-l-blue-600">
+                    <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">TOTAL TARGET WIN</p>
+                    <h3 id="tw-kpi-targetwin" class="text-2xl font-black text-slate-900 mt-1">0</h3>
+                    <p class="text-xs text-slate-500 font-medium mt-1">Target Penjualan (Pcs / Vol)</p>
+                </div>
+                <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm border-l-4 border-l-emerald-500">
+                    <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">TOTAL ACTUAL WIN</p>
+                    <h3 id="tw-kpi-win" class="text-2xl font-black text-emerald-600 mt-1">0</h3>
+                    <p class="text-xs text-slate-500 font-medium mt-1">Realilasi Win (Pcs / Vol)</p>
                 </div>
                 <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm border-l-4 border-l-amber-500">
-                    <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">TARGET WIN-BACK VOLUME</p>
-                    <h3 id="comp-kpi-winback" class="text-2xl font-black text-amber-600 mt-1">0 KL</h3>
-                    <p class="text-xs text-slate-500 font-medium mt-1">Potensi Pasar Direbut Kembali</p>
+                    <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">AVG SUCCESSION RATIO</p>
+                    <h3 id="tw-kpi-ratio" class="text-2xl font-black text-amber-600 mt-1">0%</h3>
+                    <p class="text-xs text-slate-500 font-medium mt-1">Rata-rata Tingkat Keberhasilan</p>
                 </div>
-                <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm border-l-4 border-l-indigo-600">
-                    <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">TOTAL RECORDS LOGGED</p>
-                    <h3 id="comp-kpi-records" class="text-2xl font-black text-indigo-600 mt-1">0 Entry</h3>
-                    <p class="text-xs text-slate-500 font-medium mt-1">Laporan DSR Terdaftar</p>
+                <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm border-l-4 border-l-purple-600">
+                    <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">TOTAL PRODUCT RECORDS</p>
+                    <h3 id="tw-kpi-records" class="text-2xl font-black text-purple-600 mt-1">0 Item</h3>
+                    <p class="text-xs text-slate-500 font-medium mt-1">Total Transaksi Terdaftar</p>
                 </div>
             </div>
 
-            <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
-                <h3 class="text-xs font-black text-slate-800 uppercase tracking-wide mb-4">MONITORING AKTIVITAS KOMPETITOR PER DSR & DISTRIBUTOR</h3>
+            <!-- Target Win Accuracy Table -->
+            <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+                <div class="flex justify-between items-center border-b pb-3">
+                    <h3 class="text-xs font-black text-slate-800 uppercase tracking-wide">DETAIL TARGET WIN & SUCCESSION RATIO PER PRODUCT</h3>
+                    <span class="text-[10px] bg-blue-50 text-blue-700 border border-blue-200 px-2.5 py-1 rounded-md font-bold">Live Sheet Data</span>
+                </div>
+                
                 <div class="overflow-x-auto">
                     <table class="w-full text-left text-xs text-slate-600">
                         <thead class="bg-slate-50 text-slate-700 uppercase font-bold tracking-wider">
                             <tr>
-                                <th class="p-3.5 rounded-l-lg">DISTRIBUTOR / REGION</th>
-                                <th class="p-3.5">DSR NAME</th>
-                                <th class="p-3.5">COMPETITOR SELL OUT</th>
-                                <th class="p-3.5 rounded-r-lg">TARGET WIN-BACK</th>
+                                <th class="p-3.5 rounded-l-lg">DSR NAME / DISTRIBUTOR</th>
+                                <th class="p-3.5">PRODUCT NAME</th>
+                                <th class="p-3.5">COMPETITOR BRAND</th>
+                                <th class="p-3.5 text-right">COMPET YTD SELL OUT / HARGA</th>
+                                <th class="p-3.5 text-right">TARGET WIN</th>
+                                <th class="p-3.5 text-right">WIN (VOL)</th>
+                                <th class="p-3.5 text-center rounded-r-lg">SUCCESSION RATIO</th>
                             </tr>
                         </thead>
-                        <tbody id="competitorTableBody" class="divide-y divide-slate-100 font-medium">
-                            <tr><td colspan="4" class="p-4 text-center text-slate-400">Memuat data competitor...</td></tr>
+                        <tbody id="targetWinTableBody" class="divide-y divide-slate-100 font-medium">
+                            <tr><td colspan="7" class="p-4 text-center text-slate-400">Memuat data Target Win Accuracy...</td></tr>
                         </tbody>
                     </table>
                 </div>
@@ -256,18 +267,17 @@
                 </h3>
                 <button onclick="closeModal('topDsrModal')" class="text-slate-400 hover:text-slate-600 text-2xl font-bold">&times;</button>
             </div>
-            <div id="topDsrList" class="space-y-3">
-                <!-- Dynamically Inserted -->
-            </div>
+            <div id="topDsrList" class="space-y-3"></div>
         </div>
     </div>
 
     <!-- JAVASCRIPT LOGIC -->
     <script>
         const URL_SALES_CSV = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ7ZrrcD9z_Iwj3QWGAHq0usQd20cth9Y8pdfNiuBeWLaX-uqAFlpdZt6J8ggkYx0uCK2cnOJcYzM_5/pub?gid=1625392721&single=true&output=csv";
-        const URL_COMPETITOR_CSV = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTXXMZUwsOfUmKwgSVMf2u-3VbugnUo1gdO3r0y6lh4DIgkBH6K4wcyuOw6RbAHWHzh417iWdy0gBIz/pub?gid=1920770625&single=true&output=csv";
+        const URL_TARGET_WIN_CSV = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTXXMZUwsOfUmKwgSVMf2u-3VbugnUo1gdO3r0y6lh4DIgkBH6K4wcyuOw6RbAHWHzh417iWdy0gBIz/pub?gid=1920770625&single=true&output=csv";
 
         let rawSalesData = [];
+        let rawTargetWinData = [];
         let salesChartInstance = null;
         let showAllDsr = false;
 
@@ -284,22 +294,22 @@
 
         function switchDashboard(type) {
             const salesDash = document.getElementById('dashboard-sales');
-            const compDash = document.getElementById('dashboard-competitor');
+            const targetWinDash = document.getElementById('dashboard-targetwin');
             const tabSales = document.getElementById('tab-sales');
-            const tabComp = document.getElementById('tab-competitor');
+            const tabTargetWin = document.getElementById('tab-targetwin');
 
             if (type === 'sales') {
                 salesDash.classList.remove('hidden');
-                compDash.classList.add('hidden');
+                targetWinDash.classList.add('hidden');
                 tabSales.classList.add('active-tab');
                 tabSales.classList.remove('text-slate-400');
-                tabComp.classList.remove('active-tab');
-                tabComp.classList.add('text-slate-400');
+                tabTargetWin.classList.remove('active-tab');
+                tabTargetWin.classList.add('text-slate-400');
             } else {
                 salesDash.classList.add('hidden');
-                compDash.classList.remove('hidden');
-                tabComp.classList.add('active-tab');
-                tabComp.classList.remove('text-slate-400');
+                targetWinDash.classList.remove('hidden');
+                tabTargetWin.classList.add('active-tab');
+                tabTargetWin.classList.remove('text-slate-400');
                 tabSales.classList.remove('active-tab');
                 tabSales.classList.add('text-slate-400');
             }
@@ -312,26 +322,21 @@
             refreshAllData();
         };
 
-        // REFRESH DATA FUNCTION WITH ANIMATION
         function refreshAllData() {
             const icon = document.getElementById('refreshIcon');
             icon.classList.add('spin-active');
-
-            // Add timestamp query parameter to bypass browser cache
             const cacheBuster = "&t=" + new Date().getTime();
 
             let salesDone = false;
-            let compDone = false;
+            let twDone = false;
 
             function checkDone() {
-                if (salesDone && compDone) {
-                    setTimeout(() => {
-                        icon.classList.remove('spin-active');
-                    }, 500);
+                if (salesDone && twDone) {
+                    setTimeout(() => { icon.classList.remove('spin-active'); }, 500);
                 }
             }
 
-            // Load Sales
+            // Load Sales Data
             Papa.parse(URL_SALES_CSV + cacheBuster, {
                 download: true,
                 header: true,
@@ -346,19 +351,24 @@
                 }
             });
 
-            // Load Competitor
-            Papa.parse(URL_COMPETITOR_CSV + cacheBuster, {
+            // Load Target Win Data
+            Papa.parse(URL_TARGET_WIN_CSV + cacheBuster, {
                 download: true,
                 header: true,
                 skipEmptyLines: true,
                 complete: function(results) {
-                    loadCompetitorData(results.data);
-                    compDone = true;
+                    rawTargetWinData = results.data;
+                    populateDistributorFilter(rawTargetWinData);
+                    filterTargetWinData();
+                    twDone = true;
                     checkDone();
                 }
             });
         }
 
+        // ==========================================
+        // SALES DASHBOARD FUNCTIONS
+        // ==========================================
         function populateAreaFilter(data) {
             const filterSelect = document.getElementById('salesAreaFilter');
             const currentVal = filterSelect.value;
@@ -372,9 +382,7 @@
                 filterSelect.appendChild(option);
             });
 
-            if (areas.includes(currentVal)) {
-                filterSelect.value = currentVal;
-            }
+            if (areas.includes(currentVal)) { filterSelect.value = currentVal; }
         }
 
         function filterSalesData() {
@@ -439,8 +447,8 @@
                 data: {
                     labels: labels.map(l => l.replace('PT CAHAYA PENGAJARAN ABADI-', '')),
                     datasets: [
-                        { label: 'Target Jul 26 (KL)', data: targetData.map(v => v/1000), backgroundColor: '#94A3B8', borderRadius: 6 },
-                        { label: 'Actual Jul 26 (KL)', data: actualData.map(v => v/1000), backgroundColor: '#EA580C', borderRadius: 6 }
+                        { label: 'Target (KL)', data: targetData.map(v => v/1000), backgroundColor: '#94A3B8', borderRadius: 6 },
+                        { label: 'Actual (KL)', data: actualData.map(v => v/1000), backgroundColor: '#EA580C', borderRadius: 6 }
                     ]
                 },
                 options: {
@@ -451,9 +459,6 @@
             });
         }
 
-        // =========================================================================
-        // DIURUTKAN BERDASARKAN % MONTHLY ACHIEVEMENT TERTINGGI (HIGHEST TO LOWEST)
-        // =========================================================================
         function renderDsrTable(data) {
             const tbody = document.getElementById('dsrTableBody');
             tbody.innerHTML = '';
@@ -467,7 +472,7 @@
                 const actualB = parseNum(b['Actual Jul 26'] || b['Actual']);
                 const achB = parseNum(b['% Monthly']) || (targetB > 0 ? (actualB / targetB) * 100 : 0);
 
-                return achB - achA; // Sort descending berdasarkan % Monthly Achievement
+                return achB - achA;
             });
 
             const limit = showAllDsr ? sorted.length : 10;
@@ -533,12 +538,7 @@
         }
 
         function populateTopDsrModal(data) {
-            const sorted = [...data].sort((a, b) => {
-                const actualA = parseNum(a['Actual Jul 26'] || a['Actual']);
-                const actualB = parseNum(b['Actual Jul 26'] || b['Actual']);
-                return actualB - actualA;
-            });
-
+            const sorted = [...data].sort((a, b) => parseNum(b['Actual Jul 26'] || b['Actual']) - parseNum(a['Actual Jul 26'] || a['Actual']));
             const container = document.getElementById('topDsrList');
             container.innerHTML = '';
 
@@ -564,33 +564,100 @@
             });
         }
 
-        function loadCompetitorData(compData) {
-            let totalSellOut = 0;
-            let totalWinBack = 0;
+        // ==========================================
+        // TARGET WIN ACCURACY FUNCTIONS (NEW)
+        // ==========================================
+        function populateDistributorFilter(data) {
+            const select = document.getElementById('distributorFilter');
+            const currentVal = select.value;
+            const distributors = [...new Set(data.map(row => row['Distributor']).filter(Boolean))];
 
-            const tbody = document.getElementById('competitorTableBody');
+            select.innerHTML = '<option value="ALL">Semua Distributor (ALL)</option>';
+            distributors.forEach(dist => {
+                const opt = document.createElement('option');
+                opt.value = dist;
+                opt.textContent = dist;
+                select.appendChild(opt);
+            });
+
+            if (distributors.includes(currentVal)) { select.value = currentVal; }
+        }
+
+        function filterTargetWinData() {
+            const selectedDist = document.getElementById('distributorFilter').value;
+            let filtered = rawTargetWinData;
+
+            if (selectedDist !== 'ALL') {
+                filtered = rawTargetWinData.filter(row => row['Distributor'] === selectedDist);
+            }
+
+            let totalTargetWin = 0;
+            let totalWinVol = 0;
+            let totalRatioSum = 0;
+            let validRatioCount = 0;
+
+            const tbody = document.getElementById('targetWinTableBody');
             tbody.innerHTML = '';
 
-            compData.forEach(row => {
-                const sellVal = parseNum(row['Compet YTD Sell Out'] || row['Sell Out']);
-                const winVal = parseNum(row['JUL-TargetWin'] || row['Target Win']);
+            if (filtered.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="7" class="p-4 text-center text-slate-400">Tidak ada data ditemukan.</td></tr>';
+                return;
+            }
 
-                totalSellOut += sellVal;
-                totalWinBack += winVal;
+            filtered.forEach(row => {
+                const dsrName = row['DSR Name'] || '-';
+                const distName = row['Distributor'] || '-';
+                const prodName = row['Product Name'] || '-';
+                const compBrand = row['Competitor Product Brand'] || '-';
+                const compSellOut = parseNum(row['Compet YTD. Sell Out']);
+                const targetWin = parseNum(row['JUL-TargetWin']);
+                const winVol = parseNum(row['JUL-WIN(Vol)']);
+                
+                // Parsing atau Kalkulasi Ratio Succession
+                let ratioVal = 0;
+                if (row['Succesion Ratio'] !== undefined && row['Succesion Ratio'] !== '') {
+                    ratioVal = parseNum(row['Succesion Ratio']);
+                } else if (targetWin > 0) {
+                    ratioVal = (winVol / targetWin) * 100;
+                }
+
+                totalTargetWin += targetWin;
+                totalWinVol += winVol;
+                totalRatioSum += ratioVal;
+                validRatioCount++;
+
+                const ratioBadge = ratioVal >= 100 ? 'bg-emerald-100 text-emerald-800 border-emerald-300' :
+                                   ratioVal > 0 ? 'bg-amber-100 text-amber-800 border-amber-300' : 
+                                   'bg-slate-100 text-slate-500 border-slate-200';
 
                 tbody.innerHTML += `
                     <tr class="hover:bg-slate-50 transition">
-                        <td class="p-3.5 font-bold text-slate-800">${row['Distributor'] || '-'}</td>
-                        <td class="p-3.5 font-medium">${row['DSR Name'] || '-'}</td>
-                        <td class="p-3.5 font-bold text-slate-700">${formatKL(sellVal)}</td>
-                        <td class="p-3.5 font-bold text-amber-600">${formatKL(winVal)}</td>
+                        <td class="p-3.5">
+                            <div class="font-bold text-slate-900">${dsrName}</div>
+                            <div class="text-[10px] text-slate-400">${distName}</div>
+                        </td>
+                        <td class="p-3.5 font-bold text-slate-800">${prodName}</td>
+                        <td class="p-3.5">
+                            <span class="bg-slate-100 text-slate-700 font-semibold px-2 py-0.5 rounded border border-slate-200">${compBrand}</span>
+                        </td>
+                        <td class="p-3.5 text-right font-semibold text-slate-600">${compSellOut.toLocaleString('id-ID')}</td>
+                        <td class="p-3.5 text-right font-bold text-blue-900">${targetWin.toLocaleString('id-ID')}</td>
+                        <td class="p-3.5 text-right font-black text-emerald-600">${winVol.toLocaleString('id-ID')}</td>
+                        <td class="p-3.5 text-center">
+                            <span class="px-2.5 py-1 rounded-full text-[11px] font-extrabold border ${ratioBadge}">
+                                ${ratioVal.toFixed(0)}%
+                            </span>
+                        </td>
                     </tr>
                 `;
             });
 
-            document.getElementById('comp-kpi-sellout').innerText = formatKL(totalSellOut);
-            document.getElementById('comp-kpi-winback').innerText = formatKL(totalWinBack);
-            document.getElementById('comp-kpi-records').innerText = compData.length + ' Entry';
+            const avgRatio = validRatioCount > 0 ? (totalRatioSum / validRatioCount).toFixed(1) : 0;
+
+            document.getElementById('tw-kpi-targetwin').innerText = totalTargetWin.toLocaleString('id-ID');
+            document.getElementById('tw-kpi-win').innerText = totalWinVol.toLocaleString('id-ID');
+            document.getElementById('tw-kpi-ratio').innerText = avgRatio + '%';
+            document.getElementById('tw-kpi-records').innerText = filtered.length + ' Item';
         }
     </script>
 </body>
