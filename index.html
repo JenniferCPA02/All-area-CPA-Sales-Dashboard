@@ -37,7 +37,7 @@
 </head>
 <body class="bg-slate-100 font-sans text-slate-800 antialiased">
 
-    <!-- TOP NAVIGATION BAR WITH LOGOS & REFRESH BUTTON -->
+    <!-- TOP NAVIGATION BAR -->
     <nav class="bg-white border-b border-slate-200 sticky top-0 z-50 shadow-sm">
         <div class="max-w-7xl mx-auto px-6 py-2.5 flex justify-between items-center">
             
@@ -195,11 +195,26 @@
                     <h2 class="text-xl font-black text-slate-900 tracking-tight uppercase">TARGET WIN ACCURACY DASHBOARD</h2>
                     <p class="text-xs text-slate-500 font-medium">Analisa Succession Rate Penjualan & Penetrasi Competitor</p>
                 </div>
-                <div class="flex items-center gap-3">
-                    <label class="text-xs font-extrabold text-slate-700 uppercase tracking-wider">DISTRIBUTOR / REGION:</label>
-                    <select id="distributorFilter" onchange="filterTargetWinData()" class="bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2 text-xs font-bold text-slate-800 focus:ring-2 focus:ring-blue-600 outline-none transition">
-                        <option value="ALL">Semua Distributor (ALL)</option>
-                    </select>
+                
+                <!-- FILTER DUAL CONTROL (DISTRIBUTOR & SORT MODE) -->
+                <div class="flex flex-wrap items-center gap-3">
+                    <div class="flex items-center gap-2">
+                        <label class="text-xs font-extrabold text-slate-700 uppercase tracking-wider">DISTRIBUTOR:</label>
+                        <select id="distributorFilter" onchange="filterTargetWinData()" class="bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2 text-xs font-bold text-slate-800 focus:ring-2 focus:ring-blue-600 outline-none transition">
+                            <option value="ALL">Semua Distributor (ALL)</option>
+                        </select>
+                    </div>
+
+                    <div class="flex items-center gap-2">
+                        <label class="text-xs font-extrabold text-slate-700 uppercase tracking-wider">SORT / URUTAN:</label>
+                        <select id="sortWinMode" onchange="filterTargetWinData()" class="bg-amber-50 border border-amber-300 rounded-xl px-3.5 py-2 text-xs font-extrabold text-amber-900 focus:ring-2 focus:ring-amber-500 outline-none transition shadow-sm">
+                            <option value="LOW_RATIO_HIGH_TARGET" selected>🔥 Priority: Lowest Ratio + Highest Target WIN</option>
+                            <option value="DEFAULT">Standard (Sheet Order)</option>
+                            <option value="HIGH_TARGET">Highest Target WIN</option>
+                            <option value="LOW_RATIO">Lowest Succession Ratio</option>
+                            <option value="HIGH_RATIO">Highest Succession Ratio</option>
+                        </select>
+                    </div>
                 </div>
             </div>
 
@@ -230,7 +245,10 @@
             <!-- Target Win Accuracy Table -->
             <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
                 <div class="flex justify-between items-center border-b pb-3">
-                    <h3 class="text-xs font-black text-slate-800 uppercase tracking-wide">DETAIL TARGET WIN & SUCCESSION RATIO PER PRODUCT</h3>
+                    <div class="flex items-center gap-2">
+                        <h3 class="text-xs font-black text-slate-800 uppercase tracking-wide">DETAIL TARGET WIN & SUCCESSION RATIO PER PRODUCT</h3>
+                        <span id="activeSortBadge" class="text-[10px] bg-amber-100 text-amber-800 border border-amber-300 px-2.5 py-0.5 rounded-md font-bold">Priority Watchlist Active</span>
+                    </div>
                     <span class="text-[10px] bg-blue-50 text-blue-700 border border-blue-200 px-2.5 py-1 rounded-md font-bold">Live Sheet Data</span>
                 </div>
                 
@@ -565,7 +583,7 @@
         }
 
         // ==========================================
-        // TARGET WIN ACCURACY FUNCTIONS (NEW)
+        // TARGET WIN ACCURACY FUNCTIONS & SORTING
         // ==========================================
         function populateDistributorFilter(data) {
             const select = document.getElementById('distributorFilter');
@@ -585,10 +603,62 @@
 
         function filterTargetWinData() {
             const selectedDist = document.getElementById('distributorFilter').value;
-            let filtered = rawTargetWinData;
+            const sortMode = document.getElementById('sortWinMode').value;
+            const sortBadge = document.getElementById('activeSortBadge');
 
+            let filtered = [...rawTargetWinData];
+
+            // Filter Distributor
             if (selectedDist !== 'ALL') {
-                filtered = rawTargetWinData.filter(row => row['Distributor'] === selectedDist);
+                filtered = filtered.filter(row => row['Distributor'] === selectedDist);
+            }
+
+            // Hitung Ratio per item untuk kebutuhan sorting & render
+            filtered = filtered.map(row => {
+                const targetWin = parseNum(row['JUL-TargetWin']);
+                const winVol = parseNum(row['JUL-WIN(Vol)']);
+                let ratioVal = 0;
+                
+                if (row['Succesion Ratio'] !== undefined && row['Succesion Ratio'] !== '') {
+                    ratioVal = parseNum(row['Succesion Ratio']);
+                } else if (targetWin > 0) {
+                    ratioVal = (winVol / targetWin) * 100;
+                }
+
+                return {
+                    ...row,
+                    _parsedTargetWin: targetWin,
+                    _parsedWinVol: winVol,
+                    _parsedRatio: ratioVal
+                };
+            });
+
+            // LOGIKA SORTING KHUSUS
+            if (sortMode === 'LOW_RATIO_HIGH_TARGET') {
+                // Prioritas: Succession Ratio terendah, jika ratio sama maka Target WIN tertinggi
+                filtered.sort((a, b) => {
+                    if (a._parsedRatio === b._parsedRatio) {
+                        return b._parsedTargetWin - a._parsedTargetWin;
+                    }
+                    return a._parsedRatio - b._parsedRatio;
+                });
+                sortBadge.innerText = '🔥 Priority: Lowest Ratio + Highest Target WIN';
+                sortBadge.className = 'text-[10px] bg-amber-100 text-amber-800 border border-amber-300 px-2.5 py-0.5 rounded-md font-bold';
+            } else if (sortMode === 'HIGH_TARGET') {
+                filtered.sort((a, b) => b._parsedTargetWin - a._parsedTargetWin);
+                sortBadge.innerText = 'Highest Target WIN Order';
+                sortBadge.className = 'text-[10px] bg-blue-100 text-blue-800 border border-blue-300 px-2.5 py-0.5 rounded-md font-bold';
+            } else if (sortMode === 'LOW_RATIO') {
+                filtered.sort((a, b) => a._parsedRatio - b._parsedRatio);
+                sortBadge.innerText = 'Lowest Succession Ratio Order';
+                sortBadge.className = 'text-[10px] bg-rose-100 text-rose-800 border border-rose-300 px-2.5 py-0.5 rounded-md font-bold';
+            } else if (sortMode === 'HIGH_RATIO') {
+                filtered.sort((a, b) => b._parsedRatio - a._parsedRatio);
+                sortBadge.innerText = 'Highest Succession Ratio Order';
+                sortBadge.className = 'text-[10px] bg-emerald-100 text-emerald-800 border border-emerald-300 px-2.5 py-0.5 rounded-md font-bold';
+            } else {
+                sortBadge.innerText = 'Standard Sheet Order';
+                sortBadge.className = 'text-[10px] bg-slate-100 text-slate-700 border border-slate-300 px-2.5 py-0.5 rounded-md font-bold';
             }
 
             let totalTargetWin = 0;
@@ -610,16 +680,9 @@
                 const prodName = row['Product Name'] || '-';
                 const compBrand = row['Competitor Product Brand'] || '-';
                 const compSellOut = parseNum(row['Compet YTD. Sell Out']);
-                const targetWin = parseNum(row['JUL-TargetWin']);
-                const winVol = parseNum(row['JUL-WIN(Vol)']);
-                
-                // Parsing atau Kalkulasi Ratio Succession
-                let ratioVal = 0;
-                if (row['Succesion Ratio'] !== undefined && row['Succesion Ratio'] !== '') {
-                    ratioVal = parseNum(row['Succesion Ratio']);
-                } else if (targetWin > 0) {
-                    ratioVal = (winVol / targetWin) * 100;
-                }
+                const targetWin = row._parsedTargetWin;
+                const winVol = row._parsedWinVol;
+                const ratioVal = row._parsedRatio;
 
                 totalTargetWin += targetWin;
                 totalWinVol += winVol;
@@ -628,20 +691,27 @@
 
                 const ratioBadge = ratioVal >= 100 ? 'bg-emerald-100 text-emerald-800 border-emerald-300' :
                                    ratioVal > 0 ? 'bg-amber-100 text-amber-800 border-amber-300' : 
-                                   'bg-slate-100 text-slate-500 border-slate-200';
+                                   'bg-rose-100 text-rose-800 border-rose-300';
+
+                // Row Highlighting untuk kasus Ratio Rendah + Target Win Besar
+                const isCriticalWarning = ratioVal === 0 && targetWin > 0;
+                const rowClass = isCriticalWarning ? 'bg-rose-50/40 hover:bg-rose-100/50' : 'hover:bg-slate-50';
 
                 tbody.innerHTML += `
-                    <tr class="hover:bg-slate-50 transition">
+                    <tr class="${rowClass} transition">
                         <td class="p-3.5">
                             <div class="font-bold text-slate-900">${dsrName}</div>
                             <div class="text-[10px] text-slate-400">${distName}</div>
                         </td>
-                        <td class="p-3.5 font-bold text-slate-800">${prodName}</td>
+                        <td class="p-3.5 font-bold text-slate-800">
+                            ${prodName}
+                            ${isCriticalWarning ? '<span class="ml-1 text-[9px] bg-rose-600 text-white font-black px-1.5 py-0.5 rounded">HIGH TARGET / ZERO WIN</span>' : ''}
+                        </td>
                         <td class="p-3.5">
                             <span class="bg-slate-100 text-slate-700 font-semibold px-2 py-0.5 rounded border border-slate-200">${compBrand}</span>
                         </td>
                         <td class="p-3.5 text-right font-semibold text-slate-600">${compSellOut.toLocaleString('id-ID')}</td>
-                        <td class="p-3.5 text-right font-bold text-blue-900">${targetWin.toLocaleString('id-ID')}</td>
+                        <td class="p-3.5 text-right font-black text-blue-900">${targetWin.toLocaleString('id-ID')}</td>
                         <td class="p-3.5 text-right font-black text-emerald-600">${winVol.toLocaleString('id-ID')}</td>
                         <td class="p-3.5 text-center">
                             <span class="px-2.5 py-1 rounded-full text-[11px] font-extrabold border ${ratioBadge}">
