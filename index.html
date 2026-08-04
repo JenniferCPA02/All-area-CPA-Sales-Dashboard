@@ -31,8 +31,8 @@
         <div class="max-w-7xl mx-auto px-6 py-2.5 flex justify-between items-center">
             
             <div class="flex items-center space-x-4">
-                <!-- KODE LOGO PERUSAHAAN (Silakan ganti URL src di bawah ini dengan link gambar logo Anda) -->
-                <img src="PASTE_LINK_LOGO_ANDA_DI_SINI.png" alt="Logo PT CPA" class="h-10 w-auto object-contain">
+                <!-- TAG GAMBAR ASLI (Ganti 'logo.png' dengan nama file gambar Anda atau teks Base64) -->
+                <img src="logo.png" alt="Logo PT CPA" class="h-10 w-auto object-contain">
                 
                 <div class="border-l border-slate-200 pl-4">
                     <h1 class="text-sm font-black leading-tight text-slate-900 tracking-tight">PT CAHAYA PENGAJARAN ABADI</h1>
@@ -192,7 +192,7 @@
                         </select>
                     </div>
 
-                    <!-- Filter Status Win (BARU: PARTIAL WIN & FULL WIN) -->
+                    <!-- Filter Status Win -->
                     <div class="flex items-center gap-1.5">
                         <label class="font-bold text-slate-600">Status Win:</label>
                         <select id="twStatusFilter" onchange="filterTargetWinData()" class="bg-white border border-slate-300 rounded-lg px-2.5 py-1.5 font-bold text-slate-700 outline-none focus:ring-2 focus:ring-blue-600">
@@ -326,7 +326,7 @@
             document.getElementById('kpi-target').innerText = formatKL(target);
             document.getElementById('kpi-actual').innerText = formatKL(actual);
             document.getElementById('kpi-ach').innerText = (target > 0 ? ((actual / target) * 100).toFixed(1) : 0) + '%';
-            document.getElementById('kpi-[#kpi-dsr]').innerText = dsrCount || filtered.length;
+            document.getElementById('kpi-dsr').innerText = dsrCount || filtered.length;
 
             renderSalesChart(Object.keys(areaAgg), Object.values(areaAgg).map(x => x.target), Object.values(areaAgg).map(x => x.actual));
             renderDsrTable(filtered);
@@ -451,7 +451,6 @@
                     ratio = 100;
                 }
 
-                // LOGIKA FILTER STATUS WIN BARU (PARTIAL WIN & FULL WIN)
                 if (selectedStatus === 'PARTIAL_WIN' && !(winVol > 0 && ratio < 100)) return;
                 if (selectedStatus === 'FULL_WIN' && !(winVol > 0 && ratio >= 100)) return;
                 if (selectedStatus === 'LOSS' && !(targetWin > 0 && winVol === 0)) return;
@@ -471,10 +470,8 @@
                 });
             });
 
-            // Urutkan Data: Prioritaskan produk dengan Target WIN Terbesar
             valid.sort((a, b) => b.targetWin - a.targetWin || b.winVol - a.winVol);
 
-            // Hitung Kartu KPI
             let totalTargetWinAll = 0;
             let totalActualWinAll = 0;
             let totalRatioSum = 0;
@@ -500,10 +497,7 @@
                 return;
             }
 
-            // Render Hasil ke Tabel
             valid.forEach((r, i) => {
-                
-                // BADGE VISUAL UNTUK PARTIAL WIN VS FULL WIN VS LOSS
                 let badgeHTML = '';
                 if (r.targetWin > 0 && r.winVol === 0) {
                     badgeHTML = `<span class="bg-red-100 text-red-800 border border-red-300 px-2.5 py-1 rounded-full font-black text-[10px] tracking-wider">❌ LOSS (0%)</span>`;
