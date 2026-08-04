@@ -566,12 +566,12 @@
         }
 
         // ==========================================
-        // TARGET WIN ACCURACY LOGIC
+        // TARGET WIN ACCURACY LOGIC (SMART AUTO DETECT)
         // ==========================================
         function populateDistributorFilter(data) {
             const select = document.getElementById('distributorFilter');
             const currentVal = select.value;
-            const distributors = [...new Set(data.map(row => row['Distributor']).filter(Boolean))];
+            const distributors = [...new Set(data.map(row => row['Distributor'] || row['Distributor Name']).filter(Boolean))];
 
             select.innerHTML = '<option value="ALL">Semua Distributor (ALL)</option>';
             distributors.forEach(dist => {
@@ -591,30 +591,43 @@
 
             // 1. Filter Berdasarkan Distributor
             if (selectedDist !== 'ALL') {
-                filtered = filtered.filter(row => row['Distributor'] === selectedDist);
+                filtered = filtered.filter(row => (row['Distributor'] || row['Distributor Name']) === selectedDist);
             }
 
-            // 2. Filter & Parsing: HANYA YANG PUNYA TARGET WIN > 0
+            // 2. HELPER UTAMA: AUTO DETECT KOLOM HEADER TARGET WIN & REALISASI WIN
+            let targetWinKey = null;
+            let winVolKey = null;
+
+            if (filtered.length > 0) {
+                const keys = Object.keys(filtered[0]);
+                
+                // Cari key kolom Target WIN otomatis
+                targetWinKey = keys.find(k => {
+                    const norm = k.toLowerCase().replace(/\s+/g, '');
+                    return norm.includes('target') && norm.includes('win');
+                });
+
+                // Cari key kolom Realisasi WIN (Vol) otomatis
+                winVolKey = keys.find(k => {
+                    const norm = k.toLowerCase().replace(/\s+/g, '');
+                    return norm.includes('win') && !norm.includes('target') && !norm.includes('ratio');
+                });
+            }
+
             let validItems = [];
 
             filtered.forEach(row => {
-                // FLEXIBLE HEADER CHECKING UNTUK TARGET WIN VOLUME
-                const targetWin = parseNum(
-                    row['JUL-Target WIN(Vol)'] || 
-                    row['JUL-Target WIN (Vol)'] || 
-                    row['JUL-Target WIN'] || 
-                    row['JUL-TargetWin'] || 
-                    row['Target WIN'] || 
-                    row['TargetWin']
-                );
+                // Ambil nilai Target WIN menggunakan Auto Detector Key
+                const targetWin = targetWinKey ? parseNum(row[targetWinKey]) : 0;
                 
+                // Jika Target WIN > 0 (masuk kriteria)
                 if (targetWin > 0) {
-                    const winVol = parseNum(row['JUL-WIN(Vol)'] || row['JUL-WIN (Vol)'] || row['JUL-WIN']);
-                    let ratioVal = 0;
+                    const winVol = winVolKey ? parseNum(row[winVolKey]) : 0;
                     
+                    let ratioVal = 0;
                     if (row['Succesion Ratio'] !== undefined && row['Succesion Ratio'] !== '') {
                         ratioVal = parseNum(row['Succesion Ratio']);
-                    } else {
+                    } else if (targetWin > 0) {
                         ratioVal = (winVol / targetWin) * 100;
                     }
 
@@ -650,7 +663,7 @@
             tbody.innerHTML = '';
 
             if (validItems.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="7" class="p-4 text-center text-slate-400 font-bold">Tidak ada data dengan Target WIN > 0.</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="7" class="p-4 text-center text-slate-400 font-bold">Tidak ada data dengan Target WIN > 0. (Periksa apakah nama header di Sheet sesuai)</td></tr>';
                 document.getElementById('tw-kpi-targetwin').innerText = "0";
                 document.getElementById('tw-kpi-win').innerText = "0";
                 document.getElementById('tw-kpi-ratio').innerText = "0%";
@@ -658,13 +671,13 @@
                 return;
             }
 
-            // 4. RENDER BARIS TABEL
+            // 4. RENDER TABEL
             validItems.forEach((row, idx) => {
-                const dsrName = row['DSR Name'] || '-';
-                const distName = row['Distributor'] || '-';
-                const prodName = row['Product Name'] || '-';
-                const compBrand = row['Competitor Product Brand'] || '-';
-                const compSellOut = parseNum(row['Compet YTD. Sell Out']);
+                const dsrName = row['DSR Name'] || row['DSR'] || row['Sales Name'] || '-';
+                const distName = row['Distributor'] || row['Distributor Name'] || '-';
+                const prodName = row['Product Name'] || row['Product'] || '-';
+                const compBrand = row['Competitor Product Brand'] || row['Competitor Brand'] || '-';
+                const compSellOut = parseNum(row['Compet YTD. Sell Out'] || row['Compet YTD Sell Out']);
                 const targetWin = row._parsedTargetWin;
                 const winVol = row._parsedWinVol;
                 const ratioVal = row._parsedRatio;
