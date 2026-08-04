@@ -217,9 +217,9 @@
         const URL_SALES_CSV = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ7ZrrcD9z_Iwj3QWGAHq0usQd20cth9Y8pdfNiuBeWLaX-uqAFlpdZt6J8ggkYx0uCK2cnOJcYzM_5/pub?gid=1625392721&single=true&output=csv";
         const URL_TARGET_WIN_CSV = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTXXMZUwsOfUmKwgSVMf2u-3VbugnUo1gdO3r0y6lh4DIgkBH6K4wcyuOw6RbAHWHzh417iWdy0gBIz/pub?gid=1920770625&single=true&output=csv";
 
-        const CACHE_KEY_SALES = 'cache_sales_data';
-        const CACHE_KEY_TW = 'cache_tw_data_v5';
-        const CACHE_TIME_KEY = 'cache_last_time';
+        const CACHE_KEY_SALES = 'cache_sales_data_v6';
+        const CACHE_KEY_TW = 'cache_tw_data_v6';
+        const CACHE_TIME_KEY = 'cache_last_time_v6';
         const CACHE_DURATION = 5 * 60 * 1000;
 
         let rawSalesData = [];
@@ -229,7 +229,7 @@
         function formatKL(val) { return ((val || 0) / 1000).toLocaleString('id-ID', { minimumFractionDigits: 1 }) + ' KL'; }
         function parseNum(val) { return parseFloat((val || '0').toString().replace(/[^0-9.-]+/g, '')) || 0; }
 
-        // MENCARI NAMA KOLOM DENGAN DUKUNGAN LEBIH BANYAK VARIASI
+        // MENCARI VALUE KOLOM DENGAN CHECK MULTIPLE HEADER ALIAS
         function getColValue(row, possibleNames) {
             const keys = Object.keys(row);
             for (let name of possibleNames) {
@@ -383,31 +383,30 @@
             const selected = document.getElementById('distributorFilter').value;
             let valid = [];
 
-            // 1. Ambil data TANPA menyaring targetWin > 0
             rawTargetWinData.forEach(row => {
                 const dist = getColValue(row, ['Distributor', 'Distributor Name', 'Workplace', 'Workplace Name']);
                 const dsrName = getColValue(row, ['DSR Name', 'DSR', 'Sales Name', 'Sales']);
                 const prodName = getColValue(row, ['Product Name', 'Product', 'Nama Produk']);
 
-                // Pastikan setidaknya baris memiliki nama distributor atau produk
-                if ((selected === 'ALL' || dist === selected) && (dsrName || prodName || dist)) {
-                    const targetWin = parseNum(getColValue(row, ['Target WIN', 'Target Win', 'TARGET WIN', 'Target']));
-                    const winVol = parseNum(getColValue(row, ['WIN (VOL)', 'Win Vol', 'WIN VOL', 'Win (Vol)', 'Actual']));
-                    const compSellOut = parseNum(getColValue(row, ['Compet YTD Sell Out', 'Compet YTD. Sell Out', 'COMPET YTD SELL OUT / HARGA', 'Competitor Sell Out']));
-                    
+                if (selected === 'ALL' || dist === selected) {
+                    // MAPPING HEADER H, J, K YANG SESUAI DENGAN GOOGLE SHEETS
+                    const compSellOut = parseNum(getColValue(row, ['YTD. Sell Out', 'YTD Sell Out', 'Compet YTD Sell Out']));
+                    const targetWin = parseNum(getColValue(row, ['JUL-TargetWinPerMonth', 'TargetWINPerMonth', 'Target WIN']));
+                    const winVol = parseNum(getColValue(row, ['JUL-WIN(Vol)', 'JUL-WIN Vol', 'WIN (Vol)', 'Win Vol']));
+
                     let ratio = 0;
-                    const rawRatio = getColValue(row, ['Succession Ratio', 'Succesion Ratio', 'SUCCESSION RATIO', 'Ratio']);
-                    if (rawRatio !== '') {
-                        ratio = parseNum(rawRatio);
-                    } else if (targetWin > 0) {
+                    if (targetWin > 0) {
                         ratio = (winVol / targetWin) * 100;
+                    } else {
+                        const rawRatio = getColValue(row, ['Succession Ratio', 'Succesion Ratio']);
+                        ratio = parseNum(rawRatio);
                     }
 
                     valid.push({
                         dsrName: dsrName || '-',
                         distName: dist || '-',
                         prodName: prodName || '-',
-                        compBrand: getColValue(row, ['Competitor Brand', 'Competitor Product Brand', 'Competitor']) || '-',
+                        compBrand: getColValue(row, ['Competitor Product Brand', 'Competitor Brand', 'Competitor']) || '-',
                         compSellOut: compSellOut,
                         targetWin: targetWin,
                         winVol: winVol,
@@ -416,18 +415,16 @@
                 }
             });
 
-            // 2. Hitung KPI Card
+            // Hitung KPI
             let totalTargetWinAll = 0;
             let totalActualWinAll = 0;
-            let totalRatioSum = 0;
 
             valid.forEach(r => {
                 totalTargetWinAll += r.targetWin;
                 totalActualWinAll += r.winVol;
-                totalRatioSum += r.ratio;
             });
 
-            const avgRatioAll = valid.length > 0 ? (totalRatioSum / valid.length) : 0;
+            const avgRatioAll = totalTargetWinAll > 0 ? (totalActualWinAll / totalTargetWinAll) * 100 : 0;
 
             document.getElementById('tw-kpi-targetwin').innerText = totalTargetWinAll.toLocaleString('id-ID');
             document.getElementById('tw-kpi-win').innerText = totalActualWinAll.toLocaleString('id-ID');
@@ -438,11 +435,11 @@
             tbody.innerHTML = '';
 
             if (valid.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="7" class="p-5 text-center text-slate-400 font-bold">Tidak ada data Target Win yang ditemukan. Pastikan spreadsheet memiliki data.</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="7" class="p-5 text-center text-slate-400 font-bold">Tidak ada data Target Win yang ditemukan.</td></tr>';
                 return;
             }
 
-            // Tampilkan seluruh baris
+            // Render Table
             valid.forEach((r, i) => {
                 tbody.innerHTML += `
                     <tr class="hover:bg-slate-50">
