@@ -81,9 +81,7 @@
 
     <div class="max-w-7xl mx-auto px-6 py-6">
 
-        <!-- ========================================================================= -->
         <!-- DASHBOARD 1: SALES PERFORMANCE -->
-        <!-- ========================================================================= -->
         <div id="dashboard-sales" class="space-y-6">
             
             <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-wrap justify-between items-center gap-4">
@@ -185,9 +183,7 @@
         </div>
 
 
-        <!-- ========================================================================= -->
         <!-- DASHBOARD 2: TARGET WIN ACCURACY -->
-        <!-- ========================================================================= -->
         <div id="dashboard-targetwin" class="space-y-6 hidden">
             
             <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-wrap justify-between items-center gap-4">
@@ -196,25 +192,11 @@
                     <p class="text-xs text-slate-500 font-medium">Analisa Succession Rate Penjualan & Penetrasi Competitor</p>
                 </div>
                 
-                <!-- FILTER DUAL CONTROL -->
-                <div class="flex flex-wrap items-center gap-3">
-                    <div class="flex items-center gap-2">
-                        <label class="text-xs font-extrabold text-slate-700 uppercase tracking-wider">DISTRIBUTOR:</label>
-                        <select id="distributorFilter" onchange="filterTargetWinData()" class="bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2 text-xs font-bold text-slate-800 focus:ring-2 focus:ring-blue-600 outline-none transition">
-                            <option value="ALL">Semua Distributor (ALL)</option>
-                        </select>
-                    </div>
-
-                    <div class="flex items-center gap-2">
-                        <label class="text-xs font-extrabold text-slate-700 uppercase tracking-wider">SORT / URUTAN:</label>
-                        <select id="sortWinMode" onchange="filterTargetWinData()" class="bg-amber-50 border border-amber-300 rounded-xl px-3.5 py-2 text-xs font-extrabold text-amber-900 focus:ring-2 focus:ring-amber-500 outline-none transition shadow-sm">
-                            <option value="LOW_RATIO_HIGH_TARGET" selected>🔥 Priority: Lowest Ratio + Highest Target WIN</option>
-                            <option value="DEFAULT">Standard (Sheet Order)</option>
-                            <option value="HIGH_TARGET">Highest Target WIN</option>
-                            <option value="LOW_RATIO">Lowest Succession Ratio</option>
-                            <option value="HIGH_RATIO">Highest Succession Ratio</option>
-                        </select>
-                    </div>
+                <div class="flex items-center gap-3">
+                    <label class="text-xs font-extrabold text-slate-700 uppercase tracking-wider">DISTRIBUTOR:</label>
+                    <select id="distributorFilter" onchange="filterTargetWinData()" class="bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2 text-xs font-bold text-slate-800 focus:ring-2 focus:ring-blue-600 outline-none transition">
+                        <option value="ALL">Semua Distributor (TOP 20 ALL)</option>
+                    </select>
                 </div>
             </div>
 
@@ -223,41 +205,46 @@
                 <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm border-l-4 border-l-blue-600">
                     <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">TOTAL TARGET WIN</p>
                     <h3 id="tw-kpi-targetwin" class="text-2xl font-black text-slate-900 mt-1">0</h3>
-                    <p class="text-xs text-slate-500 font-medium mt-1">Target Penjualan (Pcs / Vol)</p>
+                    <p class="text-xs text-slate-500 font-medium mt-1">Target Penjualan WIN (> 0)</p>
                 </div>
                 <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm border-l-4 border-l-emerald-500">
                     <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">TOTAL ACTUAL WIN</p>
                     <h3 id="tw-kpi-win" class="text-2xl font-black text-emerald-600 mt-1">0</h3>
-                    <p class="text-xs text-slate-500 font-medium mt-1">Realilasi Win (Pcs / Vol)</p>
+                    <p class="text-xs text-slate-500 font-medium mt-1">Realisasi Win (Vol)</p>
                 </div>
                 <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm border-l-4 border-l-amber-500">
                     <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">AVG SUCCESSION RATIO</p>
                     <h3 id="tw-kpi-ratio" class="text-2xl font-black text-amber-600 mt-1">0%</h3>
-                    <p class="text-xs text-slate-500 font-medium mt-1">Rata-rata Tingkat Keberhasilan</p>
+                    <p class="text-xs text-slate-500 font-medium mt-1">Rata-rata Keberhasilan</p>
                 </div>
                 <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm border-l-4 border-l-purple-600">
-                    <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">TOTAL PRODUCT RECORDS</p>
+                    <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">VALID PRODUCT RECORDS</p>
                     <h3 id="tw-kpi-records" class="text-2xl font-black text-purple-600 mt-1">0 Item</h3>
-                    <p class="text-xs text-slate-500 font-medium mt-1">Total Transaksi Terdaftar</p>
+                    <p id="tw-kpi-records-desc" class="text-xs text-slate-500 font-medium mt-1">Item Ditampilkan</p>
                 </div>
             </div>
 
             <!-- Target Win Accuracy Table -->
             <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
-                <div class="flex justify-between items-center border-b pb-3">
+                <div class="flex flex-wrap justify-between items-center border-b pb-3 gap-2">
                     <div class="flex items-center gap-2">
                         <h3 class="text-xs font-black text-slate-800 uppercase tracking-wide">DETAIL TARGET WIN & SUCCESSION RATIO PER PRODUCT</h3>
-                        <span id="activeSortBadge" class="text-[10px] bg-amber-100 text-amber-800 border border-amber-300 px-2.5 py-0.5 rounded-md font-bold">Priority Watchlist Active</span>
+                        <span id="targetWinTableBadge" class="text-[10px] bg-rose-100 text-rose-800 border border-rose-300 px-2.5 py-0.5 rounded-md font-bold">Priority: Lowest Ratio + Highest Target WIN (Top 20)</span>
                     </div>
-                    <span class="text-[10px] bg-blue-50 text-blue-700 border border-blue-200 px-2.5 py-1 rounded-md font-bold">Scroll untuk melihat selengkapnya</span>
+
+                    <!-- Pilihan Upload Spreadsheet -->
+                    <a href="https://docs.google.com/spreadsheets/d/1_S5-p8s8c5c-X3m9-A82I9xZ4w1w6Z8" target="_blank" class="text-xs font-bold text-blue-600 hover:text-blue-800 flex items-center gap-1.5 bg-blue-50 px-3 py-1.5 rounded-lg border border-blue-200 transition">
+                        <span>📊 Update/Upload di Google Spreadsheet</span>
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
+                    </a>
                 </div>
                 
-                <!-- CONTAINER TABEL DENGAN MAKSIMAL TINGGI (~10 ROW) + VERTICAL SCROLL -->
-                <div class="overflow-x-auto overflow-y-auto max-h-[480px] border rounded-xl">
+                <!-- CONTAINER TABEL (SCROLLABLE & HEADER STICKY) -->
+                <div class="overflow-x-auto overflow-y-auto max-h-[480px] border rounded-xl shadow-inner">
                     <table class="w-full text-left text-xs text-slate-600">
                         <thead class="bg-slate-100 text-slate-700 uppercase font-bold tracking-wider sticky top-0 shadow-sm z-10">
                             <tr>
-                                <th class="p-3.5">DSR NAME</th>
+                                <th class="p-3.5">DSR NAME / DISTRIBUTOR</th>
                                 <th class="p-3.5">PRODUCT NAME</th>
                                 <th class="p-3.5">COMPETITOR BRAND</th>
                                 <th class="p-3.5 text-right">COMPET YTD SELL OUT / HARGA</th>
@@ -386,7 +373,7 @@
         }
 
         // ==========================================
-        // SALES DASHBOARD FUNCTIONS
+        // SALES DASHBOARD LOGIC
         // ==========================================
         function populateAreaFilter(data) {
             const filterSelect = document.getElementById('salesAreaFilter');
@@ -584,14 +571,14 @@
         }
 
         // ==========================================
-        // TARGET WIN ACCURACY FUNCTIONS & SORTING
+        // TARGET WIN ACCURACY LOGIC (TOP 20 ALL + TARGET WIN > 0)
         // ==========================================
         function populateDistributorFilter(data) {
             const select = document.getElementById('distributorFilter');
             const currentVal = select.value;
-            const distributors = [...new Set(data.map(row => row['Distributor']).filter(Boolean))];
+            const distributors = [...new Set(data.map(row => row['Distributor'] || row['Distributor Name']).filter(Boolean))];
 
-            select.innerHTML = '<option value="ALL">Semua Distributor (ALL)</option>';
+            select.innerHTML = '<option value="ALL">Semua Distributor (TOP 20 ALL)</option>';
             distributors.forEach(dist => {
                 const opt = document.createElement('option');
                 opt.value = dist;
@@ -604,107 +591,127 @@
 
         function filterTargetWinData() {
             const selectedDist = document.getElementById('distributorFilter').value;
-            const sortMode = document.getElementById('sortWinMode').value;
-            const sortBadge = document.getElementById('activeSortBadge');
 
             let filtered = [...rawTargetWinData];
 
-            // Filter Distributor
-            if (selectedDist !== 'ALL') {
-                filtered = filtered.filter(row => row['Distributor'] === selectedDist);
+            // Auto Detect Key Target WIN & WIN Vol
+            let targetWinKey = null;
+            let winVolKey = null;
+
+            if (filtered.length > 0) {
+                const keys = Object.keys(filtered[0]);
+                targetWinKey = keys.find(k => {
+                    const norm = k.toLowerCase().replace(/\s+/g, '');
+                    return norm.includes('target') && norm.includes('win');
+                });
+                winVolKey = keys.find(k => {
+                    const norm = k.toLowerCase().replace(/\s+/g, '');
+                    return norm.includes('win') && !norm.includes('target') && !norm.includes('ratio');
+                });
             }
 
-            // Hitung Ratio per item untuk kebutuhan sorting & render
-            filtered = filtered.map(row => {
-                const targetWin = parseNum(row['JUL-TargetWin']);
-                const winVol = parseNum(row['JUL-WIN(Vol)']);
-                let ratioVal = 0;
-                
-                if (row['Succesion Ratio'] !== undefined && row['Succesion Ratio'] !== '') {
-                    ratioVal = parseNum(row['Succesion Ratio']);
-                } else if (targetWin > 0) {
-                    ratioVal = (winVol / targetWin) * 100;
-                }
+            // 1. FILTER SYARAT MUTLAK: HANYA YANG PUNYA TARGET WIN > 0
+            let validItems = [];
 
-                return {
-                    ...row,
-                    _parsedTargetWin: targetWin,
-                    _parsedWinVol: winVol,
-                    _parsedRatio: ratioVal
-                };
+            filtered.forEach(row => {
+                const targetWin = targetWinKey ? parseNum(row[targetWinKey]) : 0;
+                
+                // Syarat: Target WIN > 0
+                if (targetWin > 0) {
+                    const distName = row['Distributor'] || row['Distributor Name'] || '';
+                    
+                    // Filter Distributor
+                    if (selectedDist === 'ALL' || distName === selectedDist) {
+                        const winVol = winVolKey ? parseNum(row[winVolKey]) : 0;
+                        let ratioVal = 0;
+                        
+                        if (row['Succesion Ratio'] !== undefined && row['Succesion Ratio'] !== '') {
+                            ratioVal = parseNum(row['Succesion Ratio']);
+                        } else {
+                            ratioVal = (winVol / targetWin) * 100;
+                        }
+
+                        validItems.push({
+                            ...row,
+                            _parsedTargetWin: targetWin,
+                            _parsedWinVol: winVol,
+                            _parsedRatio: ratioVal
+                        });
+                    }
+                }
             });
 
-            // LOGIKA SORTING KHUSUS
-            if (sortMode === 'LOW_RATIO_HIGH_TARGET') {
-                filtered.sort((a, b) => {
-                    if (a._parsedRatio === b._parsedRatio) {
-                        return b._parsedTargetWin - a._parsedTargetWin;
-                    }
-                    return a._parsedRatio - b._parsedRatio;
-                });
-                sortBadge.innerText = '🔥 Priority: Lowest Ratio + Highest Target WIN';
-                sortBadge.className = 'text-[10px] bg-amber-100 text-amber-800 border border-amber-300 px-2.5 py-0.5 rounded-md font-bold';
-            } else if (sortMode === 'HIGH_TARGET') {
-                filtered.sort((a, b) => b._parsedTargetWin - a._parsedTargetWin);
-                sortBadge.innerText = 'Highest Target WIN Order';
-                sortBadge.className = 'text-[10px] bg-blue-100 text-blue-800 border border-blue-300 px-2.5 py-0.5 rounded-md font-bold';
-            } else if (sortMode === 'LOW_RATIO') {
-                filtered.sort((a, b) => a._parsedRatio - b._parsedRatio);
-                sortBadge.innerText = 'Lowest Succession Ratio Order';
-                sortBadge.className = 'text-[10px] bg-rose-100 text-rose-800 border border-rose-300 px-2.5 py-0.5 rounded-md font-bold';
-            } else if (sortMode === 'HIGH_RATIO') {
-                filtered.sort((a, b) => b._parsedRatio - a._parsedRatio);
-                sortBadge.innerText = 'Highest Succession Ratio Order';
-                sortBadge.className = 'text-[10px] bg-emerald-100 text-emerald-800 border border-emerald-300 px-2.5 py-0.5 rounded-md font-bold';
+            // 2. SORTING: LOWEST RATIO + HIGHEST TARGET WIN
+            validItems.sort((a, b) => {
+                if (a._parsedRatio === b._parsedRatio) {
+                    return b._parsedTargetWin - a._parsedTargetWin; 
+                }
+                return a._parsedRatio - b._parsedRatio; 
+            });
+
+            // 3. JIKA DILIHAT DARI "ALL", HANYA AMBIL TOP 20
+            let displayItems = validItems;
+            if (selectedDist === 'ALL') {
+                displayItems = validItems.slice(0, 20);
+                document.getElementById('targetWinTableBadge').innerText = "Priority: Lowest Ratio + Highest Target WIN (TOP 20 ALL)";
+                document.getElementById('tw-kpi-records-desc').innerText = "Top 20 Item Ditampilkan";
             } else {
-                sortBadge.innerText = 'Standard Sheet Order';
-                sortBadge.className = 'text-[10px] bg-slate-100 text-slate-700 border border-slate-300 px-2.5 py-0.5 rounded-md font-bold';
+                document.getElementById('targetWinTableBadge').innerText = `Priority: Lowest Ratio + Highest Target WIN (${selectedDist})`;
+                document.getElementById('tw-kpi-records-desc').innerText = "Item Ditampilkan";
             }
 
+            // Hitung KPI ringkasan berdasarkan item yang ditampilkan
             let totalTargetWin = 0;
             let totalWinVol = 0;
             let totalRatioSum = 0;
-            let validRatioCount = 0;
+
+            displayItems.forEach(item => {
+                totalTargetWin += item._parsedTargetWin;
+                totalWinVol += item._parsedWinVol;
+                totalRatioSum += item._parsedRatio;
+            });
 
             const tbody = document.getElementById('targetWinTableBody');
             tbody.innerHTML = '';
 
-            if (filtered.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="7" class="p-4 text-center text-slate-400">Tidak ada data ditemukan.</td></tr>';
+            if (displayItems.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="7" class="p-6 text-center text-slate-400 font-bold">Tidak ada data produk yang memiliki Target WIN > 0.</td></tr>';
+                document.getElementById('tw-kpi-targetwin').innerText = "0";
+                document.getElementById('tw-kpi-win').innerText = "0";
+                document.getElementById('tw-kpi-ratio').innerText = "0%";
+                document.getElementById('tw-kpi-records').innerText = "0 Item";
                 return;
             }
 
-            filtered.forEach(row => {
-                const dsrName = row['DSR Name'] || '-';
-                const prodName = row['Product Name'] || '-';
-                const compBrand = row['Competitor Product Brand'] || '-';
-                const compSellOut = parseNum(row['Compet YTD. Sell Out']);
+            // 4. RENDER TABEL
+            displayItems.forEach((row, idx) => {
+                const dsrName = row['DSR Name'] || row['DSR'] || row['Sales Name'] || '-';
+                const distName = row['Distributor'] || row['Distributor Name'] || '-';
+                const prodName = row['Product Name'] || row['Product'] || '-';
+                const compBrand = row['Competitor Product Brand'] || row['Competitor Brand'] || '-';
+                const compSellOut = parseNum(row['Compet YTD. Sell Out'] || row['Compet YTD Sell Out']);
                 const targetWin = row._parsedTargetWin;
                 const winVol = row._parsedWinVol;
                 const ratioVal = row._parsedRatio;
-
-                totalTargetWin += targetWin;
-                totalWinVol += winVol;
-                totalRatioSum += ratioVal;
-                validRatioCount++;
 
                 const ratioBadge = ratioVal >= 100 ? 'bg-emerald-100 text-emerald-800 border-emerald-300' :
                                    ratioVal > 0 ? 'bg-amber-100 text-amber-800 border-amber-300' : 
                                    'bg-rose-100 text-rose-800 border-rose-300';
 
-                const isCriticalWarning = ratioVal === 0 && targetWin > 0;
-                const rowClass = isCriticalWarning ? 'bg-rose-50/40 hover:bg-rose-100/50' : 'hover:bg-slate-50';
+                const rowBg = ratioVal === 0 ? 'bg-rose-50/40 hover:bg-rose-100/60' : 'bg-white hover:bg-slate-50';
 
                 tbody.innerHTML += `
-                    <tr class="${rowClass} transition">
-                        <!-- HANYA TAMPILKAN DSR NAME TANPA DISTRIBUTOR -->
-                        <td class="p-3.5 font-bold text-slate-900">${dsrName}</td>
-                        <td class="p-3.5 font-bold text-slate-800">
-                            ${prodName}
-                            ${isCriticalWarning ? '<span class="ml-1 text-[9px] bg-rose-600 text-white font-black px-1.5 py-0.5 rounded">HIGH TARGET / ZERO WIN</span>' : ''}
-                        </td>
+                    <tr class="${rowBg} transition">
                         <td class="p-3.5">
-                            <span class="bg-slate-100 text-slate-700 font-semibold px-2 py-0.5 rounded border border-slate-200">${compBrand}</span>
+                            <div class="flex items-center gap-1.5 font-bold text-slate-900">
+                                <span class="text-[9px] bg-slate-800 text-white font-black px-1.5 py-0.5 rounded">#${idx+1}</span>
+                                <span>${dsrName}</span>
+                            </div>
+                            <div class="text-[10px] text-slate-500 font-medium pl-6">${distName}</div>
+                        </td>
+                        <td class="p-3.5 font-bold text-slate-800">${prodName}</td>
+                        <td class="p-3.5">
+                            <span class="bg-slate-100 text-slate-700 font-semibold px-2 py-0.5 rounded border border-slate-200 text-[11px]">${compBrand}</span>
                         </td>
                         <td class="p-3.5 text-right font-semibold text-slate-600">${compSellOut.toLocaleString('id-ID')}</td>
                         <td class="p-3.5 text-right font-black text-blue-900">${targetWin.toLocaleString('id-ID')}</td>
@@ -718,12 +725,12 @@
                 `;
             });
 
-            const avgRatio = validRatioCount > 0 ? (totalRatioSum / validRatioCount).toFixed(1) : 0;
+            const avgRatio = displayItems.length > 0 ? (totalRatioSum / displayItems.length).toFixed(1) : 0;
 
             document.getElementById('tw-kpi-targetwin').innerText = totalTargetWin.toLocaleString('id-ID');
             document.getElementById('tw-kpi-win').innerText = totalWinVol.toLocaleString('id-ID');
             document.getElementById('tw-kpi-ratio').innerText = avgRatio + '%';
-            document.getElementById('tw-kpi-records').innerText = filtered.length + ' Item';
+            document.getElementById('tw-kpi-records').innerText = displayItems.length + ' Item';
         }
     </script>
 </body>
