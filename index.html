@@ -82,28 +82,24 @@
 
             <!-- KPI CARDS -->
             <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-                <!-- TOTAL TARGET -->
                 <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
                     <p class="text-[11px] font-extrabold text-slate-400 uppercase tracking-wider">TOTAL TARGET (JUL 26)</p>
                     <h3 id="kpi-target" class="text-2xl font-black text-slate-900 mt-1">0,0 KL</h3>
                     <p class="text-[10px] font-bold text-slate-400 mt-1">Target Penjualan Bulanan</p>
                 </div>
                 
-                <!-- TOTAL ACTUAL -->
                 <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
                     <p class="text-[11px] font-extrabold text-slate-400 uppercase tracking-wider">TOTAL ACTUAL (JUL 26)</p>
                     <h3 id="kpi-actual" class="text-2xl font-black text-slate-900 mt-1">0,0 KL</h3>
                     <p class="text-[10px] font-bold text-slate-400 mt-1">Pencapaian Real-Time</p>
                 </div>
 
-                <!-- % MONTHLY ACHIEVEMENT -->
                 <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
                     <p class="text-[11px] font-extrabold text-slate-400 uppercase tracking-wider">% MONTHLY ACHIEVEMENT</p>
                     <h3 id="kpi-ach" class="text-2xl font-black text-rose-600 mt-1">0%</h3>
                     <p id="kpi-status" class="text-[10px] font-bold text-rose-500 mt-1">Status: Need Attention 🔴</p>
                 </div>
 
-                <!-- ACTIVE DSR COUNT -->
                 <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
                     <p class="text-[11px] font-extrabold text-slate-400 uppercase tracking-wider">ACTIVE DSR COUNT</p>
                     <h3 id="kpi-dsr" class="text-2xl font-black text-emerald-600 mt-1">0</h3>
@@ -157,9 +153,7 @@
                                 <th class="p-3 text-center">YTD GROWTH</th>
                             </tr>
                         </thead>
-                        <tbody id="dsrTableBody" class="divide-y divide-slate-100 font-medium">
-                            <!-- Populated by JavaScript -->
-                        </tbody>
+                        <tbody id="dsrTableBody" class="divide-y divide-slate-100 font-medium"></tbody>
                     </table>
                 </div>
 
@@ -265,8 +259,14 @@
                 rawSalesData = salesData;
                 rawTargetWinArray = twData;
 
+                // Render Sales Performance
                 populateAreaFilter(rawSalesData);
                 filterSalesData();
+
+                // Render Target Win Accuracy (DITAMBAHKAN)
+                populateDistributorFilter(rawTargetWinArray);
+                filterTargetWinData();
+
                 showLoading(false);
             }).catch(err => {
                 console.error("Gagal memuat data:", err);
@@ -274,6 +274,7 @@
             });
         }
 
+        // --- SALES DASHBOARD FUNCTIONS ---
         function populateAreaFilter(data) {
             const select = document.getElementById('salesAreaFilter');
             const areas = [...new Set(data.map(r => getColValue(r, ['Workplace Name', 'Workplace', 'Area', 'Distributor'])).filter(Boolean))];
@@ -322,13 +323,9 @@
             renderDsrTable(filtered);
         }
 
-        // RENDER GRAFIK DENGAN WAKTU & KONTRAST LIGHT MODE
         function renderSalesChart(labels, targetData, actualData) {
             const ctx = document.getElementById('salesChart').getContext('2d');
-            
-            if (salesChartInstance) {
-                salesChartInstance.destroy();
-            }
+            if (salesChartInstance) salesChartInstance.destroy();
 
             const targetKL = targetData.map(v => v / 1000);
             const actualKL = actualData.map(v => v / 1000);
@@ -339,18 +336,8 @@
                 data: {
                     labels: labels.map(l => l.replace('PT CAHAYA PENGAJARAN ABADI-', '')),
                     datasets: [
-                        { 
-                            label: 'Target Jul 26 (KL)', 
-                            data: targetKL, 
-                            backgroundColor: '#94A3B8', // Muted Grey
-                            borderRadius: 4 
-                        },
-                        { 
-                            label: 'Actual Jul 26 (KL)', 
-                            data: actualKL, 
-                            backgroundColor: '#D97706', // Shell Gold/Amber
-                            borderRadius: 4 
-                        }
+                        { label: 'Target Jul 26 (KL)', data: targetKL, backgroundColor: '#94A3B8', borderRadius: 4 },
+                        { label: 'Actual Jul 26 (KL)', data: actualKL, backgroundColor: '#D97706', borderRadius: 4 }
                     ]
                 },
                 options: { 
@@ -358,20 +345,12 @@
                     maintainAspectRatio: false,
                     layout: { padding: { top: 35 } },
                     plugins: {
-                        legend: {
-                            display: true,
-                            position: 'top',
-                            labels: { font: { weight: 'bold', size: 11 }, color: '#334155' }
-                        },
+                        legend: { display: true, position: 'top', labels: { font: { weight: 'bold', size: 11 }, color: '#334155' } },
                         datalabels: {
-                            display: true,
-                            anchor: 'end',
-                            align: 'top',
-                            offset: 4,
+                            display: true, anchor: 'end', align: 'top', offset: 4,
                             font: { size: 10, weight: 'bold' },
                             formatter: function(value, context) {
                                 if (value === 0 || value === null) return '';
-
                                 if (context.datasetIndex === 1) {
                                     const targetVal = targetKL[context.dataIndex];
                                     const ach = targetVal > 0 ? Math.round((value / targetVal) * 100) : 0;
@@ -379,23 +358,13 @@
                                 }
                                 return `${value.toLocaleString('id-ID', { maximumFractionDigits: 1 })} KL`;
                             },
-                            color: function(context) {
-                                return context.datasetIndex === 1 ? '#B45309' : '#475569';
-                            },
+                            color: function(context) { return context.datasetIndex === 1 ? '#B45309' : '#475569'; },
                             textAlign: 'center'
                         }
                     },
                     scales: {
-                        y: {
-                            beginAtZero: true,
-                            grace: '20%',
-                            ticks: { color: '#64748B', font: { weight: 'bold' } },
-                            grid: { color: '#F1F5F9' }
-                        },
-                        x: {
-                            ticks: { color: '#334155', font: { weight: 'bold', size: 10 } },
-                            grid: { display: false }
-                        }
+                        y: { beginAtZero: true, grace: '20%', ticks: { color: '#64748B', font: { weight: 'bold' } }, grid: { color: '#F1F5F9' } },
+                        x: { ticks: { color: '#334155', font: { weight: 'bold', size: 10 } }, grid: { display: false } }
                     }
                 }
             });
@@ -410,7 +379,6 @@
             const tbody = document.getElementById('dsrTableBody');
             tbody.innerHTML = '';
 
-            // Sort data berdasarkan % Monthly Achievement
             let sorted = [...data].sort((a,b) => {
                 const tA = parseNum(getColValue(a, ['Target Jul 26', 'Target']));
                 const aA = parseNum(getColValue(a, ['Actual Jul 26', 'Actual']));
@@ -450,7 +418,6 @@
                 const prevYtd = parseNum(getColValue(row, ['Prev YTD']));
                 const ytdGrowth = prevYtd > 0 ? (((actualYtd - prevYtd) / prevYtd) * 100) : 0;
 
-                // Color styling for Badges
                 let achMonthBadge = "bg-rose-100 text-rose-800 border-rose-200";
                 if(achMonth >= 100) achMonthBadge = "bg-emerald-100 text-emerald-800 border-emerald-200";
                 else if(achMonth >= 70) achMonthBadge = "bg-amber-100 text-amber-800 border-amber-200";
@@ -484,6 +451,106 @@
                         </td>
                         <td class="p-3 text-right font-medium text-slate-400">${formatVol(prevYtd)}</td>
                         <td class="p-3 text-center font-bold ${ytdColor}">${ytdGrowth >= 0 ? '+' : ''}${ytdGrowth.toFixed(0)}%</td>
+                    </tr>
+                `;
+            });
+        }
+
+        // --- TARGET WIN DASHBOARD FUNCTIONS (FUNGSI BARU DITAMBAHKAN) ---
+        function populateDistributorFilter(dataArray) {
+            const select = document.getElementById('distributorFilter');
+            if (!select) return;
+
+            const dists = new Set();
+            dataArray.forEach((row, idx) => {
+                if (idx === 0) return; // Skip Header
+                const dist = (row[0] || row[1] || '').trim();
+                if (dist && dist.length > 2 && !dist.toLowerCase().includes('dsr name')) {
+                    dists.add(dist);
+                }
+            });
+
+            select.innerHTML = '<option value="ALL">Semua Distributor (ALL)</option>';
+            [...dists].sort().forEach(d => {
+                select.innerHTML += `<option value="${d}">${d}</option>`;
+            });
+        }
+
+        function filterTargetWinData() {
+            const selectElem = document.getElementById('distributorFilter');
+            const selectedDist = selectElem ? selectElem.value : 'ALL';
+            const tbody = document.getElementById('targetWinTableBody');
+            if (!tbody) return;
+
+            let valid = [];
+
+            rawTargetWinArray.forEach((row, idx) => {
+                if (idx === 0) return; // Skip Header
+
+                const distName = (row[0] || '').trim();
+                const dsrName = (row[1] || '').trim();
+                const prodName = (row[4] || '').trim();
+                const compBrand = (row[5] || '').trim();
+
+                if (!dsrName || dsrName.toLowerCase().includes('dsr name')) return;
+
+                // Filter Distributor
+                if (selectedDist !== 'ALL' && distName !== selectedDist && dsrName !== selectedDist) return;
+
+                const compSellOut = parseNum(row[7]);
+                const targetWin = parseNum(row[9]);
+                const winVol = parseNum(row[10]);
+
+                let ratio = 0;
+                if (targetWin > 0) {
+                    ratio = (winVol / targetWin) * 100;
+                } else if (winVol > 0) {
+                    ratio = 100;
+                }
+
+                valid.push({
+                    dsrName: dsrName || '-',
+                    distName: distName || '-',
+                    prodName: prodName || '-',
+                    compBrand: compBrand || '-',
+                    compSellOut: compSellOut,
+                    targetWin: targetWin,
+                    winVol: winVol,
+                    ratio: ratio
+                });
+            });
+
+            tbody.innerHTML = '';
+
+            if (valid.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="7" class="p-6 text-center text-slate-400 font-bold">Tidak ada data Target Win ditemukan.</td></tr>';
+                return;
+            }
+
+            valid.forEach((r, i) => {
+                let badgeHTML = '';
+                if (r.targetWin > 0 && r.winVol === 0) {
+                    badgeHTML = `<span class="bg-rose-100 text-rose-800 border border-rose-200 px-2.5 py-0.5 rounded-full font-black text-[10px]">❌ LOSS (0%)</span>`;
+                } else if (r.winVol > 0 && r.ratio < 100) {
+                    badgeHTML = `<span class="bg-amber-100 text-amber-800 border border-amber-200 px-2.5 py-0.5 rounded-full font-black text-[10px]">⚠️ WIN (${r.ratio.toFixed(0)}%)</span>`;
+                } else if (r.winVol > 0 && r.ratio >= 100) {
+                    badgeHTML = `<span class="bg-emerald-100 text-emerald-800 border border-emerald-200 px-2.5 py-0.5 rounded-full font-black text-[10px]">✅ WIN (${r.ratio.toFixed(0)}%)</span>`;
+                } else {
+                    badgeHTML = `<span class="bg-slate-100 text-slate-600 border border-slate-200 px-2.5 py-0.5 rounded-full font-bold text-[10px]">⚪ 0%</span>`;
+                }
+
+                tbody.innerHTML += `
+                    <tr class="hover:bg-slate-50 transition border-b border-slate-100">
+                        <td class="p-3.5 font-bold text-slate-800">
+                            #${i+1} ${r.dsrName}
+                            <div class="text-[10px] text-slate-400 font-normal">${r.distName}</div>
+                        </td>
+                        <td class="p-3.5 font-bold text-slate-800">${r.prodName}</td>
+                        <td class="p-3.5"><span class="bg-slate-100 border border-slate-200 px-2 py-0.5 rounded text-[11px] font-semibold text-slate-700">${r.compBrand}</span></td>
+                        <td class="p-3.5 text-right font-semibold text-slate-600">${r.compSellOut.toLocaleString('id-ID')}</td>
+                        <td class="p-3.5 text-right font-black text-slate-900">${r.targetWin.toLocaleString('id-ID')}</td>
+                        <td class="p-3.5 text-right font-black ${r.winVol > 0 ? 'text-emerald-600' : 'text-slate-400'}">${r.winVol.toLocaleString('id-ID')}</td>
+                        <td class="p-3.5 text-center">${badgeHTML}</td>
                     </tr>
                 `;
             });
