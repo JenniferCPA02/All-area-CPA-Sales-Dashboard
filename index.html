@@ -170,7 +170,7 @@
                     </a>
                 </div>
 
-                <!-- TOOLBAR MULTI-FILTER DENGAN OPSI LOSS -->
+                <!-- TOOLBAR MULTI-FILTER DENGAN OPSI PARTIAL WIN & FULL WIN -->
                 <div class="bg-slate-50 p-3.5 rounded-xl border border-slate-200 flex flex-wrap items-center gap-3 text-xs">
                     
                     <!-- Search Input -->
@@ -194,13 +194,15 @@
                         </select>
                     </div>
 
-                    <!-- Filter Status Win (DENGAN LOSS DITAMBAHKAN) -->
+                    <!-- Filter Status Win (BARU: PARTIAL WIN & FULL WIN) -->
                     <div class="flex items-center gap-1.5">
                         <label class="font-bold text-slate-600">Status Win:</label>
                         <select id="twStatusFilter" onchange="filterTargetWinData()" class="bg-white border border-slate-300 rounded-lg px-2.5 py-1.5 font-bold text-slate-700 outline-none focus:ring-2 focus:ring-blue-600">
                             <option value="ALL">Semua Status</option>
+                            <option value="PARTIAL_WIN">⚠️ PARTIAL WIN (Ada WIN, Tapi Ratio < 100%)</option>
+                            <option value="FULL_WIN">✅ FULL WIN (Sudah Capai Target Ratio ≥ 100%)</option>
                             <option value="LOSS">❌ LOSS (Ada Target WIN, tapi Win = 0)</option>
-                            <option value="HAS_WIN">✅ WIN (Ada Realisasi WIN > 0)</option>
+                            <option value="HAS_WIN">🟢 Semua WIN (Realisasi WIN > 0)</option>
                             <option value="HAS_TARGET">🎯 Memiliki Target WIN (> 0)</option>
                             <option value="NO_TARGET">⚪ Tidak Ada Target WIN (= 0)</option>
                         </select>
@@ -444,18 +446,20 @@
                 const targetWin = parseNum(row[9]);
                 const winVol = parseNum(row[10]);
 
-                // LOGIKA FILTER STATUS WIN TERMASUK "LOSS"
-                if (selectedStatus === 'LOSS' && !(targetWin > 0 && winVol === 0)) return; // KONDISI LOSS
-                if (selectedStatus === 'HAS_WIN' && winVol <= 0) return;
-                if (selectedStatus === 'HAS_TARGET' && targetWin <= 0) return;
-                if (selectedStatus === 'NO_TARGET' && targetWin > 0) return;
-
                 let ratio = 0;
                 if (targetWin > 0) {
                     ratio = (winVol / targetWin) * 100;
                 } else if (winVol > 0) {
                     ratio = 100;
                 }
+
+                // LOGIKA FILTER STATUS WIN BARU (PARTIAL WIN & FULL WIN)
+                if (selectedStatus === 'PARTIAL_WIN' && !(winVol > 0 && ratio < 100)) return;
+                if (selectedStatus === 'FULL_WIN' && !(winVol > 0 && ratio >= 100)) return;
+                if (selectedStatus === 'LOSS' && !(targetWin > 0 && winVol === 0)) return;
+                if (selectedStatus === 'HAS_WIN' && winVol <= 0) return;
+                if (selectedStatus === 'HAS_TARGET' && targetWin <= 0) return;
+                if (selectedStatus === 'NO_TARGET' && targetWin > 0) return;
 
                 valid.push({
                     dsrName: dsrName || '-',
@@ -501,11 +505,13 @@
             // Render Hasil ke Tabel
             valid.forEach((r, i) => {
                 
-                // KONDISI BADGE STATUS (LOSS vs WIN vs NORMAL)
+                // BADGE VISUAL UNTUK PARTIAL WIN VS FULL WIN VS LOSS
                 let badgeHTML = '';
                 if (r.targetWin > 0 && r.winVol === 0) {
                     badgeHTML = `<span class="bg-red-100 text-red-800 border border-red-300 px-2.5 py-1 rounded-full font-black text-[10px] tracking-wider">❌ LOSS (0%)</span>`;
-                } else if (r.winVol > 0) {
+                } else if (r.winVol > 0 && r.ratio < 100) {
+                    badgeHTML = `<span class="bg-amber-100 text-amber-800 border border-amber-300 px-2.5 py-1 rounded-full font-black text-[10px] tracking-wider">⚠️ WIN (${r.ratio.toFixed(0)}%)</span>`;
+                } else if (r.winVol > 0 && r.ratio >= 100) {
                     badgeHTML = `<span class="bg-emerald-100 text-emerald-800 border border-emerald-300 px-2.5 py-1 rounded-full font-black text-[10px] tracking-wider">✅ WIN (${r.ratio.toFixed(0)}%)</span>`;
                 } else {
                     badgeHTML = `<span class="bg-slate-100 text-slate-600 border border-slate-300 px-2.5 py-1 rounded-full font-bold text-[10px]">⚪ 0%</span>`;
