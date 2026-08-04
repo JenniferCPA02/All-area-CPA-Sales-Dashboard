@@ -30,17 +30,18 @@
     <nav class="bg-white border-b border-slate-200 sticky top-0 z-40 shadow-sm">
         <div class="max-w-7xl mx-auto px-6 py-2.5 flex justify-between items-center">
             
-            <div class="flex items-center space-x-4">
-                <!-- TAG GAMBAR ASLI (Ganti 'logo.png' dengan nama file gambar Anda atau teks Base64) -->
-                <img src="logo.png" alt="Logo PT CPA" class="h-10 w-auto object-contain">
+            <!-- SEBELAH KIRI: LOGO SHELL & JUDUL -->
+            <div class="flex items-center space-x-3">
+                <!-- LOGO SHELL (KIRI) -->
+                <img src="LOGO_SHELL.png" alt="Logo Shell" class="h-10 w-auto object-contain">
                 
-                <div class="border-l border-slate-200 pl-4">
+                <div class="border-l border-slate-200 pl-3">
                     <h1 class="text-sm font-black leading-tight text-slate-900 tracking-tight">PT CAHAYA PENGAJARAN ABADI</h1>
                     <p class="text-[11px] text-slate-500 font-medium">Real-Time Operational Dashboard</p>
                 </div>
             </div>
 
-            <!-- Tabs Switcher -->
+            <!-- TABS SWITCHER (TENGAH) -->
             <div class="flex space-x-6 text-xs font-bold uppercase tracking-wider">
                 <button id="tab-sales" onclick="switchDashboard('sales')" class="py-2 px-3 active-tab transition flex items-center gap-1.5">
                     📊 Sales Performance
@@ -50,13 +51,19 @@
                 </button>
             </div>
 
-            <!-- Refresh Button -->
-            <div class="flex items-center space-x-3">
+            <!-- SEBELAH KANAN: REFRESH BUTTON & LOGO CPA -->
+            <div class="flex items-center space-x-4">
                 <button onclick="refreshAllData(true)" title="Paksa Ambil Data Baru Dari Google Sheets" class="bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold px-3 py-1.5 rounded-xl border border-slate-300 text-xs transition flex items-center gap-2 active:scale-95 shadow-sm">
                     <svg class="w-4 h-4 text-slate-600" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
                     <span>Refresh Data</span>
                 </button>
+
+                <!-- LOGO CPA (KANAN) -->
+                <div class="border-l border-slate-200 pl-4">
+                    <img src="LOGO_CPA.png" alt="Logo PT CPA" class="h-10 w-auto object-contain">
+                </div>
             </div>
+
         </div>
     </nav>
 
