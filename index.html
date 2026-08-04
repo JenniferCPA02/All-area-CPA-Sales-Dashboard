@@ -9,6 +9,8 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Chart.js DataLabels Plugin (Membuat Angka Tampil di Atas Batang Chart) -->
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0"></script>
     <!-- PapaParse -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
 
@@ -32,7 +34,6 @@
             
             <!-- SEBELAH KIRI: LOGO SHELL & JUDUL -->
             <div class="flex items-center space-x-3">
-                <!-- LOGO SHELL (KIRI) -->
                 <img src="LOGO_SHELL.png" alt="Logo Shell" class="h-10 w-auto object-contain">
                 
                 <div class="border-l border-slate-200 pl-3">
@@ -58,7 +59,6 @@
                     <span>Refresh Data</span>
                 </button>
 
-                <!-- LOGO CPA (KANAN) -->
                 <div class="border-l border-slate-200 pl-4">
                     <img src="LOGO_CPA.png" alt="Logo PT CPA" class="h-10 w-auto object-contain">
                 </div>
@@ -107,7 +107,7 @@
             <!-- Chart -->
             <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
                 <h3 class="text-xs font-black text-slate-800 uppercase tracking-wide mb-4">GRAFIK TARGET VS ACTUAL PER AREA (DALAM KL)</h3>
-                <div class="relative h-80"><canvas id="salesChart"></canvas></div>
+                <div class="relative h-96"><canvas id="salesChart"></canvas></div>
             </div>
 
             <!-- Table -->
@@ -242,6 +242,9 @@
 
     <!-- JAVASCRIPT LOGIC -->
     <script>
+        // Registrasi plugin datalabels untuk Chart.js
+        Chart.register(ChartDataLabels);
+
         const URL_SALES_CSV = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ7ZrrcD9z_Iwj3QWGAHq0usQd20cth9Y8pdfNiuBeWLaX-uqAFlpdZt6J8ggkYx0uCK2cnOJcYzM_5/pub?gid=1625392721&single=true&output=csv";
         const URL_TARGET_WIN_CSV = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTXXMZUwsOfUmKwgSVMf2u-3VbugnUo1gdO3r0y6lh4DIgkBH6K4wcyuOw6RbAHWHzh417iWdy0gBIz/pub?gid=1920770625&single=true&output=csv";
 
@@ -339,19 +342,74 @@
             renderDsrTable(filtered);
         }
 
+        // FUNGSI UTAMA UNTUK MENAMPILKAN ANGKA & % PADA GRAFIK
         function renderSalesChart(labels, targetData, actualData) {
             const ctx = document.getElementById('salesChart').getContext('2d');
             if (salesChartInstance) salesChartInstance.destroy();
+
+            const targetKL = targetData.map(v => v / 1000);
+            const actualKL = actualData.map(v => v / 1000);
+
             salesChartInstance = new Chart(ctx, {
                 type: 'bar',
                 data: {
                     labels: labels.map(l => l.replace('PT CAHAYA PENGAJARAN ABADI-', '')),
                     datasets: [
-                        { label: 'Target (KL)', data: targetData.map(v => v/1000), backgroundColor: '#94A3B8', borderRadius: 4 },
-                        { label: 'Actual (KL)', data: actualData.map(v => v/1000), backgroundColor: '#EA580C', borderRadius: 4 }
+                        { 
+                            label: 'Target (KL)', 
+                            data: targetKL, 
+                            backgroundColor: '#94A3B8', 
+                            borderRadius: 6 
+                        },
+                        { 
+                            label: 'Actual (KL)', 
+                            data: actualKL, 
+                            backgroundColor: '#EA580C', 
+                            borderRadius: 6 
+                        }
                     ]
                 },
-                options: { responsive: true, maintainAspectRatio: false }
+                options: { 
+                    responsive: true, 
+                    maintainAspectRatio: false,
+                    layout: {
+                        padding: { top: 25 } // Ruang atas agar angka tidak terpotong
+                    },
+                    plugins: {
+                        datalabels: {
+                            anchor: 'end',
+                            align: 'top',
+                            offset: 2,
+                            font: {
+                                weight: 'bold',
+                                size: 10
+                            },
+                            formatter: function(value, context) {
+                                if (value === 0) return '';
+                                
+                                // Jika ini batang Actual, tampilkan Volume KL & Persentase Achievement
+                                if (context.datasetIndex === 1) {
+                                    const targetVal = targetKL[context.dataIndex];
+                                    const ach = targetVal > 0 ? ((value / targetVal) * 100).toFixed(0) : 0;
+                                    return value.toLocaleString('id-ID', { maximumFractionDigits: 1 }) + ' KL\n(' + ach + '%)';
+                                }
+                                
+                                // Jika ini batang Target, tampilkan Volume KL saja
+                                return value.toLocaleString('id-ID', { maximumFractionDigits: 1 }) + ' KL';
+                            },
+                            color: function(context) {
+                                return context.datasetIndex === 1 ? '#C2410C' : '#475569';
+                            },
+                            textAlign: 'center'
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grace: '15%' // Ruang ekstra di Y-Axis agar angka teratas tidak terpotong
+                        }
+                    }
+                }
             });
         }
 
