@@ -192,10 +192,11 @@
                     <p class="text-xs text-slate-500 font-medium">Analisa Succession Rate Penjualan & Penetrasi Competitor</p>
                 </div>
                 
+                <!-- DROPDOWN MENAMPILKAN SEMUA DISTRIBUTOR -->
                 <div class="flex items-center gap-3">
                     <label class="text-xs font-extrabold text-slate-700 uppercase tracking-wider">DISTRIBUTOR:</label>
                     <select id="distributorFilter" onchange="filterTargetWinData()" class="bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2 text-xs font-bold text-slate-800 focus:ring-2 focus:ring-blue-600 outline-none transition">
-                        <option value="ALL">Semua Distributor (TOP 20 ALL)</option>
+                        <option value="ALL">Semua Distributor (ALL)</option>
                     </select>
                 </div>
             </div>
@@ -203,12 +204,12 @@
             <!-- Target Win KPI Cards -->
             <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
                 <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm border-l-4 border-l-blue-600">
-                    <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">TOTAL TARGET WIN</p>
+                    <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">TOTAL TARGET WIN (TOP 20)</p>
                     <h3 id="tw-kpi-targetwin" class="text-2xl font-black text-slate-900 mt-1">0</h3>
-                    <p class="text-xs text-slate-500 font-medium mt-1">Target Penjualan WIN (> 0)</p>
+                    <p class="text-xs text-slate-500 font-medium mt-1">Top 20 Target Win (> 0)</p>
                 </div>
                 <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm border-l-4 border-l-emerald-500">
-                    <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">TOTAL ACTUAL WIN</p>
+                    <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">TOTAL ACTUAL WIN (TOP 20)</p>
                     <h3 id="tw-kpi-win" class="text-2xl font-black text-emerald-600 mt-1">0</h3>
                     <p class="text-xs text-slate-500 font-medium mt-1">Realisasi Win (Vol)</p>
                 </div>
@@ -218,9 +219,9 @@
                     <p class="text-xs text-slate-500 font-medium mt-1">Rata-rata Keberhasilan</p>
                 </div>
                 <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm border-l-4 border-l-purple-600">
-                    <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">VALID PRODUCT RECORDS</p>
+                    <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">VALID PRODUCTS DISPLAYED</p>
                     <h3 id="tw-kpi-records" class="text-2xl font-black text-purple-600 mt-1">0 Item</h3>
-                    <p id="tw-kpi-records-desc" class="text-xs text-slate-500 font-medium mt-1">Item Ditampilkan</p>
+                    <p class="text-xs text-slate-500 font-medium mt-1">Maksimal 20 Highest Item</p>
                 </div>
             </div>
 
@@ -229,12 +230,14 @@
                 <div class="flex flex-wrap justify-between items-center border-b pb-3 gap-2">
                     <div class="flex items-center gap-2">
                         <h3 class="text-xs font-black text-slate-800 uppercase tracking-wide">DETAIL TARGET WIN & SUCCESSION RATIO PER PRODUCT</h3>
-                        <span id="targetWinTableBadge" class="text-[10px] bg-rose-100 text-rose-800 border border-rose-300 px-2.5 py-0.5 rounded-md font-bold">Priority: Lowest Ratio + Highest Target WIN (Top 20)</span>
+                        <span class="text-[10px] bg-amber-100 text-amber-800 border border-amber-300 px-2.5 py-0.5 rounded-md font-bold flex items-center gap-1">
+                            🔥 Priority: Top 20 Highest Target WIN
+                        </span>
                     </div>
 
-                    <!-- Pilihan Upload Spreadsheet -->
-                    <a href="https://docs.google.com/spreadsheets/d/1_S5-p8s8c5c-X3m9-A82I9xZ4w1w6Z8" target="_blank" class="text-xs font-bold text-blue-600 hover:text-blue-800 flex items-center gap-1.5 bg-blue-50 px-3 py-1.5 rounded-lg border border-blue-200 transition">
-                        <span>📊 Update/Upload di Google Spreadsheet</span>
+                    <!-- Tombol / Link ke Google Spreadsheet untuk Lihat Sisanya -->
+                    <a href="https://docs.google.com/spreadsheets/d/1_S5-p8s8c5c-X3m9-A82I9xZ4w1w6Z8" target="_blank" class="text-xs font-bold text-blue-600 hover:text-blue-800 flex items-center gap-1.5 bg-blue-50 px-3.5 py-1.5 rounded-lg border border-blue-200 transition shadow-sm">
+                        <span>📊 Lihat Data Lengkap di Google Spreadsheet</span>
                         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
                     </a>
                 </div>
@@ -257,6 +260,11 @@
                             <tr><td colspan="7" class="p-4 text-center text-slate-400">Memuat data Target Win Accuracy...</td></tr>
                         </tbody>
                     </table>
+                </div>
+
+                <div class="flex justify-between items-center pt-1 text-[11px] text-slate-500 font-medium">
+                    <span>* Menampilkan maksimal 20 produk dengan Target WIN tertinggi.</span>
+                    <a href="https://docs.google.com/spreadsheets/d/1_S5-p8s8c5c-X3m9-A82I9xZ4w1w6Z8" target="_blank" class="text-blue-600 hover:underline font-bold">Buka Spreadsheet untuk filter/upload lanjutan &rarr;</a>
                 </div>
             </div>
 
@@ -571,14 +579,15 @@
         }
 
         // ==========================================
-        // TARGET WIN ACCURACY LOGIC (TOP 20 ALL + TARGET WIN > 0)
+        // TARGET WIN ACCURACY LOGIC
         // ==========================================
         function populateDistributorFilter(data) {
             const select = document.getElementById('distributorFilter');
             const currentVal = select.value;
-            const distributors = [...new Set(data.map(row => row['Distributor'] || row['Distributor Name']).filter(Boolean))];
+            // AMBIL SEMUA DISTRIBUTOR TANPA DIBATASI TOP 20
+            const distributors = [...new Set(data.map(row => row['Distributor'] || row['Distributor Name']).filter(Boolean))].sort();
 
-            select.innerHTML = '<option value="ALL">Semua Distributor (TOP 20 ALL)</option>';
+            select.innerHTML = '<option value="ALL">Semua Distributor (ALL)</option>';
             distributors.forEach(dist => {
                 const opt = document.createElement('option');
                 opt.value = dist;
@@ -594,7 +603,7 @@
 
             let filtered = [...rawTargetWinData];
 
-            // Auto Detect Key Target WIN & WIN Vol
+            // Auto Detect Column Names for Target WIN & WIN Vol
             let targetWinKey = null;
             let winVolKey = null;
 
@@ -610,17 +619,17 @@
                 });
             }
 
-            // 1. FILTER SYARAT MUTLAK: HANYA YANG PUNYA TARGET WIN > 0
+            // 1. FILTER SYARAT MUTLAK: HANYA YANG MEMILIKI TARGET WIN > 0
             let validItems = [];
 
             filtered.forEach(row => {
                 const targetWin = targetWinKey ? parseNum(row[targetWinKey]) : 0;
                 
-                // Syarat: Target WIN > 0
+                // Hanya memproses yang Target WIN > 0
                 if (targetWin > 0) {
                     const distName = row['Distributor'] || row['Distributor Name'] || '';
                     
-                    // Filter Distributor
+                    // Filter berdasarkan Pilihan Dropdown Distributor
                     if (selectedDist === 'ALL' || distName === selectedDist) {
                         const winVol = winVolKey ? parseNum(row[winVolKey]) : 0;
                         let ratioVal = 0;
@@ -641,26 +650,13 @@
                 }
             });
 
-            // 2. SORTING: LOWEST RATIO + HIGHEST TARGET WIN
-            validItems.sort((a, b) => {
-                if (a._parsedRatio === b._parsedRatio) {
-                    return b._parsedTargetWin - a._parsedTargetWin; 
-                }
-                return a._parsedRatio - b._parsedRatio; 
-            });
+            // 2. SORTING UTAMA: BERDASARKAN TARGET WIN TERTINGGI (HIGHEST TARGET WIN)
+            validItems.sort((a, b) => b._parsedTargetWin - a._parsedTargetWin);
 
-            // 3. JIKA DILIHAT DARI "ALL", HANYA AMBIL TOP 20
-            let displayItems = validItems;
-            if (selectedDist === 'ALL') {
-                displayItems = validItems.slice(0, 20);
-                document.getElementById('targetWinTableBadge').innerText = "Priority: Lowest Ratio + Highest Target WIN (TOP 20 ALL)";
-                document.getElementById('tw-kpi-records-desc').innerText = "Top 20 Item Ditampilkan";
-            } else {
-                document.getElementById('targetWinTableBadge').innerText = `Priority: Lowest Ratio + Highest Target WIN (${selectedDist})`;
-                document.getElementById('tw-kpi-records-desc').innerText = "Item Ditampilkan";
-            }
+            // 3. BATASI HANYA MENAMPILKAN TOP 20 HIGHEST TARGET WIN DI TABEL
+            const displayItems = validItems.slice(0, 20);
 
-            // Hitung KPI ringkasan berdasarkan item yang ditampilkan
+            // Hitung KPI ringkasan berdasarkan Top 20 yang ditampilkan
             let totalTargetWin = 0;
             let totalWinVol = 0;
             let totalRatioSum = 0;
@@ -683,7 +679,7 @@
                 return;
             }
 
-            // 4. RENDER TABEL
+            // 4. RENDER TABEL (20 HIGHEST TARGET WIN)
             displayItems.forEach((row, idx) => {
                 const dsrName = row['DSR Name'] || row['DSR'] || row['Sales Name'] || '-';
                 const distName = row['Distributor'] || row['Distributor Name'] || '-';
@@ -698,13 +694,11 @@
                                    ratioVal > 0 ? 'bg-amber-100 text-amber-800 border-amber-300' : 
                                    'bg-rose-100 text-rose-800 border-rose-300';
 
-                const rowBg = ratioVal === 0 ? 'bg-rose-50/40 hover:bg-rose-100/60' : 'bg-white hover:bg-slate-50';
-
                 tbody.innerHTML += `
-                    <tr class="${rowBg} transition">
+                    <tr class="bg-white hover:bg-slate-50 transition">
                         <td class="p-3.5">
                             <div class="flex items-center gap-1.5 font-bold text-slate-900">
-                                <span class="text-[9px] bg-slate-800 text-white font-black px-1.5 py-0.5 rounded">#${idx+1}</span>
+                                <span class="text-[9px] bg-blue-800 text-white font-black px-1.5 py-0.5 rounded">#${idx+1}</span>
                                 <span>${dsrName}</span>
                             </div>
                             <div class="text-[10px] text-slate-500 font-medium pl-6">${distName}</div>
@@ -714,7 +708,7 @@
                             <span class="bg-slate-100 text-slate-700 font-semibold px-2 py-0.5 rounded border border-slate-200 text-[11px]">${compBrand}</span>
                         </td>
                         <td class="p-3.5 text-right font-semibold text-slate-600">${compSellOut.toLocaleString('id-ID')}</td>
-                        <td class="p-3.5 text-right font-black text-blue-900">${targetWin.toLocaleString('id-ID')}</td>
+                        <td class="p-3.5 text-right font-black text-blue-900 bg-blue-50/50">${targetWin.toLocaleString('id-ID')}</td>
                         <td class="p-3.5 text-right font-black text-emerald-600">${winVol.toLocaleString('id-ID')}</td>
                         <td class="p-3.5 text-center">
                             <span class="px-2.5 py-1 rounded-full text-[11px] font-extrabold border ${ratioBadge}">
