@@ -3,35 +3,25 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Executive Sales & Target Win Accuracy Dashboard - CPA</title>
-    
-    <!-- Google Fonts: Inter -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <title>Executive Dashboard - PT CPA</title>
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
     <!-- PapaParse -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
 
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap');
         body { font-family: 'Inter', sans-serif; }
-        .active-tab {
-            border-bottom: 3px solid #1E40AF;
-            color: #1E40AF;
-            font-weight: 700;
-        }
+        .active-tab { border-bottom: 3px solid #1E40AF; color: #1E40AF; font-weight: 700; }
     </style>
 </head>
 <body class="bg-slate-100 font-sans text-slate-800 antialiased relative">
 
     <!-- LOADING OVERLAY -->
-    <div id="loadingOverlay" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex flex-col justify-center items-center text-white transition-opacity duration-300">
+    <div id="loadingOverlay" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex flex-col justify-center items-center text-white">
         <div class="w-12 h-12 border-4 border-amber-500 border-t-transparent rounded-full animate-spin mb-3"></div>
         <p class="text-sm font-bold tracking-wide">Memuat Data Terbaru...</p>
     </div>
@@ -40,7 +30,6 @@
     <nav class="bg-white border-b border-slate-200 sticky top-0 z-40 shadow-sm">
         <div class="max-w-7xl mx-auto px-6 py-2.5 flex justify-between items-center">
             
-            <!-- Left Logo & Title -->
             <div class="flex items-center space-x-4">
                 <svg class="h-9 w-auto" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <path d="M50 5C25.1 5 5 25.1 5 50C5 74.9 25.1 95 50 95C74.9 95 95 74.9 95 50C95 25.1 74.9 5 50 5Z" fill="#DD1D21"/>
@@ -63,12 +52,10 @@
                 </button>
             </div>
 
-            <!-- Right Refresh Button -->
+            <!-- Refresh Button -->
             <div class="flex items-center space-x-3">
                 <button onclick="refreshAllData(true)" title="Paksa Ambil Data Baru Dari Google Sheets" class="bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold px-3 py-1.5 rounded-xl border border-slate-300 text-xs transition flex items-center gap-2 active:scale-95 shadow-sm">
-                    <svg id="refreshIcon" class="w-4 h-4 text-slate-600" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
-                    </svg>
+                    <svg class="w-4 h-4 text-slate-600" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
                     <span>Refresh Data</span>
                 </button>
             </div>
@@ -86,7 +73,7 @@
                 </div>
                 <div class="flex items-center gap-3">
                     <label class="text-xs font-extrabold text-slate-700 uppercase tracking-wider">WORKPLACE / AREA:</label>
-                    <select id="salesAreaFilter" onchange="filterSalesData()" class="bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2 text-xs font-bold text-slate-800 focus:ring-2 focus:ring-blue-600 outline-none transition">
+                    <select id="salesAreaFilter" onchange="filterSalesData()" class="bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2 text-xs font-bold text-slate-800 outline-none">
                         <option value="ALL">Semua Workplace (ALL)</option>
                     </select>
                 </div>
@@ -112,19 +99,15 @@
                 </div>
             </div>
 
-            <!-- Chart Section -->
+            <!-- Chart -->
             <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
                 <h3 class="text-xs font-black text-slate-800 uppercase tracking-wide mb-4">GRAFIK TARGET VS ACTUAL PER AREA (DALAM KL)</h3>
-                <div class="relative h-80">
-                    <canvas id="salesChart"></canvas>
-                </div>
+                <div class="relative h-80"><canvas id="salesChart"></canvas></div>
             </div>
 
-            <!-- TOP DSR TABLE -->
+            <!-- Table -->
             <div class="bg-[#111827] text-slate-100 p-6 rounded-2xl border border-slate-800 shadow-xl space-y-4">
-                <div class="flex justify-between items-center border-b border-slate-800 pb-3">
-                    <h3 class="text-xs font-extrabold uppercase tracking-wider text-slate-200">🔥 TOP DSR ACTIVE BY ACHIEVEMENT</h3>
-                </div>
+                <h3 class="text-xs font-extrabold uppercase tracking-wider text-slate-200">🔥 TOP DSR ACTIVE BY ACHIEVEMENT</h3>
                 <div class="overflow-x-auto">
                     <table class="w-full text-left text-xs text-slate-300">
                         <thead class="bg-slate-900/80 text-slate-400 uppercase text-[10px] font-bold tracking-wider">
@@ -151,7 +134,7 @@
                 </div>
                 <div class="flex items-center gap-3">
                     <label class="text-xs font-extrabold text-slate-700 uppercase tracking-wider">DISTRIBUTOR:</label>
-                    <select id="distributorFilter" onchange="filterTargetWinData()" class="bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2 text-xs font-bold text-slate-800 focus:ring-2 focus:ring-blue-600 outline-none transition">
+                    <select id="distributorFilter" onchange="filterTargetWinData()" class="bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2 text-xs font-bold text-slate-800 outline-none">
                         <option value="ALL">Semua Distributor (ALL)</option>
                     </select>
                 </div>
@@ -162,74 +145,69 @@
                 <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm border-l-4 border-l-blue-600">
                     <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">TOTAL TARGET WIN</p>
                     <h3 id="tw-kpi-targetwin" class="text-2xl font-black text-slate-900 mt-1">0</h3>
-                    <p class="text-[10px] text-slate-400 mt-0.5">Target Penjualan WIN</p>
                 </div>
                 <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm border-l-4 border-l-emerald-500">
                     <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">TOTAL ACTUAL WIN</p>
                     <h3 id="tw-kpi-win" class="text-2xl font-black text-emerald-600 mt-1">0</h3>
-                    <p class="text-[10px] text-slate-400 mt-0.5">Realisasi Win (Vol)</p>
                 </div>
                 <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm border-l-4 border-l-amber-500">
                     <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">AVG SUCCESSION RATIO</p>
                     <h3 id="tw-kpi-ratio" class="text-2xl font-black text-amber-600 mt-1">0%</h3>
-                    <p class="text-[10px] text-slate-400 mt-0.5">Rata-rata Keberhasilan</p>
                 </div>
                 <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm border-l-4 border-l-purple-600">
                     <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">TOTAL ITEMS</p>
                     <h3 id="tw-kpi-records" class="text-2xl font-black text-purple-600 mt-1">0 Item</h3>
-                    <p id="tw-kpi-subtext" class="text-[10px] text-slate-400 mt-0.5">Semua Item Ditampilkan</p>
                 </div>
             </div>
 
             <!-- Target Win Table & Filters Section -->
             <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
                 <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b pb-4">
-                    <div class="flex items-center gap-2">
-                        <h3 class="text-xs font-black text-slate-800 uppercase tracking-wide">DETAIL TARGET WIN & SUCCESSION RATIO PER PRODUCT</h3>
-                    </div>
+                    <h3 class="text-xs font-black text-slate-800 uppercase tracking-wide">DETAIL TARGET WIN & SUCCESSION RATIO PER PRODUCT</h3>
                     <a href="https://docs.google.com/spreadsheets/d/1rY81FzzMN95cVsH59_EKzkfGRbrmhuoypn6V0KcQxBY/edit?usp=sharing" target="_blank" class="text-xs font-bold text-blue-600 hover:underline flex items-center gap-1">
                         <span>📊 Update/Upload di Google Spreadsheet</span>
                         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
                     </a>
                 </div>
 
-                <!-- NEW: TOOLBAR MULTI-FILTER UNTUK TABEL -->
+                <!-- TOOLBAR MULTI-FILTER DENGAN OPSI LOSS -->
                 <div class="bg-slate-50 p-3.5 rounded-xl border border-slate-200 flex flex-wrap items-center gap-3 text-xs">
                     
                     <!-- Search Input -->
-                    <div class="flex-1 min-w-[200px] relative">
-                        <input type="text" id="twSearchInput" onkeyup="filterTargetWinData()" placeholder="🔍 Cari DSR atau Nama Produk..." class="w-full bg-white border border-slate-300 rounded-lg pl-3 pr-3 py-1.5 text-xs font-semibold focus:ring-2 focus:ring-blue-600 outline-none">
+                    <div class="flex-1 min-w-[200px]">
+                        <input type="text" id="twSearchInput" onkeyup="filterTargetWinData()" placeholder="🔍 Cari DSR atau Nama Produk..." class="w-full bg-white border border-slate-300 rounded-lg px-3 py-1.5 font-semibold outline-none focus:ring-2 focus:ring-blue-600">
                     </div>
 
                     <!-- Filter DSR -->
                     <div class="flex items-center gap-1.5">
-                        <label class="font-bold text-slate-600 text-[11px]">DSR:</label>
-                        <select id="twDsrFilter" onchange="filterTargetWinData()" class="bg-white border border-slate-300 rounded-lg px-2.5 py-1.5 font-bold text-slate-700 outline-none focus:ring-2 focus:ring-blue-600">
+                        <label class="font-bold text-slate-600">DSR:</label>
+                        <select id="twDsrFilter" onchange="filterTargetWinData()" class="bg-white border border-slate-300 rounded-lg px-2.5 py-1.5 font-bold text-slate-700 outline-none">
                             <option value="ALL">Semua DSR</option>
                         </select>
                     </div>
 
                     <!-- Filter Competitor Brand -->
                     <div class="flex items-center gap-1.5">
-                        <label class="font-bold text-slate-600 text-[11px]">Competitor:</label>
-                        <select id="twCompetitorFilter" onchange="filterTargetWinData()" class="bg-white border border-slate-300 rounded-lg px-2.5 py-1.5 font-bold text-slate-700 outline-none focus:ring-2 focus:ring-blue-600">
+                        <label class="font-bold text-slate-600">Competitor:</label>
+                        <select id="twCompetitorFilter" onchange="filterTargetWinData()" class="bg-white border border-slate-300 rounded-lg px-2.5 py-1.5 font-bold text-slate-700 outline-none">
                             <option value="ALL">Semua Brand</option>
                         </select>
                     </div>
 
-                    <!-- Filter Status Win -->
+                    <!-- Filter Status Win (DENGAN LOSS DITAMBAHKAN) -->
                     <div class="flex items-center gap-1.5">
-                        <label class="font-bold text-slate-600 text-[11px]">Status Win:</label>
+                        <label class="font-bold text-slate-600">Status Win:</label>
                         <select id="twStatusFilter" onchange="filterTargetWinData()" class="bg-white border border-slate-300 rounded-lg px-2.5 py-1.5 font-bold text-slate-700 outline-none focus:ring-2 focus:ring-blue-600">
                             <option value="ALL">Semua Status</option>
-                            <option value="HAS_TARGET">Memiliki Target WIN (>0)</option>
-                            <option value="HAS_WIN">Ada Realisasi WIN (>0)</option>
-                            <option value="NO_WIN">Belum WIN (=0)</option>
+                            <option value="LOSS">❌ LOSS (Ada Target WIN, tapi Win = 0)</option>
+                            <option value="HAS_WIN">✅ WIN (Ada Realisasi WIN > 0)</option>
+                            <option value="HAS_TARGET">🎯 Memiliki Target WIN (> 0)</option>
+                            <option value="NO_TARGET">⚪ Tidak Ada Target WIN (= 0)</option>
                         </select>
                     </div>
 
                     <!-- Reset Filter Button -->
-                    <button onclick="resetTWFilters()" class="bg-slate-200 hover:bg-slate-300 text-slate-700 px-3 py-1.5 rounded-lg font-bold text-[11px] transition">
+                    <button onclick="resetTWFilters()" class="bg-slate-200 hover:bg-slate-300 text-slate-700 px-3 py-1.5 rounded-lg font-bold transition">
                         🔄 Reset Filter
                     </button>
                 </div>
@@ -237,7 +215,7 @@
                 <!-- Tabel Detail Data -->
                 <div class="overflow-x-auto border rounded-xl">
                     <table class="w-full text-left text-xs text-slate-600">
-                        <thead class="bg-slate-100 text-slate-700 uppercase font-bold tracking-wider">
+                        <thead class="bg-slate-100 text-slate-700 uppercase font-bold tracking-wider border-b">
                             <tr>
                                 <th class="p-3.5">DSR NAME / DISTRIBUTOR</th>
                                 <th class="p-3.5">PRODUCT NAME</th>
@@ -245,7 +223,7 @@
                                 <th class="p-3.5 text-right">COMPET YTD SELL OUT / HARGA</th>
                                 <th class="p-3.5 text-right">TARGET WIN</th>
                                 <th class="p-3.5 text-right">WIN (VOL)</th>
-                                <th class="p-3.5 text-center">SUCCESSION RATIO</th>
+                                <th class="p-3.5 text-center">SUCCESSION RATIO / STATUS</th>
                             </tr>
                         </thead>
                         <tbody id="targetWinTableBody" class="divide-y divide-slate-100 font-medium"></tbody>
@@ -260,11 +238,6 @@
         const URL_SALES_CSV = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ7ZrrcD9z_Iwj3QWGAHq0usQd20cth9Y8pdfNiuBeWLaX-uqAFlpdZt6J8ggkYx0uCK2cnOJcYzM_5/pub?gid=1625392721&single=true&output=csv";
         const URL_TARGET_WIN_CSV = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTXXMZUwsOfUmKwgSVMf2u-3VbugnUo1gdO3r0y6lh4DIgkBH6K4wcyuOw6RbAHWHzh417iWdy0gBIz/pub?gid=1920770625&single=true&output=csv";
 
-        const CACHE_KEY_SALES = 'cache_sales_data_v12';
-        const CACHE_KEY_TW = 'cache_tw_data_v12';
-        const CACHE_TIME_KEY = 'cache_last_time_v12';
-        const CACHE_DURATION = 5 * 60 * 1000;
-
         let rawSalesData = [];
         let rawTargetWinArray = [];
         let salesChartInstance = null;
@@ -274,11 +247,8 @@
         function parseNum(val) { 
             if (val === undefined || val === null) return 0;
             let str = val.toString().replace(/%/g, '').trim();
-            if (str.includes(',') && !str.includes('.')) {
-                str = str.replace(',', '.');
-            } else {
-                str = str.replace(/,/g, '');
-            }
+            if (str.includes(',') && !str.includes('.')) { str = str.replace(',', '.'); } 
+            else { str = str.replace(/,/g, ''); }
             return parseFloat(str) || 0; 
         }
 
@@ -286,16 +256,12 @@
             const keys = Object.keys(row);
             for (let name of possibleNames) {
                 const foundKey = keys.find(k => k.trim().toLowerCase().replace(/[^a-z0-9]/g, '') === name.toLowerCase().replace(/[^a-z0-9]/g, ''));
-                if (foundKey && row[foundKey] !== undefined) {
-                    return row[foundKey];
-                }
+                if (foundKey && row[foundKey] !== undefined) return row[foundKey];
             }
             return '';
         }
 
-        function showLoading(show) {
-            document.getElementById('loadingOverlay').style.display = show ? 'flex' : 'none';
-        }
+        function showLoading(show) { document.getElementById('loadingOverlay').style.display = show ? 'flex' : 'none'; }
 
         function switchDashboard(type) {
             document.getElementById('dashboard-sales').classList.toggle('hidden', type !== 'sales');
@@ -304,28 +270,11 @@
             document.getElementById('tab-targetwin').classList.toggle('active-tab', type === 'targetwin');
         }
 
-        window.onload = function() {
-            refreshAllData(false);
-        };
+        window.onload = function() { refreshAllData(true); };
 
         function refreshAllData(forceRefresh = false) {
-            const now = new Date().getTime();
-            const lastCacheTime = localStorage.getItem(CACHE_TIME_KEY);
-
-            if (!forceRefresh && lastCacheTime && (now - lastCacheTime < CACHE_DURATION)) {
-                const cachedSales = localStorage.getItem(CACHE_KEY_SALES);
-                const cachedTW = localStorage.getItem(CACHE_KEY_TW);
-
-                if (cachedSales && cachedTW) {
-                    rawSalesData = JSON.parse(cachedSales);
-                    rawTargetWinArray = JSON.parse(cachedTW);
-                    initDashboards();
-                    return;
-                }
-            }
-
             showLoading(true);
-            const cacheBuster = "&t=" + now;
+            const cacheBuster = "&t=" + new Date().getTime();
 
             Promise.all([
                 new Promise(resolve => Papa.parse(URL_SALES_CSV + cacheBuster, { download: true, header: true, skipEmptyLines: true, complete: res => resolve(res.data) })),
@@ -334,27 +283,17 @@
                 rawSalesData = salesData;
                 rawTargetWinArray = twData;
 
-                localStorage.setItem(CACHE_KEY_SALES, JSON.stringify(salesData));
-                localStorage.setItem(CACHE_KEY_TW, JSON.stringify(twData));
-                localStorage.setItem(CACHE_TIME_KEY, now);
-
-                initDashboards();
+                populateAreaFilter(rawSalesData);
+                filterSalesData();
+                populateDistributorFilter(rawTargetWinArray);
+                populateTWSubFilters(rawTargetWinArray);
+                filterTargetWinData();
+                
+                showLoading(false);
             }).catch(err => {
                 console.error("Gagal memuat data:", err);
                 showLoading(false);
             });
-        }
-
-        function initDashboards() {
-            populateAreaFilter(rawSalesData);
-            filterSalesData();
-            
-            // Populate Dropdowns Target Win
-            populateDistributorFilter(rawTargetWinArray);
-            populateTWSubFilters(rawTargetWinArray);
-            
-            filterTargetWinData();
-            showLoading(false);
         }
 
         function populateAreaFilter(data) {
@@ -434,17 +373,12 @@
             dataArray.forEach((row, idx) => {
                 if (idx === 0) return;
                 const dist = (row[0] || row[1] || '').trim();
-                if (dist && dist.length > 2 && !dist.toLowerCase().includes('dsr name')) {
-                    dists.add(dist);
-                }
+                if (dist && dist.length > 2 && !dist.toLowerCase().includes('dsr name')) dists.add(dist);
             });
-
-            const sortedDists = [...dists].sort();
             select.innerHTML = '<option value="ALL">Semua Distributor (ALL)</option>';
-            sortedDists.forEach(d => select.innerHTML += `<option value="${d}">${d}</option>`);
+            [...dists].sort().forEach(d => select.innerHTML += `<option value="${d}">${d}</option>`);
         }
 
-        // FUNGSI BARU: MENGISI DROPDOWN FILTER DSR & COMPETITOR BRAND
         function populateTWSubFilters(dataArray) {
             const dsrSelect = document.getElementById('twDsrFilter');
             const compSelect = document.getElementById('twCompetitorFilter');
@@ -495,16 +429,10 @@
 
                 if (!dsrName || dsrName.toLowerCase().includes('dsr name')) return;
 
-                // 1. Filter Distributor
                 if (selectedDist !== 'ALL' && distName !== selectedDist && dsrName !== selectedDist) return;
-
-                // 2. Filter DSR
                 if (selectedDsr !== 'ALL' && dsrName !== selectedDsr) return;
-
-                // 3. Filter Competitor
                 if (selectedComp !== 'ALL' && compBrand !== selectedComp) return;
 
-                // 4. Search Keyword
                 if (searchKeyword !== '') {
                     const matchSearch = dsrName.toLowerCase().includes(searchKeyword) || 
                                         prodName.toLowerCase().includes(searchKeyword) ||
@@ -516,16 +444,17 @@
                 const targetWin = parseNum(row[9]);
                 const winVol = parseNum(row[10]);
 
-                // 5. Filter Status
-                if (selectedStatus === 'HAS_TARGET' && targetWin <= 0) return;
+                // LOGIKA FILTER STATUS WIN TERMASUK "LOSS"
+                if (selectedStatus === 'LOSS' && !(targetWin > 0 && winVol === 0)) return; // KONDISI LOSS
                 if (selectedStatus === 'HAS_WIN' && winVol <= 0) return;
-                if (selectedStatus === 'NO_WIN' && winVol > 0) return;
+                if (selectedStatus === 'HAS_TARGET' && targetWin <= 0) return;
+                if (selectedStatus === 'NO_TARGET' && targetWin > 0) return;
 
                 let ratio = 0;
-                if (row[11] !== undefined && row[11] !== '') {
-                    ratio = parseNum(row[11]);
-                } else if (targetWin > 0) {
+                if (targetWin > 0) {
                     ratio = (winVol / targetWin) * 100;
+                } else if (winVol > 0) {
+                    ratio = 100;
                 }
 
                 valid.push({
@@ -540,7 +469,10 @@
                 });
             });
 
-            // Hitung Kartu KPI Berdasarkan Data Terfilter
+            // Urutkan Data: Prioritaskan produk dengan Target WIN Terbesar
+            valid.sort((a, b) => b.targetWin - a.targetWin || b.winVol - a.winVol);
+
+            // Hitung Kartu KPI
             let totalTargetWinAll = 0;
             let totalActualWinAll = 0;
             let totalRatioSum = 0;
@@ -562,21 +494,32 @@
             tbody.innerHTML = '';
 
             if (valid.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="7" class="p-6 text-center text-slate-400 font-bold">Tidak ada data Target Win yang sesuai filter.</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="7" class="p-6 text-center text-slate-400 font-bold">Tidak ada data Target Win yang sesuai filter status ini.</td></tr>';
                 return;
             }
 
             // Render Hasil ke Tabel
             valid.forEach((r, i) => {
+                
+                // KONDISI BADGE STATUS (LOSS vs WIN vs NORMAL)
+                let badgeHTML = '';
+                if (r.targetWin > 0 && r.winVol === 0) {
+                    badgeHTML = `<span class="bg-red-100 text-red-800 border border-red-300 px-2.5 py-1 rounded-full font-black text-[10px] tracking-wider">❌ LOSS (0%)</span>`;
+                } else if (r.winVol > 0) {
+                    badgeHTML = `<span class="bg-emerald-100 text-emerald-800 border border-emerald-300 px-2.5 py-1 rounded-full font-black text-[10px] tracking-wider">✅ WIN (${r.ratio.toFixed(0)}%)</span>`;
+                } else {
+                    badgeHTML = `<span class="bg-slate-100 text-slate-600 border border-slate-300 px-2.5 py-1 rounded-full font-bold text-[10px]">⚪ 0%</span>`;
+                }
+
                 tbody.innerHTML += `
-                    <tr class="hover:bg-slate-50">
+                    <tr class="hover:bg-slate-50 transition">
                         <td class="p-3.5 font-bold">#${i+1} ${r.dsrName} <br><span class="text-[10px] text-slate-400 font-normal">${r.distName}</span></td>
-                        <td class="p-3.5 font-bold">${r.prodName}</td>
+                        <td class="p-3.5 font-bold text-slate-800">${r.prodName}</td>
                         <td class="p-3.5"><span class="bg-slate-100 px-2 py-0.5 rounded text-[11px] font-semibold">${r.compBrand}</span></td>
                         <td class="p-3.5 text-right font-semibold text-slate-600">${r.compSellOut.toLocaleString('id-ID')}</td>
                         <td class="p-3.5 text-right font-black text-blue-900">${r.targetWin.toLocaleString('id-ID')}</td>
-                        <td class="p-3.5 text-right font-black text-emerald-600">${r.winVol.toLocaleString('id-ID')}</td>
-                        <td class="p-3.5 text-center"><span class="bg-amber-100 text-amber-800 border border-amber-300 px-2.5 py-1 rounded-full font-extrabold text-[11px]">${r.ratio.toFixed(0)}%</span></td>
+                        <td class="p-3.5 text-right font-black ${r.winVol > 0 ? 'text-emerald-600' : 'text-slate-400'}">${r.winVol.toLocaleString('id-ID')}</td>
+                        <td class="p-3.5 text-center">${badgeHTML}</td>
                     </tr>
                 `;
             });
