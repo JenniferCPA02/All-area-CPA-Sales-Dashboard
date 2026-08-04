@@ -3,13 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard Performa Sales</title>
-    <!-- Tailwind CSS -->
+    <title>Dashboard Performa Sales (Fast & Optimized)</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- PapaParse untuk memproses CSV -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
-    <!-- Chart.js -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body class="bg-slate-100 font-sans text-slate-800 p-6">
 
@@ -23,11 +19,12 @@
                      alt="CPA Logo" class="h-12 w-auto">
                 <div>
                     <h1 class="text-2xl font-bold text-slate-900">Dashboard Performa Sales</h1>
-                    <p class="text-sm text-slate-500" id="status-loading">Memuat data dari Google Sheets...</p>
+                    <p class="text-sm text-slate-500" id="status-loading">Siap memuat data...</p>
                 </div>
             </div>
-            <button onclick="loadData()" class="mt-4 md:mt-0 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition">
-                🔄 Refresh Data
+            <button id="btn-refresh" onclick="loadData()" class="mt-4 md:mt-0 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition flex items-center gap-2">
+                <span id="icon-spin" class="hidden animate-spin">🔄</span>
+                <span>Refresh Data</span>
             </button>
         </div>
 
@@ -65,7 +62,7 @@
                             </tr>
                         </thead>
                         <tbody id="table-top-workplace">
-                            <tr><td colspan="3" class="p-4 text-center text-slate-400">Sedang memuat...</td></tr>
+                            <tr><td colspan="3" class="p-4 text-center text-slate-400">Belum ada data</td></tr>
                         </tbody>
                     </table>
                 </div>
@@ -86,7 +83,7 @@
                             </tr>
                         </thead>
                         <tbody id="table-top-dsr">
-                            <tr><td colspan="3" class="p-4 text-center text-slate-400">Sedang memuat...</td></tr>
+                            <tr><td colspan="3" class="p-4 text-center text-slate-400">Belum ada data</td></tr>
                         </tbody>
                     </table>
                 </div>
@@ -97,101 +94,109 @@
     </div>
 
     <script>
-        // ⚠️ GANTI URL DI BAWAH DENGAN URL CSV GOOGLE SHEETS ANDA YANGBERTIPE PUBLIK
-        const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vR_EXAMPLE_URL_HERE/pub?output=csv';
+        const BASE_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vR_EXAMPLE_URL_HERE/pub?output=csv';
 
-        function loadData() {
-            document.getElementById('status-loading').innerText = "Memperbarui data...";
-
-            Papa.parse(CSV_URL, {
-                download: true,
-                header: true,
-                skipEmptyLines: true,
-                complete: function(results) {
-                    const data = results.data;
-                    document.getElementById('status-loading').innerText = "Data berhasil diperbarui: " + new Date().toLocaleTimeString();
-                    
-                    processMetrics(data);
-                    renderTopWorkplace(data);
-                    renderTopDSR(data);
-                },
-                error: function(err) {
-                    console.error(err);
-                    document.getElementById('status-loading').innerText = "Gagal memuat data Google Sheets.";
-                }
-            });
-        }
-
-        // Helper untuk parse angka aman dari CSV
         function parseNum(val) {
             if (!val) return 0;
             let cleaned = val.toString().replace(/[^0-9.-]+/g, "");
             return parseFloat(cleaned) || 0;
         }
 
-        // 1. Hitung Ringkasan Metrics
-        function processMetrics(data) {
+        function setLoadingState(isLoading) {
+            const btn = document.getElementById('btn-refresh');
+            const icon = document.getElementById('icon-spin');
+            const status = document.getElementById('status-loading');
+
+            if (isLoading) {
+                btn.disabled = true;
+                btn.classList.add('opacity-50', 'cursor-not-allowed');
+                icon.classList.remove('hidden');
+                status.innerText = "Mengunduh & memproses data terbaru...";
+            } else {
+                btn.disabled = false;
+                btn.classList.remove('opacity-50', 'cursor-not-allowed');
+                icon.classList.add('hidden');
+            }
+        }
+
+        function loadData() {
+            setLoadingState(true);
+
+            // Trik Cache-Busting: Tambahkan parameter timestamp agar request tidak di-cache oleh browser
+            const freshUrl = BASE_CSV_URL + '&t=' + new Date().getTime();
+
+            Papa.parse(freshUrl, {
+                download: true,
+                header: true,
+                skipEmptyLines: 'greedy', // Hapus baris kosong agar memori lebih hemat
+                fastMode: true,           // Aktifkan mode cepat jika format CSV standar
+                complete: function(results) {
+                    // Gunakan setTimeout agar UI browser sempat bernapas (tidak freeze)
+                    setTimeout(() => {
+                        processAllData(results.data);
+                        setLoadingState(false);
+                        document.getElementById('status-loading').innerText = "Diperbarui: " + new Date().toLocaleTimeString();
+                    }, 50);
+                },
+                error: function(err) {
+                    console.error(err);
+                    setLoadingState(false);
+                    document.getElementById('status-loading').innerText = "Gagal memuat data. Periksa koneksi/URL.";
+                }
+            });
+        }
+
+        // Proses agregasi sekaligus dalam 1 x looping (Sangat Menghemat Performa)
+        function processAllData(data) {
             let totalTarget = 0;
             let totalActual = 0;
+            const workplaceMap = {};
+            const dsrMap = {};
 
-            data.forEach(row => {
-                totalTarget += parseNum(row['Target Jul 26']);
-                totalActual += parseNum(row['Actual Jul 26']);
-            });
+            for (let i = 0; i < data.length; i++) {
+                const row = data[i];
+                const target = parseNum(row['Target Jul 26']);
+                const actual = parseNum(row['Actual Jul 26']);
+                
+                totalTarget += target;
+                totalActual += actual;
 
+                // Group Workplace
+                const wp = row['Workplace Name'];
+                if (wp) workplaceMap[wp] = (workplaceMap[wp] || 0) + actual;
+
+                // Group DSR
+                const dsr = row['DSR Name'];
+                if (dsr) dsrMap[dsr] = (dsrMap[dsr] || 0) + actual;
+            }
+
+            // Render Metrics
             const achievement = totalTarget > 0 ? ((totalActual / totalTarget) * 100).toFixed(1) : 0;
-
             document.getElementById('metric-target').innerText = totalTarget.toLocaleString('id-ID');
             document.getElementById('metric-actual').innerText = totalActual.toLocaleString('id-ID');
             document.getElementById('metric-achievement').innerText = achievement + '%';
-        }
 
-        // 2. Render Tabel TOP 10 Workplace
-        function renderTopWorkplace(data) {
-            // Grouping berdasarkan Workplace Name
-            const map = {};
-            data.forEach(row => {
-                const name = row['Workplace Name'] || 'Unassigned';
-                const actual = parseNum(row['Actual Jul 26']);
-                map[name] = (map[name] || 0) + actual;
-            });
-
-            // Convert ke Array & Sort
-            const sorted = Object.keys(map)
-                .map(key => ({ name: key, actual: map[key] }))
+            // Render Workplace TOP 10
+            const sortedWp = Object.keys(workplaceMap)
+                .map(key => ({ name: key, actual: workplaceMap[key] }))
                 .sort((a, b) => b.actual - a.actual)
-                .slice(0, 10); // Ambil TOP 10
+                .slice(0, 10);
 
-            // Render ke HTML
-            const tbody = document.getElementById('table-top-workplace');
-            tbody.innerHTML = sorted.map((item, index) => `
+            document.getElementById('table-top-workplace').innerHTML = sortedWp.map((item, index) => `
                 <tr class="border-b hover:bg-slate-50 transition">
                     <td class="p-3 font-semibold text-slate-400">${index + 1}</td>
                     <td class="p-3 font-medium text-slate-800">${item.name}</td>
                     <td class="p-3 text-right font-bold text-blue-600">${item.actual.toLocaleString('id-ID')}</td>
                 </tr>
             `).join('');
-        }
 
-        // 3. Render Tabel TOP 5 DSR
-        function renderTopDSR(data) {
-            // Grouping berdasarkan DSR Name
-            const map = {};
-            data.forEach(row => {
-                const name = row['DSR Name'] || 'Unassigned';
-                const actual = parseNum(row['Actual Jul 26']);
-                map[name] = (map[name] || 0) + actual;
-            });
-
-            // Convert ke Array & Sort
-            const sorted = Object.keys(map)
-                .map(key => ({ name: key, actual: map[key] }))
+            // Render DSR TOP 5
+            const sortedDsr = Object.keys(dsrMap)
+                .map(key => ({ name: key, actual: dsrMap[key] }))
                 .sort((a, b) => b.actual - a.actual)
-                .slice(0, 5); // Ambil TOP 5
+                .slice(0, 5);
 
-            // Render ke HTML
-            const tbody = document.getElementById('table-top-dsr');
-            tbody.innerHTML = sorted.map((item, index) => `
+            document.getElementById('table-top-dsr').innerHTML = sortedDsr.map((item, index) => `
                 <tr class="border-b hover:bg-slate-50 transition">
                     <td class="p-3 font-semibold text-slate-400">${index + 1}</td>
                     <td class="p-3 font-medium text-slate-800">${item.name}</td>
@@ -200,7 +205,6 @@
             `).join('');
         }
 
-        // Jalankan saat pertama kali halaman di-load
         window.onload = loadData;
     </script>
 </body>
