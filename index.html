@@ -35,10 +35,16 @@
         }
     </style>
 </head>
-<body class="bg-slate-100 font-sans text-slate-800 antialiased">
+<body class="bg-slate-100 font-sans text-slate-800 antialiased relative">
+
+    <!-- LOADING OVERLAY -->
+    <div id="loadingOverlay" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex flex-col justify-center items-center text-white transition-opacity duration-300">
+        <div class="w-12 h-12 border-4 border-amber-500 border-t-transparent rounded-full animate-spin mb-3"></div>
+        <p class="text-sm font-bold tracking-wide">Memuat Data Terbaru...</p>
+    </div>
 
     <!-- TOP NAVIGATION BAR -->
-    <nav class="bg-white border-b border-slate-200 sticky top-0 z-50 shadow-sm">
+    <nav class="bg-white border-b border-slate-200 sticky top-0 z-40 shadow-sm">
         <div class="max-w-7xl mx-auto px-6 py-2.5 flex justify-between items-center">
             
             <!-- Left Logo & Title -->
@@ -64,17 +70,14 @@
                 </button>
             </div>
 
-            <!-- Right CPA Logo & Refresh Button -->
+            <!-- Right Refresh Button -->
             <div class="flex items-center space-x-3">
-                <button onclick="refreshAllData()" title="Refresh Data Dari Google Sheets" class="bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold px-3 py-1.5 rounded-xl border border-slate-300 text-xs transition flex items-center gap-2 active:scale-95 shadow-sm">
+                <button onclick="refreshAllData(true)" title="Paksa Ambil Data Baru Dari Google Sheets" class="bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold px-3 py-1.5 rounded-xl border border-slate-300 text-xs transition flex items-center gap-2 active:scale-95 shadow-sm">
                     <svg id="refreshIcon" class="w-4 h-4 text-slate-600" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M160 80 A80 80 0 1 0 240 160" transform="scale(0.07) translate(40, 40)"></path>
                         <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
                     </svg>
-                    <span>Refresh</span>
+                    <span>Refresh Data</span>
                 </button>
-                <div class="h-6 w-px bg-slate-200"></div>
-                <img src="https://lh3.googleusercontent.com/d/1_S5-p8s8c5c-X3m9-A82I9xZ4w1w6Z8" alt="PT CPA Logo" class="h-9 w-auto object-contain onerror-hide" onerror="this.src='https://via.placeholder.com/100x40?text=PT+CPA'">
             </div>
         </div>
     </nav>
@@ -83,7 +86,6 @@
 
         <!-- DASHBOARD 1: SALES PERFORMANCE -->
         <div id="dashboard-sales" class="space-y-6">
-            
             <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-wrap justify-between items-center gap-4">
                 <div>
                     <h2 class="text-xl font-black text-slate-900 tracking-tight uppercase">SALES PERFORMANCE DASHBOARD</h2>
@@ -102,35 +104,18 @@
                 <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm border-l-4 border-l-blue-600">
                     <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">TOTAL TARGET (KL)</p>
                     <h3 id="kpi-target" class="text-2xl font-black text-slate-900 mt-1">0 KL</h3>
-                    <p class="text-xs text-slate-500 font-medium mt-1">Target Penjualan Bulanan</p>
                 </div>
                 <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm border-l-4 border-l-amber-500">
                     <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">TOTAL ACTUAL (KL)</p>
                     <h3 id="kpi-actual" class="text-2xl font-black text-amber-600 mt-1">0 KL</h3>
-                    <p class="text-xs text-slate-500 font-medium mt-1">Pencapaian Real-Time</p>
                 </div>
                 <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm border-l-4 border-l-emerald-500">
                     <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">% ACHIEVEMENT</p>
                     <h3 id="kpi-ach" class="text-2xl font-black text-emerald-600 mt-1">0%</h3>
-                    <p id="kpi-status" class="text-xs font-bold mt-1 text-slate-500">Status: -</p>
                 </div>
                 <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm border-l-4 border-l-purple-600">
                     <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">ACTIVE DSR COUNT</p>
                     <h3 id="kpi-dsr" class="text-2xl font-black text-purple-600 mt-1">0</h3>
-                    <p class="text-xs text-slate-500 font-medium mt-1">Total Sales Person Active</p>
-                </div>
-            </div>
-
-            <!-- Quick Drill Down Banner -->
-            <div class="bg-amber-50/60 border border-amber-200/80 p-4 rounded-2xl flex flex-wrap items-center justify-between gap-3 shadow-sm">
-                <div class="flex items-center gap-2">
-                    <span class="text-amber-600">⚡</span>
-                    <h4 class="text-xs font-extrabold text-amber-900 uppercase tracking-wider">QUICK DRILL-DOWN ANALYSIS (KLIK UNTUK DETAIL):</h4>
-                </div>
-                <div>
-                    <button onclick="openModal('topDsrModal')" class="bg-white hover:bg-amber-100 text-amber-900 font-extrabold px-5 py-2 rounded-xl border border-amber-300 shadow-sm text-xs transition flex items-center gap-2">
-                        🏆 TOP 5 DSR (BY VOLUME)
-                    </button>
                 </div>
             </div>
 
@@ -142,56 +127,35 @@
                 </div>
             </div>
 
-            <!-- TOP 10 DSR ACTIVE TABLE -->
+            <!-- TOP DSR TABLE -->
             <div class="bg-[#111827] text-slate-100 p-6 rounded-2xl border border-slate-800 shadow-xl space-y-4">
                 <div class="flex justify-between items-center border-b border-slate-800 pb-3">
-                    <h3 class="text-xs font-extrabold uppercase tracking-wider text-slate-200 flex items-center gap-2">
-                        <span>🔥</span> TOP 10 DSR ACTIVE BY % MONTHLY ACHIEVEMENT
-                    </h3>
-                    <span class="text-[10px] bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2.5 py-1 rounded-md font-semibold">Active Representatives</span>
+                    <h3 class="text-xs font-extrabold uppercase tracking-wider text-slate-200">🔥 TOP DSR ACTIVE BY ACHIEVEMENT</h3>
                 </div>
-
                 <div class="overflow-x-auto">
                     <table class="w-full text-left text-xs text-slate-300">
                         <thead class="bg-slate-900/80 text-slate-400 uppercase text-[10px] font-bold tracking-wider">
                             <tr>
-                                <th class="p-3 rounded-l-lg">SALES NAME / WORKPLACE</th>
+                                <th class="p-3">SALES NAME / WORKPLACE</th>
                                 <th class="p-3 text-center">ACTIVE</th>
                                 <th class="p-3 text-right">TARGET</th>
                                 <th class="p-3 text-right">ACTUAL</th>
                                 <th class="p-3 text-center">% MONTHLY</th>
-                                <th class="p-3 text-right">PREV MONTH</th>
-                                <th class="p-3 text-center">MOM GROWTH</th>
-                                <th class="p-3 text-right">TARGET YTD</th>
-                                <th class="p-3 text-right">ACTUAL YTD</th>
-                                <th class="p-3 text-center">% YTD</th>
-                                <th class="p-3 text-right">PREV YTD</th>
-                                <th class="p-3 text-center rounded-r-lg">YTD GROWTH</th>
                             </tr>
                         </thead>
                         <tbody id="dsrTableBody" class="divide-y divide-slate-800/60 font-medium"></tbody>
                     </table>
                 </div>
-
-                <div class="text-center pt-2">
-                    <button id="toggleDsrBtn" onclick="toggleDsrRows()" class="bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 px-5 py-2 rounded-xl text-xs font-bold transition">
-                        Tampilkan Seluruh DSR (<span id="hiddenDsrCount">0</span> DSR Lainnya) ▾
-                    </button>
-                </div>
             </div>
-
         </div>
-
 
         <!-- DASHBOARD 2: TARGET WIN ACCURACY -->
         <div id="dashboard-targetwin" class="space-y-6 hidden">
-            
             <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-wrap justify-between items-center gap-4">
                 <div>
                     <h2 class="text-xl font-black text-slate-900 tracking-tight uppercase">TARGET WIN ACCURACY DASHBOARD</h2>
                     <p class="text-xs text-slate-500 font-medium">Analisa Succession Rate Penjualan & Penetrasi Competitor</p>
                 </div>
-                
                 <div class="flex items-center gap-3">
                     <label class="text-xs font-extrabold text-slate-700 uppercase tracking-wider">DISTRIBUTOR:</label>
                     <select id="distributorFilter" onchange="filterTargetWinData()" class="bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2 text-xs font-bold text-slate-800 focus:ring-2 focus:ring-blue-600 outline-none transition">
@@ -205,46 +169,30 @@
                 <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm border-l-4 border-l-blue-600">
                     <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">TOTAL TARGET WIN (TOP 10)</p>
                     <h3 id="tw-kpi-targetwin" class="text-2xl font-black text-slate-900 mt-1">0</h3>
-                    <p class="text-xs text-slate-500 font-medium mt-1">Top 10 Target Win (> 0)</p>
                 </div>
                 <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm border-l-4 border-l-emerald-500">
                     <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">TOTAL ACTUAL WIN (TOP 10)</p>
                     <h3 id="tw-kpi-win" class="text-2xl font-black text-emerald-600 mt-1">0</h3>
-                    <p class="text-xs text-slate-500 font-medium mt-1">Realisasi Win (Vol)</p>
                 </div>
                 <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm border-l-4 border-l-amber-500">
                     <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">AVG SUCCESSION RATIO</p>
                     <h3 id="tw-kpi-ratio" class="text-2xl font-black text-amber-600 mt-1">0%</h3>
-                    <p class="text-xs text-slate-500 font-medium mt-1">Rata-rata Keberhasilan</p>
                 </div>
                 <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm border-l-4 border-l-purple-600">
                     <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">ITEMS DISPLAYED</p>
                     <h3 id="tw-kpi-records" class="text-2xl font-black text-purple-600 mt-1">0 Item</h3>
-                    <p class="text-xs text-slate-500 font-medium mt-1">Maksimal 10 Items</p>
                 </div>
             </div>
 
-            <!-- Target Win Accuracy Table (Dibatasi Top 10) -->
+            <!-- Target Win Table -->
             <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
-                <div class="flex flex-wrap justify-between items-center border-b pb-3 gap-2">
-                    <div class="flex items-center gap-2">
-                        <h3 class="text-xs font-black text-slate-800 uppercase tracking-wide">DETAIL TARGET WIN & SUCCESSION RATIO PER PRODUCT</h3>
-                        <span class="text-[10px] bg-amber-100 text-amber-800 border border-amber-300 px-2.5 py-0.5 rounded-md font-bold flex items-center gap-1">
-                            🔥 Priority: Top 10 Target WIN
-                        </span>
-                    </div>
-
-                    <!-- Link Direct ke Spreadsheet -->
-                    <a href="https://docs.google.com/spreadsheets/d/1_S5-p8s8c5c-X3m9-A82I9xZ4w1w6Z8" target="_blank" class="text-xs font-bold text-blue-600 hover:text-blue-800 flex items-center gap-1.5 bg-blue-50 px-3.5 py-1.5 rounded-lg border border-blue-200 transition shadow-sm">
-                        <span>📊 Upload & Lihat Data Lengkap di Google Spreadsheet</span>
-                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
-                    </a>
+                <div class="flex justify-between items-center border-b pb-3">
+                    <h3 class="text-xs font-black text-slate-800 uppercase tracking-wide">DETAIL TARGET WIN (TOP 10 DISPLAY)</h3>
+                    <a href="https://docs.google.com/spreadsheets/d/1_S5-p8s8c5c-X3m9-A82I9xZ4w1w6Z8" target="_blank" class="text-xs font-bold text-blue-600 hover:underline">📊 Buka Full Spreadsheet &rarr;</a>
                 </div>
-                
-                <!-- CONTAINER TABEL (TOP 10 DISPLAY) -->
-                <div class="overflow-x-auto border rounded-xl shadow-inner">
+                <div class="overflow-x-auto border rounded-xl">
                     <table class="w-full text-left text-xs text-slate-600">
-                        <thead class="bg-slate-100 text-slate-700 uppercase font-bold tracking-wider sticky top-0 shadow-sm z-10">
+                        <thead class="bg-slate-100 text-slate-700 uppercase font-bold tracking-wider">
                             <tr>
                                 <th class="p-3.5">DSR NAME / DISTRIBUTOR</th>
                                 <th class="p-3.5">PRODUCT NAME</th>
@@ -255,465 +203,218 @@
                                 <th class="p-3.5 text-center">SUCCESSION RATIO</th>
                             </tr>
                         </thead>
-                        <tbody id="targetWinTableBody" class="divide-y divide-slate-100 font-medium">
-                            <tr><td colspan="7" class="p-4 text-center text-slate-400">Memuat data Target Win Accuracy...</td></tr>
-                        </tbody>
+                        <tbody id="targetWinTableBody" class="divide-y divide-slate-100 font-medium"></tbody>
                     </table>
                 </div>
-
-                <div class="flex justify-between items-center pt-1 text-[11px] text-slate-500 font-medium">
-                    <span>* Hanya menampilkan 10 data dengan Target WIN tertinggi di dashboard.</span>
-                    <a href="https://docs.google.com/spreadsheets/d/1_S5-p8s8c5c-X3m9-A82I9xZ4w1w6Z8" target="_blank" class="text-blue-600 hover:underline font-bold">Buka Spreadsheet untuk upload/melihat seluruh data &rarr;</a>
-                </div>
             </div>
-
-        </div>
-
-    </div>
-
-    <!-- MODAL TOP 5 DSR -->
-    <div id="topDsrModal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex justify-center items-center p-4">
-        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg p-6 border border-slate-100">
-            <div class="flex justify-between items-center mb-4 border-b pb-3">
-                <h3 class="text-sm font-black text-slate-900 uppercase flex items-center gap-2">
-                    🏆 TOP 5 DSR (HIGHEST VOLUME ACHIEVEMENT)
-                </h3>
-                <button onclick="closeModal('topDsrModal')" class="text-slate-400 hover:text-slate-600 text-2xl font-bold">&times;</button>
-            </div>
-            <div id="topDsrList" class="space-y-3"></div>
         </div>
     </div>
 
-    <!-- JAVASCRIPT LOGIC -->
+    <!-- JAVASCRIPT LOGIC DENGAN CACHING TEROPTIMASI -->
     <script>
         const URL_SALES_CSV = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ7ZrrcD9z_Iwj3QWGAHq0usQd20cth9Y8pdfNiuBeWLaX-uqAFlpdZt6J8ggkYx0uCK2cnOJcYzM_5/pub?gid=1625392721&single=true&output=csv";
         const URL_TARGET_WIN_CSV = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTXXMZUwsOfUmKwgSVMf2u-3VbugnUo1gdO3r0y6lh4DIgkBH6K4wcyuOw6RbAHWHzh417iWdy0gBIz/pub?gid=1920770625&single=true&output=csv";
 
+        const CACHE_KEY_SALES = 'cache_sales_data';
+        const CACHE_KEY_TW = 'cache_tw_data';
+        const CACHE_TIME_KEY = 'cache_last_time';
+        const CACHE_DURATION = 5 * 60 * 1000; // Cache berlaku selama 5 menit
+
         let rawSalesData = [];
         let rawTargetWinData = [];
         let salesChartInstance = null;
-        let showAllDsr = false;
 
-        function formatKL(valueInLiters) {
-            const kl = valueInLiters / 1000;
-            return kl.toLocaleString('id-ID', { minimumFractionDigits: 1, maximumFractionDigits: 1 }) + ' KL';
-        }
+        function formatKL(val) { return ((val || 0) / 1000).toLocaleString('id-ID', { minimumFractionDigits: 1 }) + ' KL'; }
+        function parseNum(val) { return parseFloat((val || '0').toString().replace(/[^0-9.-]+/g, '')) || 0; }
 
-        function parseNum(val) {
-            if (!val) return 0;
-            const cleaned = val.toString().replace(/[^0-9.-]+/g,"");
-            return parseFloat(cleaned) || 0;
+        function showLoading(show) {
+            document.getElementById('loadingOverlay').style.display = show ? 'flex' : 'none';
         }
 
         function switchDashboard(type) {
-            const salesDash = document.getElementById('dashboard-sales');
-            const targetWinDash = document.getElementById('dashboard-targetwin');
-            const tabSales = document.getElementById('tab-sales');
-            const tabTargetWin = document.getElementById('tab-targetwin');
-
-            if (type === 'sales') {
-                salesDash.classList.remove('hidden');
-                targetWinDash.classList.add('hidden');
-                tabSales.classList.add('active-tab');
-                tabSales.classList.remove('text-slate-400');
-                tabTargetWin.classList.remove('active-tab');
-                tabTargetWin.classList.add('text-slate-400');
-            } else {
-                salesDash.classList.add('hidden');
-                targetWinDash.classList.remove('hidden');
-                tabTargetWin.classList.add('active-tab');
-                tabTargetWin.classList.remove('text-slate-400');
-                tabSales.classList.remove('active-tab');
-                tabSales.classList.add('text-slate-400');
-            }
+            document.getElementById('dashboard-sales').classList.toggle('hidden', type !== 'sales');
+            document.getElementById('dashboard-targetwin').classList.toggle('hidden', type !== 'targetwin');
+            document.getElementById('tab-sales').classList.toggle('active-tab', type === 'sales');
+            document.getElementById('tab-targetwin').classList.toggle('active-tab', type === 'targetwin');
         }
 
-        function openModal(id) { document.getElementById(id).classList.remove('hidden'); }
-        function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
-
         window.onload = function() {
-            refreshAllData();
+            refreshAllData(false);
         };
 
-        function refreshAllData() {
-            const icon = document.getElementById('refreshIcon');
-            icon.classList.add('spin-active');
-            const cacheBuster = "&t=" + new Date().getTime();
+        function refreshAllData(forceRefresh = false) {
+            const now = new Date().getTime();
+            const lastCacheTime = localStorage.getItem(CACHE_TIME_KEY);
 
-            let salesDone = false;
-            let twDone = false;
+            // Jika cache masih ada dan belum lewat 5 menit, gunakan data lokal (Instant Loading!)
+            if (!forceRefresh && lastCacheTime && (now - lastCacheTime < CACHE_DURATION)) {
+                const cachedSales = localStorage.getItem(CACHE_KEY_SALES);
+                const cachedTW = localStorage.getItem(CACHE_KEY_TW);
 
-            function checkDone() {
-                if (salesDone && twDone) {
-                    setTimeout(() => { icon.classList.remove('spin-active'); }, 500);
+                if (cachedSales && cachedTW) {
+                    rawSalesData = JSON.parse(cachedSales);
+                    rawTargetWinData = JSON.parse(cachedTW);
+                    initDashboards();
+                    return;
                 }
             }
 
-            Papa.parse(URL_SALES_CSV + cacheBuster, {
-                download: true,
-                header: true,
-                skipEmptyLines: true,
-                complete: function(results) {
-                    rawSalesData = results.data;
-                    populateAreaFilter(rawSalesData);
-                    filterSalesData();
-                    populateTopDsrModal(rawSalesData);
-                    salesDone = true;
-                    checkDone();
-                }
-            });
+            // Ambil data baru jika cache lewat waktu atau ditekan tombol refresh
+            showLoading(true);
+            const cacheBuster = "&t=" + now;
 
-            Papa.parse(URL_TARGET_WIN_CSV + cacheBuster, {
-                download: true,
-                header: true,
-                skipEmptyLines: true,
-                complete: function(results) {
-                    rawTargetWinData = results.data;
-                    populateDistributorFilter(rawTargetWinData);
-                    filterTargetWinData();
-                    twDone = true;
-                    checkDone();
-                }
+            Promise.all([
+                new Promise(resolve => Papa.parse(URL_SALES_CSV + cacheBuster, { download: true, header: true, skipEmptyLines: true, complete: res => resolve(res.data) })),
+                new Promise(resolve => Papa.parse(URL_TARGET_WIN_CSV + cacheBuster, { download: true, header: true, skipEmptyLines: true, complete: res => resolve(res.data) }))
+            ]).then(([salesData, twData]) => {
+                rawSalesData = salesData;
+                rawTargetWinData = twData;
+
+                // Simpan ke Cache Browser
+                localStorage.setItem(CACHE_KEY_SALES, JSON.stringify(salesData));
+                localStorage.setItem(CACHE_KEY_TW, JSON.stringify(twData));
+                localStorage.setItem(CACHE_TIME_KEY, now);
+
+                initDashboards();
+                showLoading(false);
+            }).catch(err => {
+                console.error("Gagal memuat data:", err);
+                showLoading(false);
             });
+        }
+
+        function initDashboards() {
+            populateAreaFilter(rawSalesData);
+            filterSalesData();
+            populateDistributorFilter(rawTargetWinData);
+            filterTargetWinData();
+            showLoading(false);
         }
 
         function populateAreaFilter(data) {
-            const filterSelect = document.getElementById('salesAreaFilter');
-            const currentVal = filterSelect.value;
-            const areas = [...new Set(data.map(row => row['Workplace Name'] || row['Workplace'] || row['Area']).filter(Boolean))];
-            
-            filterSelect.innerHTML = '<option value="ALL">Semua Workplace (ALL)</option>';
-            areas.forEach(area => {
-                const option = document.createElement('option');
-                option.value = area;
-                option.textContent = area;
-                filterSelect.appendChild(option);
-            });
-
-            if (areas.includes(currentVal)) { filterSelect.value = currentVal; }
+            const select = document.getElementById('salesAreaFilter');
+            const areas = [...new Set(data.map(r => r['Workplace Name'] || r['Area']).filter(Boolean))];
+            select.innerHTML = '<option value="ALL">Semua Workplace (ALL)</option>';
+            areas.forEach(a => select.innerHTML += `<option value="${a}">${a}</option>`);
         }
 
         function filterSalesData() {
-            const selectedArea = document.getElementById('salesAreaFilter').value;
+            const selected = document.getElementById('salesAreaFilter').value;
             let filtered = rawSalesData;
-
-            if (selectedArea !== 'ALL') {
-                filtered = rawSalesData.filter(row => (row['Workplace Name'] || row['Workplace'] || row['Area']) === selectedArea);
+            if (selected !== 'ALL') {
+                filtered = rawSalesData.filter(r => (r['Workplace Name'] || r['Area']) === selected);
             }
 
-            let totalTarget = 0;
-            let totalActual = 0;
-            let activeDsrCount = 0;
-            let areaAgg = {};
+            let target = 0, actual = 0, dsrCount = 0, areaAgg = {};
+            filtered.forEach(r => {
+                const t = parseNum(r['Target Jul 26'] || r['Target']);
+                const a = parseNum(r['Actual Jul 26'] || r['Actual']);
+                target += t; actual += a;
+                if ((r['Active'] || '').toUpperCase() === 'YES') dsrCount++;
 
-            filtered.forEach(row => {
-                const targetVal = parseNum(row['Target Jul 26'] || row['Target']);
-                const actualVal = parseNum(row['Actual Jul 26'] || row['Actual']);
-
-                totalTarget += targetVal;
-                totalActual += actualVal;
-
-                if (row['Active'] && row['Active'].toString().toUpperCase() === 'YES') {
-                    activeDsrCount++;
-                }
-
-                const areaName = row['Workplace Name'] || row['Area'] || 'Other';
-                if (!areaAgg[areaName]) { areaAgg[areaName] = { target: 0, actual: 0 }; }
-                areaAgg[areaName].target += targetVal;
-                areaAgg[areaName].actual += actualVal;
+                const area = r['Workplace Name'] || r['Area'] || 'Other';
+                if (!areaAgg[area]) areaAgg[area] = { target: 0, actual: 0 };
+                areaAgg[area].target += t;
+                areaAgg[area].actual += a;
             });
 
-            const achievement = totalTarget > 0 ? ((totalActual / totalTarget) * 100).toFixed(1) : 0;
+            document.getElementById('kpi-target').innerText = formatKL(target);
+            document.getElementById('kpi-actual').innerText = formatKL(actual);
+            document.getElementById('kpi-ach').innerText = (target > 0 ? ((actual / target) * 100).toFixed(1) : 0) + '%';
+            document.getElementById('kpi-dsr').innerText = dsrCount || filtered.length;
 
-            document.getElementById('kpi-target').innerText = formatKL(totalTarget);
-            document.getElementById('kpi-actual').innerText = formatKL(totalActual);
-            document.getElementById('kpi-ach').innerText = achievement + '%';
-            document.getElementById('kpi-dsr').innerText = activeDsrCount || filtered.length;
-
-            const statusEl = document.getElementById('kpi-status');
-            if (achievement >= 100) {
-                statusEl.innerText = 'Status: Excellent Target Met 🟢';
-                statusEl.className = 'text-xs font-bold mt-1 text-emerald-600';
-            } else if (achievement >= 50) {
-                statusEl.innerText = 'Status: Need Attention 🟡';
-                statusEl.className = 'text-xs font-bold mt-1 text-amber-600';
-            } else {
-                statusEl.innerText = 'Status: Critical Warning 🔴';
-                statusEl.className = 'text-xs font-bold mt-1 text-rose-600';
-            }
-
-            renderSalesChart(Object.keys(areaAgg), Object.values(areaAgg).map(a => a.target), Object.values(areaAgg).map(a => a.actual));
+            renderSalesChart(Object.keys(areaAgg), Object.values(areaAgg).map(x => x.target), Object.values(areaAgg).map(x => x.actual));
             renderDsrTable(filtered);
         }
 
         function renderSalesChart(labels, targetData, actualData) {
             const ctx = document.getElementById('salesChart').getContext('2d');
-            if (salesChartInstance) { salesChartInstance.destroy(); }
-
+            if (salesChartInstance) salesChartInstance.destroy();
             salesChartInstance = new Chart(ctx, {
                 type: 'bar',
                 data: {
                     labels: labels.map(l => l.replace('PT CAHAYA PENGAJARAN ABADI-', '')),
                     datasets: [
-                        { label: 'Target (KL)', data: targetData.map(v => v/1000), backgroundColor: '#94A3B8', borderRadius: 6 },
-                        { label: 'Actual (KL)', data: actualData.map(v => v/1000), backgroundColor: '#EA580C', borderRadius: 6 }
+                        { label: 'Target (KL)', data: targetData.map(v => v/1000), backgroundColor: '#94A3B8', borderRadius: 4 },
+                        { label: 'Actual (KL)', data: actualData.map(v => v/1000), backgroundColor: '#EA580C', borderRadius: 4 }
                     ]
                 },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: { legend: { position: 'top' } }
-                }
+                options: { responsive: true, maintainAspectRatio: false }
             });
         }
 
         function renderDsrTable(data) {
             const tbody = document.getElementById('dsrTableBody');
             tbody.innerHTML = '';
-
-            const sorted = [...data].sort((a, b) => {
-                const targetA = parseNum(a['Target Jul 26']);
-                const actualA = parseNum(a['Actual Jul 26'] || a['Actual']);
-                const achA = parseNum(a['% Monthly']) || (targetA > 0 ? (actualA / targetA) * 100 : 0);
-
-                const targetB = parseNum(b['Target Jul 26']);
-                const actualB = parseNum(b['Actual Jul 26'] || b['Actual']);
-                const achB = parseNum(b['% Monthly']) || (targetB > 0 ? (actualB / targetB) * 100 : 0);
-
-                return achB - achA;
-            });
-
-            const limit = showAllDsr ? sorted.length : 10;
-            const displayData = sorted.slice(0, limit);
-
-            displayData.forEach((row, index) => {
-                const name = row['Sales Name'] || 'DSR';
-                const code = row['Sales ID'] || '';
-                const workplace = row['Workplace Name'] || '';
-                const active = (row['Active'] || 'YES').toUpperCase();
-
-                const targetJul = parseNum(row['Target Jul 26']);
-                const actualJul = parseNum(row['Actual Jul 26']);
-                const achMonthly = parseNum(row['% Monthly']) || (targetJul > 0 ? (actualJul/targetJul)*100 : 0);
-                
-                const prevMonth = parseNum(row['Prev Month']);
-                const momGrowth = parseNum(row['MoM Growth']);
-                
-                const targetYtd = parseNum(row['Target YTD']);
-                const actualYtd = parseNum(row['Actual YTD']);
-                const achYtd = parseNum(row['% YTD']);
-                const prevYtd = parseNum(row['Prev YTD']);
-                const ytdGrowth = parseNum(row['YTD Growth']);
-
-                const achColor = achMonthly >= 100 ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30' : 
-                                 achMonthly >= 70 ? 'bg-amber-500/20 text-amber-400 border-amber-500/30' : 'bg-rose-500/20 text-rose-400 border-rose-500/30';
-
+            data.slice(0, 10).forEach((row, i) => {
+                const target = parseNum(row['Target Jul 26']);
+                const actual = parseNum(row['Actual Jul 26']);
+                const ach = target > 0 ? (actual / target) * 100 : 0;
                 tbody.innerHTML += `
-                    <tr class="hover:bg-slate-800/40 transition">
-                        <td class="p-3">
-                            <div class="font-bold text-slate-100">#${index+1} ${name}</div>
-                            <div class="text-[10px] text-slate-500">${code} | ${workplace}</div>
-                        </td>
-                        <td class="p-3 text-center">
-                            <span class="bg-emerald-900/60 text-emerald-300 text-[10px] px-2 py-0.5 rounded font-bold">${active}</span>
-                        </td>
-                        <td class="p-3 text-right font-semibold text-slate-300">${formatKL(targetJul)}</td>
-                        <td class="p-3 text-right font-bold text-amber-400">${formatKL(actualJul)}</td>
-                        <td class="p-3 text-center">
-                            <span class="border px-2 py-0.5 rounded-full text-[11px] font-extrabold ${achColor}">${achMonthly.toFixed(0)}%</span>
-                        </td>
-                        <td class="p-3 text-right text-slate-400">${formatKL(prevMonth)}</td>
-                        <td class="p-3 text-center font-bold ${momGrowth >= 0 ? 'text-emerald-400' : 'text-rose-400'}">${momGrowth >= 0 ? '+' : ''}${momGrowth}%</td>
-                        <td class="p-3 text-right text-slate-400">${formatKL(targetYtd)}</td>
-                        <td class="p-3 text-right text-slate-200 font-bold">${formatKL(actualYtd)}</td>
-                        <td class="p-3 text-center">
-                            <span class="bg-slate-800 text-amber-300 px-2 py-0.5 rounded text-[11px] font-bold">${achYtd.toFixed(0)}%</span>
-                        </td>
-                        <td class="p-3 text-right text-slate-400">${formatKL(prevYtd)}</td>
-                        <td class="p-3 text-center font-bold ${ytdGrowth >= 0 ? 'text-emerald-400' : 'text-rose-400'}">${ytdGrowth >= 0 ? '+' : ''}${ytdGrowth}%</td>
+                    <tr class="hover:bg-slate-800/40">
+                        <td class="p-3 font-bold text-slate-100">#${i+1} ${row['Sales Name'] || 'DSR'}</td>
+                        <td class="p-3 text-center"><span class="bg-emerald-900/60 text-emerald-300 text-[10px] px-2 py-0.5 rounded">${row['Active'] || 'YES'}</span></td>
+                        <td class="p-3 text-right text-slate-300">${formatKL(target)}</td>
+                        <td class="p-3 text-right font-bold text-amber-400">${formatKL(actual)}</td>
+                        <td class="p-3 text-center font-bold text-emerald-400">${ach.toFixed(0)}%</td>
                     </tr>
-                `;
-            });
-
-            document.getElementById('hiddenDsrCount').innerText = Math.max(0, sorted.length - 10);
-        }
-
-        function toggleDsrRows() {
-            showAllDsr = !showAllDsr;
-            const btn = document.getElementById('toggleDsrBtn');
-            btn.innerHTML = showAllDsr ? 'Sembunyikan DSR ▲' : `Tampilkan Seluruh DSR (<span id="hiddenDsrCount">0</span> DSR Lainnya) ▾`;
-            filterSalesData();
-        }
-
-        function populateTopDsrModal(data) {
-            const sorted = [...data].sort((a, b) => parseNum(b['Actual Jul 26'] || b['Actual']) - parseNum(a['Actual Jul 26'] || a['Actual']));
-            const container = document.getElementById('topDsrList');
-            container.innerHTML = '';
-
-            sorted.slice(0, 5).forEach((item, index) => {
-                const name = item['Sales Name'] || `DSR ${index+1}`;
-                const workplace = item['Workplace Name'] || '';
-                const targetJul = parseNum(item['Target Jul 26']);
-                const actualJul = parseNum(item['Actual Jul 26']);
-                const ach = parseNum(item['% Monthly']) || (targetJul > 0 ? (actualJul/targetJul)*100 : 0);
-
-                container.innerHTML += `
-                    <div class="flex justify-between items-center p-3.5 bg-amber-50/80 rounded-xl border border-amber-200">
-                        <div>
-                            <p class="font-extrabold text-slate-900 text-xs">#${index+1} ${name}</p>
-                            <p class="text-[10px] text-slate-500 font-medium">${workplace}</p>
-                        </div>
-                        <div class="text-right">
-                            <span class="font-black text-amber-700 text-sm block">${formatKL(actualJul)}</span>
-                            <span class="text-[10px] text-slate-500 font-semibold">Target: ${formatKL(targetJul)} (${ach.toFixed(1)}%)</span>
-                        </div>
-                    </div>
                 `;
             });
         }
 
         function populateDistributorFilter(data) {
             const select = document.getElementById('distributorFilter');
-            const currentVal = select.value;
-            const distributors = [...new Set(data.map(row => row['Distributor'] || row['Distributor Name']).filter(Boolean))].sort();
-
+            const dists = [...new Set(data.map(r => r['Distributor'] || r['Distributor Name']).filter(Boolean))].sort();
             select.innerHTML = '<option value="ALL">Semua Distributor (ALL)</option>';
-            distributors.forEach(dist => {
-                const opt = document.createElement('option');
-                opt.value = dist;
-                opt.textContent = dist;
-                select.appendChild(opt);
-            });
-
-            if (distributors.includes(currentVal)) { select.value = currentVal; }
+            dists.forEach(d => select.innerHTML += `<option value="${d}">${d}</option>`);
         }
 
-        // ==========================================
-        // TARGET WIN ACCURACY LOGIC (DIBATASI TOP 10)
-        // ==========================================
         function filterTargetWinData() {
-            const selectedDist = document.getElementById('distributorFilter').value;
+            const selected = document.getElementById('distributorFilter').value;
+            let valid = [];
 
-            let filtered = [...rawTargetWinData];
-
-            let targetWinKey = null;
-            let winVolKey = null;
-
-            if (filtered.length > 0) {
-                const keys = Object.keys(filtered[0]);
-                targetWinKey = keys.find(k => {
-                    const norm = k.toLowerCase().replace(/\s+/g, '');
-                    return norm.includes('target') && norm.includes('win');
-                });
-                winVolKey = keys.find(k => {
-                    const norm = k.toLowerCase().replace(/\s+/g, '');
-                    return norm.includes('win') && !norm.includes('target') && !norm.includes('ratio');
-                });
-            }
-
-            let validItems = [];
-
-            filtered.forEach(row => {
-                const targetWin = targetWinKey ? parseNum(row[targetWinKey]) : 0;
-                
-                // Syarat: Target WIN > 0
+            rawTargetWinData.forEach(row => {
+                const targetWin = parseNum(row['Target WIN'] || row['Target Win']);
                 if (targetWin > 0) {
-                    const distName = row['Distributor'] || row['Distributor Name'] || '';
-                    
-                    if (selectedDist === 'ALL' || distName === selectedDist) {
-                        const winVol = winVolKey ? parseNum(row[winVolKey]) : 0;
-                        let ratioVal = 0;
-                        
-                        if (row['Succesion Ratio'] !== undefined && row['Succesion Ratio'] !== '') {
-                            ratioVal = parseNum(row['Succesion Ratio']);
-                        } else {
-                            ratioVal = (winVol / targetWin) * 100;
-                        }
-
-                        validItems.push({
+                    const dist = row['Distributor'] || row['Distributor Name'] || '';
+                    if (selected === 'ALL' || dist === selected) {
+                        const winVol = parseNum(row['WIN (VOL)'] || row['Win Vol']);
+                        valid.push({
                             ...row,
-                            _parsedTargetWin: targetWin,
-                            _parsedWinVol: winVol,
-                            _parsedRatio: ratioVal
+                            targetWin,
+                            winVol,
+                            ratio: (winVol / targetWin) * 100
                         });
                     }
                 }
             });
 
-            // Urutkan berdasarkan Target WIN tertinggi
-            validItems.sort((a, b) => b._parsedTargetWin - a._parsedTargetWin);
-
-            // MEMBATASI HANYA MENAMPILKAN TOP 10 DATA SAJA
-            const displayItems = validItems.slice(0, 10);
-
-            let totalTargetWin = 0;
-            let totalWinVol = 0;
-            let totalRatioSum = 0;
-
-            displayItems.forEach(item => {
-                totalTargetWin += item._parsedTargetWin;
-                totalWinVol += item._parsedWinVol;
-                totalRatioSum += item._parsedRatio;
-            });
+            valid.sort((a, b) => b.targetWin - a.targetWin);
+            const display = valid.slice(0, 10);
 
             const tbody = document.getElementById('targetWinTableBody');
             tbody.innerHTML = '';
 
-            if (displayItems.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="7" class="p-6 text-center text-slate-400 font-bold">Tidak ada data produk yang memiliki Target WIN > 0.</td></tr>';
-                document.getElementById('tw-kpi-targetwin').innerText = "0";
-                document.getElementById('tw-kpi-win').innerText = "0";
-                document.getElementById('tw-kpi-ratio').innerText = "0%";
-                document.getElementById('tw-kpi-records').innerText = "0 Item";
-                return;
-            }
-
-            // Render 10 Item
-            displayItems.forEach((row, idx) => {
-                const dsrName = row['DSR Name'] || row['DSR'] || row['Sales Name'] || '-';
-                const distName = row['Distributor'] || row['Distributor Name'] || '-';
-                const prodName = row['Product Name'] || row['Product'] || '-';
-                const compBrand = row['Competitor Product Brand'] || row['Competitor Brand'] || '-';
-                const compSellOut = parseNum(row['Compet YTD. Sell Out'] || row['Compet YTD Sell Out']);
-                const targetWin = row._parsedTargetWin;
-                const winVol = row._parsedWinVol;
-                const ratioVal = row._parsedRatio;
-
-                const ratioBadge = ratioVal >= 100 ? 'bg-emerald-100 text-emerald-800 border-emerald-300' :
-                                   ratioVal > 0 ? 'bg-amber-100 text-amber-800 border-amber-300' : 
-                                   'bg-rose-100 text-rose-800 border-rose-300';
-
+            let totTW = 0, totWin = 0, totRatio = 0;
+            display.forEach((r, i) => {
+                totTW += r.targetWin; totWin += r.winVol; totRatio += r.ratio;
                 tbody.innerHTML += `
-                    <tr class="bg-white hover:bg-slate-50 transition">
-                        <td class="p-3.5">
-                            <div class="flex items-center gap-1.5 font-bold text-slate-900">
-                                <span class="text-[9px] bg-blue-800 text-white font-black px-1.5 py-0.5 rounded">#${idx+1}</span>
-                                <span>${dsrName}</span>
-                            </div>
-                            <div class="text-[10px] text-slate-500 font-medium pl-6">${distName}</div>
-                        </td>
-                        <td class="p-3.5 font-bold text-slate-800">${prodName}</td>
-                        <td class="p-3.5">
-                            <span class="bg-slate-100 text-slate-700 font-semibold px-2 py-0.5 rounded border border-slate-200 text-[11px]">${compBrand}</span>
-                        </td>
-                        <td class="p-3.5 text-right font-semibold text-slate-600">${compSellOut.toLocaleString('id-ID')}</td>
-                        <td class="p-3.5 text-right font-black text-blue-900 bg-blue-50/50">${targetWin.toLocaleString('id-ID')}</td>
-                        <td class="p-3.5 text-right font-black text-emerald-600">${winVol.toLocaleString('id-ID')}</td>
-                        <td class="p-3.5 text-center">
-                            <span class="px-2.5 py-1 rounded-full text-[11px] font-extrabold border ${ratioBadge}">
-                                ${ratioVal.toFixed(0)}%
-                            </span>
-                        </td>
+                    <tr class="hover:bg-slate-50">
+                        <td class="p-3.5 font-bold">#${i+1} ${r['DSR Name'] || '-'} <br><span class="text-[10px] text-slate-400 font-normal">${r['Distributor'] || '-'}</span></td>
+                        <td class="p-3.5 font-bold">${r['Product Name'] || '-'}</td>
+                        <td class="p-3.5"><span class="bg-slate-100 px-2 py-0.5 rounded text-[11px]">${r['Competitor Brand'] || '-'}</span></td>
+                        <td class="p-3.5 text-right">${parseNum(r['Compet YTD Sell Out']).toLocaleString('id-ID')}</td>
+                        <td class="p-3.5 text-right font-black text-blue-900">${r.targetWin.toLocaleString('id-ID')}</td>
+                        <td class="p-3.5 text-right font-black text-emerald-600">${r.winVol.toLocaleString('id-ID')}</td>
+                        <td class="p-3.5 text-center"><span class="bg-amber-100 text-amber-800 px-2 py-0.5 rounded font-bold">${r.ratio.toFixed(0)}%</span></td>
                     </tr>
                 `;
             });
 
-            const avgRatio = displayItems.length > 0 ? (totalRatioSum / displayItems.length).toFixed(1) : 0;
-
-            document.getElementById('tw-kpi-targetwin').innerText = totalTargetWin.toLocaleString('id-ID');
-            document.getElementById('tw-kpi-win').innerText = totalWinVol.toLocaleString('id-ID');
-            document.getElementById('tw-kpi-ratio').innerText = avgRatio + '%';
-            document.getElementById('tw-kpi-records').innerText = displayItems.length + ' Item';
+            document.getElementById('tw-kpi-targetwin').innerText = totTW.toLocaleString('id-ID');
+            document.getElementById('tw-kpi-win').innerText = totWin.toLocaleString('id-ID');
+            document.getElementById('tw-kpi-ratio').innerText = (display.length ? (totRatio/display.length).toFixed(1) : 0) + '%';
+            document.getElementById('tw-kpi-records').innerText = display.length + ' Item';
         }
     </script>
 </body>
