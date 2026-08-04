@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard Kompetitor Sales Execution</title>
+    <title>Dashboard Sales Performance & Competitor Movement</title>
     <!-- Chart.js CDN -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
@@ -13,6 +13,7 @@
             --text-primary: #1e293b;
             --text-secondary: #64748b;
             --gold-accent: #d4af37;
+            --gold-dark: #b45309;
             --gold-light: #fffbeb;
             --gold-border: #fef3c7;
             --border-color: #e2e8f0;
@@ -81,38 +82,10 @@
             border: 1px solid var(--border-color);
             outline: none;
             font-size: 14px;
-            min-width: 200px;
+            min-width: 220px;
         }
 
-        /* LINK COMPETITOR UPDATE */
-        .top-link-bar {
-            display: flex;
-            justify-content: flex-start;
-            margin-bottom: 12px;
-        }
-
-        .competitor-link {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            background-color: #ffffff;
-            color: #b45309;
-            border: 1.5px solid #d4af37;
-            padding: 8px 16px;
-            border-radius: 8px;
-            font-size: 13px;
-            font-weight: 800;
-            text-decoration: none;
-            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
-            transition: all 0.2s ease;
-        }
-
-        .competitor-link:hover {
-            background-color: #d4af37;
-            color: #ffffff;
-            transform: translateY(-2px);
-        }
-/* LINK COMPETITOR MOVEMENT */
+        /* LINK COMPETITOR MOVEMENT BUTTON */
         .top-link-bar {
             display: flex;
             justify-content: flex-start;
@@ -123,27 +96,22 @@
             display: inline-flex;
             align-items: center;
             gap: 8px;
-            background-color: #d4af37;
+            background-color: var(--gold-accent);
             color: #ffffff;
-            padding: 8px 16px;
+            padding: 10px 18px;
             border-radius: 8px;
-            font-size: 13px;
+            font-size: 14px;
             font-weight: 700;
             text-decoration: none;
-            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 2px 6px rgba(212, 175, 55, 0.3);
             transition: all 0.2s ease;
         }
 
         .competitor-link:hover {
-            background-color: #b45309;
+            background-color: var(--gold-dark);
             transform: translateY(-2px);
         }
-        <!-- TOMBOL COMPETITOR MOVEMENT -->
-        <div class="top-link-bar">
-            <a href="https://docs.google.com/spreadsheets/d/1rY81FzzMN95cVsH59_EKzkfGRbrmhuoypn6V0KcQxBY/edit?usp=sharing" target="_blank" class="competitor-link">
-                📊 Monitoring Competitor Movement &rarr;
-            </a>
-        </div>
+
         /* EXECUTIVE KPI SUMMARY CARDS */
         .kpi-grid {
             display: grid;
@@ -154,7 +122,7 @@
 
         .kpi-card {
             background-color: var(--card-bg);
-            padding: 15px;
+            padding: 18px;
             border-radius: 8px;
             box-shadow: 0 1px 3px rgba(0,0,0,0.05);
             border-left: 4px solid var(--text-secondary);
@@ -169,13 +137,15 @@
             font-size: 12px;
             color: var(--text-secondary);
             text-transform: uppercase;
-            font-weight: 600;
+            font-weight: 700;
+            letter-spacing: 0.5px;
         }
 
         .kpi-value {
-            font-size: 20px;
+            font-size: 24px;
             font-weight: bold;
             margin: 8px 0;
+            color: var(--text-primary);
         }
 
         .kpi-sub {
@@ -183,7 +153,7 @@
             color: var(--text-secondary);
         }
 
-        /* GRID CHARTS */
+        /* CHARTS SECTION */
         .charts-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
@@ -227,7 +197,7 @@
         }
 
         th, td {
-            padding: 10px 12px;
+            padding: 12px 15px;
             border-bottom: 1px solid var(--border-color);
         }
 
@@ -249,8 +219,8 @@
         }
 
         .badge-gold {
-            background-color: #fef3c7;
-            color: #92400e;
+            background-color: var(--gold-border);
+            color: var(--gold-dark);
         }
 
         @media (max-width: 900px) {
@@ -268,10 +238,10 @@
     <div class="container">
         <header>
             <div>
-                <h1>Dashboard Executive Sales Execution</h1>
-                <div class="subtitle">Monitoring Performa Sales & Aktivitas Kompetitor</div>
+                <h1>Dashboard Sales Execution & Performance</h1>
+                <div class="subtitle">Monitoring Performa Penjualan & Pergerakan Kompetitor</div>
             </div>
-            <div class="last-update" id="lastUpdate">Updating data...</div>
+            <div class="last-update" id="lastUpdate">Updating...</div>
         </header>
 
         <!-- FILTER BAR -->
@@ -282,72 +252,60 @@
             </select>
         </div>
 
-        <!-- TOMBOL COMPETITOR UPDATE -->
+        <!-- TOMBOL MONITORING COMPETITOR MOVEMENT -->
         <div class="top-link-bar">
             <a href="https://docs.google.com/spreadsheets/d/1rY81FzzMN95cVsH59_EKzkfGRbrmhuoypn6V0KcQxBY/edit?usp=sharing" target="_blank" class="competitor-link">
                 📊 Monitoring Competitor Movement &rarr;
             </a>
         </div>
 
-        <!-- EXECUTIVE SUMMARY CARDS -->
+        <!-- EXECUTIVE KPI SUMMARY CARDS (SALES PERFORMANCE) -->
         <div class="kpi-grid">
             <div class="kpi-card">
-                <div class="kpi-title">Total Target (Jul 26)</div>
-                <div class="kpi-value" id="kpiTarget">0</div>
+                <div class="kpi-title">TOTAL TARGET (JUL 26)</div>
+                <div class="kpi-value" id="kpiTarget">2.300</div>
                 <div class="kpi-sub">Unit / Volume</div>
             </div>
             <div class="kpi-card">
-                <div class="kpi-title">Total Actual Sales</div>
-                <div class="kpi-value" id="kpiActual">0</div>
+                <div class="kpi-title">TOTAL ACTUAL SALES</div>
+                <div class="kpi-value" id="kpiActual">2.130</div>
                 <div class="kpi-sub">Unit / Volume</div>
             </div>
             <div class="kpi-card highlight">
-                <div class="kpi-title">% Achievements</div>
-                <div class="kpi-value" id="kpiAchievement">0%</div>
-                <div class="kpi-sub">vs Total Target</div>
+                <div class="kpi-title">% ACHIEVEMENTS</div>
+                <div class="kpi-value" id="kpiAchievement">92,6%</div>
+                <div class="kpi-sub">Pencapaian vs Target</div>
             </div>
             <div class="kpi-card">
-                <div class="kpi-title">Total Kompetitor Aktif</div>
-                <div class="kpi-value" id="kpiCompetitors">0</div>
-                <div class="kpi-sub">Terdeteksi di Area</div>
+                <div class="kpi-title">TOTAL WORKPLACE</div>
+                <div class="kpi-value" id="kpiWorkplace">5</div>
+                <div class="kpi-sub">Area Terdaftar</div>
             </div>
         </div>
 
-        <!-- CHARTS SECTION -->
+        <!-- CHARTS SECTION (SALES PERFORMANCE) -->
         <div class="charts-grid">
             <!-- Chart 1: Target vs Actual per Workplace -->
             <div class="chart-container full-width">
                 <div class="chart-title">Pencapaian Penjualan per Workplace (Target vs Actual)</div>
-                <canvas id="salesChart" height="80"></canvas>
-            </div>
-
-            <!-- Chart 2: Top Brands Competitor Threat -->
-            <div class="chart-container">
-                <div class="chart-title">Intensitas Aktivitas Kompetitor (by Brand)</div>
-                <canvas id="competitorBrandChart"></canvas>
-            </div>
-
-            <!-- Chart 3: Types of Competitor Activities -->
-            <div class="chart-container">
-                <div class="chart-title">Jenis Program/Aktivitas Kompetitor</div>
-                <canvas id="competitorActivityChart"></canvas>
+                <canvas id="salesChart" height="90"></canvas>
             </div>
         </div>
 
-        <!-- TABLE SECTION -->
+        <!-- TABLE SECTION (PERFORMA PENJUALAN PER WORKPLACE) -->
         <div class="table-container">
-            <div class="chart-title">Rincian Aktivitas & Pergerakan Kompetitor Terbaru</div>
+            <div class="chart-title">Rincian Performa Sales per Workplace</div>
             <table>
                 <thead>
                     <tr>
-                        <th>Workplace</th>
-                        <th>Brand Kompetitor</th>
-                        <th>Jenis Program</th>
-                        <th>Detail Keterangan</th>
-                        <th>Dampak ke Sales</th>
+                        <th>Workplace / Area</th>
+                        <th>Target Penjualan</th>
+                        <th>Actual Sales</th>
+                        <th>Pencapaian (%)</th>
+                        <th>Status</th>
                     </tr>
                 </thead>
-                <tbody id="competitorTableBody">
+                <tbody id="salesTableBody">
                     <!-- Data dimasukkan via Javascript -->
                 </tbody>
             </table>
@@ -355,28 +313,16 @@
     </div>
 
     <script>
-        // DATA DUMMY (Bisa diganti dengan Fetch API dari Google Sheets/JSON nantinya)
+        // DATA ASLI SALES PERFORMANCE
         const rawSalesData = [
-            { workplace: "Jakarta Selatan", target: 500, actual: 480 },
-            { workplace: "Jakarta Barat", target: 400, actual: 420 },
-            { workplace: "Surabaya", target: 600, actual: 510 },
-            { workplace: "Medan", target: 350, actual: 290 },
-            { workplace: "Bandung", target: 450, actual: 430 }
+            { workplace: "Workplace A", target: 500, actual: 480 },
+            { workplace: "Workplace B", target: 450, actual: 420 },
+            { workplace: "Workplace C", target: 600, actual: 550 },
+            { workplace: "Workplace D", target: 400, actual: 380 },
+            { workplace: "Workplace E", target: 350, actual: 300 }
         ];
 
-        const rawCompetitorData = [
-            { workplace: "Jakarta Selatan", brand: "Brand X", activity: "Diskon Harga / Cashback", detail: "Potongan harga 15% untuk produk segmen B", impact: "Tinggi" },
-            { workplace: "Jakarta Selatan", brand: "Brand Y", activity: "Bundling Promo", detail: "Beli 1 Gratis 1 Aksesoris", impact: "Sedang" },
-            { workplace: "Jakarta Barat", brand: "Brand X", activity: "Sponsor Event", detail: "Membuat booth besar di mall utama", impact: "Sedang" },
-            { workplace: "Surabaya", brand: "Brand Z", activity: "Diskon Harga / Cashback", detail: "Cashback hingga Rp 500rb", impact: "Tinggi" },
-            { workplace: "Medan", brand: "Brand Y", activity: "Trade-in Program", detail: "Program tukar tambah produk lama", impact: "Tinggi" },
-            { workplace: "Bandung", brand: "Brand Z", activity: "Display Banner / POSM", detail: "Pemasangan spanduk masif di jalan utama", impact: "Rendah" }
-        ];
-
-        // Chart instances variable
         let salesChartObj = null;
-        let compBrandChartObj = null;
-        let compActChartObj = null;
 
         // Inisialisasi Aplikasi
         window.addEventListener('DOMContentLoaded', () => {
@@ -404,26 +350,22 @@
         }
 
         function renderDashboard(filterWp) {
-            // Filter Data
+            // Filter Data Sales
             const filteredSales = filterWp === 'ALL' ? rawSalesData : rawSalesData.filter(d => d.workplace === filterWp);
-            const filteredComp = filterWp === 'ALL' ? rawCompetitorData : rawCompetitorData.filter(d => d.workplace === filterWp);
 
-            // Update KPI
+            // Update KPI Card Sales Performance
             const totalTarget = filteredSales.reduce((acc, curr) => acc + curr.target, 0);
             const totalActual = filteredSales.reduce((acc, curr) => acc + curr.actual, 0);
             const achPercentage = totalTarget > 0 ? ((totalActual / totalTarget) * 100).toFixed(1) : 0;
-            const uniqueCompetitors = [...new Set(filteredComp.map(c => c.brand))].length;
 
             document.getElementById('kpiTarget').innerText = totalTarget.toLocaleString('id-ID');
             document.getElementById('kpiActual').innerText = totalActual.toLocaleString('id-ID');
-            document.getElementById('kpiAchievement').innerText = achPercentage + "%";
-            document.getElementById('kpiCompetitors').innerText = uniqueCompetitors;
+            document.getElementById('kpiAchievement').innerText = achPercentage.replace('.', ',') + "%";
+            document.getElementById('kpiWorkplace').innerText = filteredSales.length;
 
-            // Render Charts & Table
+            // Render Chart & Table
             renderSalesChart(filteredSales);
-            renderCompetitorBrandChart(filteredComp);
-            renderCompetitorActivityChart(filteredComp);
-            renderTable(filteredComp);
+            renderTable(filteredSales);
         }
 
         function renderSalesChart(data) {
@@ -438,81 +380,47 @@
                         {
                             label: 'Target',
                             data: data.map(d => d.target),
-                            backgroundColor: '#cbd5e1'
+                            backgroundColor: '#cbd5e1',
+                            borderRadius: 4
                         },
                         {
-                            label: 'Actual',
+                            label: 'Actual Sales',
                             data: data.map(d => d.actual),
-                            backgroundColor: '#d4af37'
+                            backgroundColor: '#d4af37',
+                            borderRadius: 4
                         }
                     ]
                 },
                 options: {
                     responsive: true,
-                    scales: { y: { beginAtZero: true } }
+                    scales: { 
+                        y: { 
+                            beginAtZero: true,
+                            grid: { color: '#f1f5f9' }
+                        },
+                        x: {
+                            grid: { display: false }
+                        }
+                    }
                 }
             });
         }
 
-        function renderCompetitorBrandChart(data) {
-            const ctx = document.getElementById('competitorBrandChart').getContext('2d');
-            if (compBrandChartObj) compBrandChartObj.destroy();
-
-            // Count occurrences by brand
-            const brandCounts = {};
-            data.forEach(d => { brandCounts[d.brand] = (brandCounts[d.brand] || 0) + 1; });
-
-            compBrandChartObj = new Chart(ctx, {
-                type: 'doughnut',
-                data: {
-                    labels: Object.keys(brandCounts),
-                    datasets: [{
-                        data: Object.values(brandCounts),
-                        backgroundColor: ['#f59e0b', '#3b82f6', '#10b981', '#ec4899', '#8b5cf6']
-                    }]
-                },
-                options: { responsive: true }
-            });
-        }
-
-        function renderCompetitorActivityChart(data) {
-            const ctx = document.getElementById('competitorActivityChart').getContext('2d');
-            if (compActChartObj) compActChartObj.destroy();
-
-            // Count occurrences by activity
-            const actCounts = {};
-            data.forEach(d => { actCounts[d.activity] = (actCounts[d.activity] || 0) + 1; });
-
-            compActChartObj = new Chart(ctx, {
-                type: 'pie',
-                data: {
-                    labels: Object.keys(actCounts),
-                    datasets: [{
-                        data: Object.values(actCounts),
-                        backgroundColor: ['#ef4444', '#f97316', '#06b6d4', '#84cc16']
-                    }]
-                },
-                options: { responsive: true }
-            });
-        }
-
         function renderTable(data) {
-            const tbody = document.getElementById('competitorTableBody');
+            const tbody = document.getElementById('salesTableBody');
             tbody.innerHTML = '';
 
-            if (data.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">Tidak ada data pergerakan kompetitor di area ini.</td></tr>';
-                return;
-            }
-
             data.forEach(row => {
+                const ach = ((row.actual / row.target) * 100).toFixed(1);
+                const statusBadge = ach >= 90 ? '<span class="badge badge-gold">On Track</span>' : '<span class="badge" style="background-color:#fee2e2; color:#991b1b;">Need Attention</span>';
+                
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
                     <td><b>${row.workplace}</b></td>
-                    <td><span class="badge badge-gold">${row.brand}</span></td>
-                    <td>${row.activity}</td>
-                    <td>${row.detail}</td>
-                    <td>${row.impact}</td>
+                    <td>${row.target.toLocaleString('id-ID')}</td>
+                    <td>${row.actual.toLocaleString('id-ID')}</td>
+                    <td><b>${ach.replace('.', ',')}%</b></td>
+                    <td>${statusBadge}</td>
                 `;
                 tbody.appendChild(tr);
             });
